@@ -37,15 +37,17 @@ API_DetailsURL = 'http://v2.iplaylaserforce.com/memberDetails.php'
 API_AchievementsURL = 'http://v2.iplaylaserforce.com/achievements.php'
 API_recentMissions = 'http://v2.iplaylaserforce.com/recentMissions.php'
 targetRegion = 7
-targetSite = 9
-targetMember = 9839 #current start
+targetSite = 8
+targetMember = 1196 #current start
 
-counter = 1
+totalRequests = 1
+nonResponses = 0
 print("======preparing to read and write.======")
 print(sys.stdout.encoding)
-while targetMember < 15000: 
+#while targetMember < 17500 and nonResponses <= 50: 
+while (totalRequests == 1):
 
-    data = {'requestId':str(counter), 
+    data = {'requestId':str(totalRequests), 
             'regionId':'9999', 
             'siteId':'9999', 
             'memberRegion':str(targetRegion),
@@ -56,16 +58,19 @@ while targetMember < 15000:
     #print("===============\nRead Complete, response = \n"+r.text+"\n===============")
     responseJSON = json.loads(r.text)
 
-    MemberIDAsString = "{3}: {0}-{1}-{2}".format(str(targetRegion),str(targetSite),str(targetMember),str(counter))
+    MemberIDAsString = "{0}-{1}-{2}".format(str(targetRegion),str(targetSite),str(targetMember))
 
     if 'centre'  in responseJSON and len(responseJSON['centre']) >= 1:
         outputPlayerToConsole(responseJSON,MemberIDAsString)
+        nonResponses = 0
     else:
-        print ("{0} was not found".format(MemberIDAsString))
+        nonResponses = nonResponses + 1
+        print ("{0} was not found, this is consecutive instance {1} ".format(MemberIDAsString,nonResponses))
+        
 
     targetMember = targetMember + 1
-    counter = counter + 1
-    time.sleep(1)
+    totalRequests = totalRequests + 1
+    #time.sleep(0)
 
 
 
