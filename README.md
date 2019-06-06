@@ -26,4 +26,5 @@ Python 3
 
 ## Installation instructions
 
-?
+1. download the source
+2. install the requests library '''pip install requests'''
