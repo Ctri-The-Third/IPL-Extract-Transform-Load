@@ -123,6 +123,6 @@ while (totalRequests == 1):
     totalRequests = totalRequests + 1
 '''
 
-print ("====Testing FetchUsers with user 9-6-106====")
-fetchPlayer_root('',9,6,106)
-fetchPlayerRecents_root('',9,6,106)
+#print ("====Testing FetchUsers with user 9-6-106====")
+#fetchPlayer_root('',9,6,106)
+#fetchPlayerRecents_root('',9,6,106)
