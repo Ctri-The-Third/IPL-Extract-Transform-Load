@@ -28,3 +28,4 @@ Python 3
 
 1. download the source
 2. install the requests library '''pip install requests'''
+3. install the pyodbc library '''pip install pyodbc'''

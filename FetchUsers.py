@@ -86,7 +86,22 @@ def fetchPlayerAcheivement_root(token,region,site,code):
 
 def fetchPlayerRecents_root(token,region,site,code):
     API_recentMissions = 'http://v2.iplaylaserforce.com/recentMissions.php'
+    data = {'requestId':str(1), 
+            'regionId':'9999', 
+            'siteId':'9999', 
+            'memberRegion':str(region),
+            'memberSite':str(site),
+            'memberId':str(code),
+            'token':str(token)} 
 
+    r = requests.post(url = API_recentMissions, data = data)
+    
+    responseJSON = json.loads(r.text)
+    if 'centre'  in responseJSON and len(responseJSON['mission']) >= 1:
+        
+        return (responseJSON)
+    else:
+        return ()
 #================ begins the actual looping and scraping here
 '''
 targetRegion = 7
