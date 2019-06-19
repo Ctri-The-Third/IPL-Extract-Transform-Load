@@ -58,8 +58,10 @@ def fetchPlayer_root(token,region,site,code):
     responseJSON = json.loads(r.text)
     if 'centre'  in responseJSON and len(responseJSON['centre']) >= 1:
         
+        print("fetchPlayer_root: Found player %s-%s-%s, token %s" % (region,site,code,token))
         return (responseJSON)
     else:
+        print("fetchPlayer_root: DIDN'T find player %s-%s-%s, token %s" % (region,site,code,token))
         return ()
 
 def fetchPlayerAcheivement_root(token,region,site,code):
@@ -97,7 +99,7 @@ def fetchPlayerRecents_root(token,region,site,code):
     r = requests.post(url = API_recentMissions, data = data)
     
     responseJSON = json.loads(r.text)
-    if 'centre'  in responseJSON and len(responseJSON['mission']) >= 1:
+    if 'mission'  in responseJSON and len(responseJSON['mission']) >= 1:
         
         return (responseJSON)
     else:
@@ -120,3 +122,7 @@ while (totalRequests == 1):
     targetMember = targetMember + 1
     totalRequests = totalRequests + 1
 '''
+
+print ("====Testing FetchUsers with user 9-6-106====")
+fetchPlayer_root('',9,6,106)
+fetchPlayerRecents_root('',9,6,106)
