@@ -4,3 +4,4 @@ playerBlob*.json
 __pycache__/
 *.pyc
 __
+JSONBlobs/
