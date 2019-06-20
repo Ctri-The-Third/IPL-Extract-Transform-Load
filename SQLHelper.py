@@ -89,3 +89,38 @@ def addParticipation(gameUUID, playerID, score):
     conn.close()
     return ''
 
+def addAchievement(achName, Description, image):
+    #do something
+    conn =  connectToSource()
+    cursor = conn.cursor()
+    query = """
+    SELECT *
+    FROM AllAchievements
+    where image = ? 
+    and achName = ?
+    """
+    results = cursor.execute(query,(image,achName))
+    result = results.fetchone()
+
+    if result == None:
+        print("SQLHelper.addAchievement: Didn't find [{0}], adding it".format(achName))
+        query = """
+        INSERT into AllAchievements
+         (AchName, image, Description)
+        VALUES (?,?,?)
+        
+        """
+        cursor.execute(query,(achName,image,Description))
+        print ("SQLHelper.addAchievement: Added it!")
+        conn.commit()
+        conn.close()
+    else:
+        print ("SQLHelper.addAchievement: found [{0}], no changes to it".format(achName))
+
+    print(result)
+
+def addPlayerAchievement(image,playerID,newAchievement,achievedDate,progressA,progressB):
+    #do something
+    print(image)
+
+

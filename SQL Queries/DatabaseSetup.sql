@@ -185,12 +185,31 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE TABLE [dbo].[Achievements](
-	[AchName] [varchar](50) NOT NULL,
-	[Description] [varchar](50) NULL,
-	[image] [varchar](64) NOT NULL
-) ON [PRIMARY]
+USE [LaserScraper]
 GO
+
+
+/****** Object:  Table [dbo].[AllAchievements]    Script Date: 21-Jun-19 0:32:52 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[AllAchievements](
+	[AchName] [varchar](50) NOT NULL,
+	[Description] [text] NULL,
+	[image] [varchar](64) NOT NULL,
+ CONSTRAINT [PK_AllAchievements] PRIMARY KEY CLUSTERED 
+(
+	[AchName] ASC,
+	[image] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+
+
 
 USE [LaserScraper]
 GO

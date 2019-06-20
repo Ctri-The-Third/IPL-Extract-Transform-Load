@@ -18,6 +18,13 @@ targetIDs = {
 '7-9-13899',	#Thorian
 }
 
+targetIDs = {
+    '9-6-106'
+}
+
 for ID in targetIDs:
     IDpieces = ID.split("-")
     allAchievements = fetchPlayerAcheivement_root('',IDpieces[0],IDpieces[1],IDpieces[2])
+    #print (allAchievements)
+    for achievement in allAchievements["centre"][1]["achievements"]:
+        addAchievement(achievement["name"],achievement["description"],achievement["image"])
