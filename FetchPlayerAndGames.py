@@ -115,8 +115,14 @@ targetIDs = {
 '7-9-14006', #Pinch
 '7-8-1196', #Goku
 '7-9-11663', #Soul
+'7-9-9517', #Oreos
+'7-9-9518', #Pedro
+'7-9-13869', #Channa Banana
+
 }
-targetIDs = { '7-9-1996' }
+targetIDs = {
+    '7-9-13869', #Channa Banana
+}
 
 for ID in targetIDs:
     region = ID.split("-")[0]
