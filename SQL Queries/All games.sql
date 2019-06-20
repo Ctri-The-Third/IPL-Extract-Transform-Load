@@ -1,6 +1,6 @@
 /****** Script for SelectTopNRows command from SSMS  ******/
 SELECT 
-	Participation.PlayerID, 
+	Participation.PlayerID as PID, 
 	GamerTag, 
 	GameTimestamp, 
 	GameName,
@@ -10,6 +10,8 @@ SELECT
   inner join Games on Participation.GameUUID = Games.GameUUID
   
   Order by GameTimestamp desc;
+
+
 
 
 

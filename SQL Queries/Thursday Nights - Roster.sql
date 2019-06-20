@@ -19,7 +19,7 @@ select (CONVERT(int, CURRENT_TIMESTAMP) - CONVERT(int, Max(GameTimestamp))) /7  
 group by PlayerID, GamerTag)
 
 select * from roster 
-where recency < 56
+where recency <= 8
 order by recency asc
 
 
