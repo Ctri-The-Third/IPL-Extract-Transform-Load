@@ -3,11 +3,11 @@ import json
 import importlib
 import datetime
 
-from FetchUsers import fetchPlayer_root
-from FetchUsers import fetchPlayerRecents_root
-from SQLconnector import addPlayer
-from SQLconnector import addGame
-from SQLconnector import addParticipation
+from FetchHelper import fetchPlayer_root
+from FetchHelper import fetchPlayerRecents_root
+from SQLHelper import addPlayer
+from SQLHelper import addGame
+from SQLHelper import addParticipation
 targetIDs = {
     
 '9-6-106', #C'tri

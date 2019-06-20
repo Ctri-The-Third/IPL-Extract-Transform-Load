@@ -29,4 +29,5 @@ Python 3
 1. download the source
 2. install the requests library '''pip install requests'''
 3. install the pyodbc library '''pip install pyodbc'''
-4. The program currently expects a local SQLExpress server with a database called ''LaserScrape''
+4. The program currently expects a local SQLExpress - Run the <pre>DatabaseSetup.sql</pre> query
+5. Set the connection string in SQLconnector.py
