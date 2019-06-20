@@ -109,3 +109,69 @@ GO
 ALTER DATABASE [LaserScraper] SET  READ_WRITE 
 GO
 
+USE [LaserScraper]
+GO
+
+/****** Object:  Table [dbo].[Games]    Script Date: 6/20/2019 10:01:23 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Games](
+	[GameTimestamp] [datetime] NOT NULL,
+	[GameName] [varchar](50) NOT NULL,
+	[ArenaName] [varchar](50) NOT NULL,
+	[GameUUID] [nvarchar](50) NOT NULL,
+ CONSTRAINT [PK_Games] PRIMARY KEY CLUSTERED 
+(
+	[GameUUID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+
+USE [LaserScraper]
+GO
+
+/****** Object:  Table [dbo].[Participation]    Script Date: 6/20/2019 10:01:28 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Participation](
+	[PlayerID] [varchar](15) NOT NULL,
+	[GameUUID] [varchar](50) NOT NULL,
+	[Score] [int] NOT NULL,
+ CONSTRAINT [PK_Participation] PRIMARY KEY CLUSTERED 
+(
+	[PlayerID] ASC,
+	[GameUUID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+
+USE [LaserScraper]
+GO
+
+/****** Object:  Table [dbo].[Players]    Script Date: 6/20/2019 10:01:32 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Players](
+	[PlayerID] [varchar](15) NOT NULL,
+	[GamerTag] [varchar](20) NOT NULL,
+	[Joined] [date] NULL,
+	[Missions] [int] NULL,
+	[Level] [int] NULL
+) ON [PRIMARY]
+GO
+
+
