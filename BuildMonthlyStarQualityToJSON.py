@@ -1,12 +1,17 @@
-with PlayersInGame as (
+import json
+
+from SQLconnector import connectToSource
+startDate = '2019-06-01'
+endDate = '2019-07-01'
+SQL = '''with PlayersInGame as (
 	SELECT 
 	Count ([LaserScraper].[dbo].[Players].[GamerTag]) as playersInGame, 
 	Games.GameUUID as gameID
 	FROM [LaserScraper].[dbo].[Games] as Games
 	join Participation on participation.GameUUID = Games.GameUUID
 	join Players on Participation.PlayerID = Players.PlayerID
-	where GameTimestamp >= '2019-06-01' 
-	and GameTimeStamp < '2019-07-01'
+	where GameTimestamp >= ? 
+	and GameTimeStamp < ?
 	group by Games.GameUUID ),
 averageOpponents as 
 (
@@ -22,8 +27,8 @@ totalGamesPlayed as
 	select count(*) as gamesPlayed,  Participation.PlayerID
 	from Participation 
 	join Games on Games.GameUUID = Participation.GameUUID
-	where GameTimestamp >= '2019-06-01' 
-	and GameTimeStamp < '2019-07-01'
+	where GameTimestamp >= ?
+	and GameTimeStamp < ?
 	group by Participation.PlayerID
 ),
 Ranks as 
@@ -49,10 +54,27 @@ join AverageRanks on AverageRanks.PlayerID = Players.PlayerID
 
 
 order by AvgQualityPerGame desc
---order by TotalQualityScore desc
+'''
+conn = connectToSource()
+cursor = conn.cursor()
 
+cursor.execute(SQL,('2019-06-01','2019-07-01','2019-06-01','2019-07-01'))
+JSON = {
+    'ScoreTitle' : "Star Quality for all known players, between {0} and {1}" .format(startDate,endDate),
+    'ScoreGreaterOrEqualDate' : startDate,
+    'ScoreLessDate' : endDate,
+    'Player' : [{
+    #    'Name' : "C'tri",
+    #    'AverageScore' : -1,
+    #    'MissionsPlayed' : -1,
+    }],
+    }
+for result in cursor.fetchall():
+    print (result)
+    JSON['Player'].append({'Name' : result[1], 'AverageOpponents' : result[2], 'gamesPlayed' : result[3], 'AverageRank' : result[4], 'StarQualityPerGame' : result[5], 'TotalStarQuality' : result[6]})
 
---quality is measured by: 
---* Number of games multiplied by 
---* the average number of members they play with
---* divided by their average rank within those players
+f = open("JSONBlobs\\StarQualityLatest.json", "w+")
+f.write(json.dumps(JSON))
+f = open("JSONBlobs\\StarQuality{0}to{1}.json".format(startDate,endDate), "w+")
+f.write(json.dumps(JSON))
+print ("Star Quality blobs written!")

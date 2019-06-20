@@ -1,0 +1,1 @@
+Queried <method-wrapper '__len__' of set object at 0x0000021B19C0A208> players in 0:04:32.845919 seconds

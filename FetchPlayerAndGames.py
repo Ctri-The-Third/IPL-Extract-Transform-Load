@@ -124,6 +124,7 @@ targetIDs = {
 #    '7-9-3000', #Hermione
 #}
 
+startTime = datetime.datetime.now()
 for ID in targetIDs:
     region = ID.split("-")[0]
     site =  ID.split("-")[1]
@@ -150,7 +151,11 @@ for ID in targetIDs:
             addParticipation(missionUUID,ID,mission[3])
     else:
         print("Didn't find %s" % ID)
-
+endTime = datetime.datetime.now()
 #iterate through the above and fetch stats for all.
 #iterate through all players received and update / import player info
 #iterate through all games played and create game records, and player associations.
+
+f = open("Stats.txt","a+")
+f.write("Queried {0} players, operation completed after {1} ".format(len(targetIDs),endTime - startTime ))
+f.close()

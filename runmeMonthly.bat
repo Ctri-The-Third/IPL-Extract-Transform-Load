@@ -1,2 +1,3 @@
 FetchPlayerAndGames.py
 BuildMonthlyScoresToJSON.py
+BuildMonthlyStarQualityToJSON.py
