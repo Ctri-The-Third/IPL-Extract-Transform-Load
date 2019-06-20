@@ -175,3 +175,47 @@ CREATE TABLE [dbo].[Players](
 GO
 
 
+USE [LaserScraper]
+GO
+
+/****** Object:  Table [dbo].[Achievements]    Script Date: 21-Jun-19 0:01:16 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Achievements](
+	[AchName] [varchar](50) NOT NULL,
+	[Description] [varchar](50) NULL,
+	[image] [varchar](64) NOT NULL
+) ON [PRIMARY]
+GO
+
+USE [LaserScraper]
+GO
+
+/****** Object:  Table [dbo].[PlayerAchievement]    Script Date: 21-Jun-19 0:05:06 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[PlayerAchievement](
+	[Image] [varchar](50) NOT NULL,
+	[PlayerID] [varchar](50) NOT NULL,
+	[newAchievement] [int] NULL,
+	[achievedDate] [date] NULL,
+	[progressA] [int] NULL,
+	[progressB] [int] NULL,
+ CONSTRAINT [PK_PlayerAchievement] PRIMARY KEY CLUSTERED 
+(
+	[Image] ASC,
+	[PlayerID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+
+
