@@ -3,3 +3,4 @@ playerList*.csv
 playerBlob*.json
 __pycache__/
 *.pyc
+__
