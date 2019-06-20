@@ -1,6 +1,6 @@
 with PlayersInGame as (
 	SELECT 
-	Count ([LaserScraper].[dbo].[Players].[GamerTag]) as playersInGame, 
+	Count (Players.GamerTag) as playersInGame, 
 	Games.GameUUID as gameID
 	FROM [LaserScraper].[dbo].[Games] as Games
 	join Participation on participation.GameUUID = Games.GameUUID

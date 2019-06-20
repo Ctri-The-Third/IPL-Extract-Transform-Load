@@ -9,7 +9,7 @@ from SQLHelper import addPlayer
 from SQLHelper import addGame
 from SQLHelper import addParticipation
 targetIDs = {
-    
+'7-9-13899', #thoria 
 '9-6-106', #C'tri
 '7-9-0121', #Inferno
 '7-9-0126', #Achilles
@@ -119,9 +119,10 @@ targetIDs = {
 '7-9-9518', #Pedro
 '7-9-13869', #Channa Banana
 '7-9-3000', #Hermione
+'7-9-5940', #Kai
 }
 #targetIDs = {
-#    '7-9-3000', #Hermione
+    #'7-9-5940', #Kai
 #}
 
 startTime = datetime.datetime.now()
@@ -157,5 +158,5 @@ endTime = datetime.datetime.now()
 #iterate through all games played and create game records, and player associations.
 
 f = open("Stats.txt","a+")
-f.write("Queried {0} players, operation completed after {1} ".format(len(targetIDs),endTime - startTime ))
+f.write("Queried {0} players, operation completed after {1}. \t\n ".format(len(targetIDs),endTime - startTime ))
 f.close()
