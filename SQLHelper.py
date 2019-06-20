@@ -62,9 +62,6 @@ def addGame(timestamp, arena, gametype):
          #print ("SQLconnector: Insert game check found an exiting game! : %s" % result)
          return result.GameUUID
 
-
-
-    
     return ''
 
 def addParticipation(gameUUID, playerID, score):

@@ -9,8 +9,8 @@ SELECT
   inner join Players on Participation.PlayerID = Players.PlayerID
   inner join Games on Participation.GameUUID = Games.GameUUID
 
-  where Games.GameTimestamp >= '2019-05-23' AND 
-  Games.GameTimestamp < '2019-06-23'
+  where Games.GameTimestamp >= '2019-05-23' 
+  AND Games.GameTimestamp < '2019-06-23'
   and Games.GameName in ('2 Teams','3 Teams','4 Teams', 'Colour Ranked','Individual')
   
   GROUP BY Participation.PlayerID, Players.GamerTag
