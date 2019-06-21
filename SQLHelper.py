@@ -4,6 +4,29 @@ import uuid
 
 from SQLconnector import connectToSource
 
+def getInterestingPlayersRoster():
+
+    conn = connectToSource()
+    cursor = conn.cursor()
+
+    query = """
+    select playerID, Gamertag, players.Level, Missions 
+    from players
+    where (Level = 6) 
+    or (Level = 5) 
+    or players.Missions > 15
+    order by Level desc, Missions desc
+    """
+
+    results = cursor.execute(query)
+    playerList = []
+    for result in results:
+        #print (result[0])
+        playerList.append(result[0])
+    return playerList
+
+
+
 def addPlayer(playerID,GamerTag,Joined,missions,level):
 
     conn = connectToSource()

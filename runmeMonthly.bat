@@ -1,3 +1,6 @@
+FetchPlayerUpdatesAndNewPlayers.py
 FetchPlayerAndGames.py
+FetchAchievements.py
 BuildMonthlyScoresToJSON.py
 BuildMonthlyStarQualityToJSON.py
+BuildAchievementScoresToJSON.py

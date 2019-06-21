@@ -158,7 +158,7 @@ GO
 USE [LaserScraper]
 GO
 
-/****** Object:  Table [dbo].[Players]    Script Date: 6/20/2019 10:01:32 AM ******/
+/****** Object:  Table [dbo].[Players]    Script Date: 6/21/2019 9:47:20 AM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -170,9 +170,12 @@ CREATE TABLE [dbo].[Players](
 	[GamerTag] [varchar](20) NOT NULL,
 	[Joined] [date] NULL,
 	[Missions] [int] NULL,
-	[Level] [int] NULL
+	[Level] [int] NULL,
+	[AchievementScore] [int] NULL
 ) ON [PRIMARY]
 GO
+
+
 
 
 USE [LaserScraper]
@@ -222,7 +225,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[PlayerAchievement](
-	[Image] [varchar](50) NOT NULL,
+	[Image] [varchar](64) NOT NULL,
 	[PlayerID] [varchar](50) NOT NULL,
 	[newAchievement] [int] NULL,
 	[achievedDate] [date] NULL,

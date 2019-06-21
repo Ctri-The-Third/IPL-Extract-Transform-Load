@@ -8,18 +8,11 @@ from FetchHelper import fetchPlayerAcheivement_root
 from SQLHelper import addAchievement
 from SQLHelper import addPlayerAchievement
 from SQLHelper import addPlayerAchievementScore
+from SQLHelper import getInterestingPlayersRoster
 
 
-targetIDs = {
-'7-9-8167',	#Billybob
-'9-6-106',	#C'tri
-'7-9-1996',	#Paradigm
-'7-9-13958',	#Robo_h34d
-'7-9-2331',	#Reboot
-'7-9-13899',	#Thorian
-}
-
-
+targetIDs = getInterestingPlayersRoster()
+startTime = datetime.datetime.now()
 for ID in targetIDs:
     IDpieces = ID.split("-")
     allAchievements = fetchPlayerAcheivement_root('',IDpieces[0],IDpieces[1],IDpieces[2])
@@ -33,4 +26,7 @@ for ID in targetIDs:
             for achievement in centre["achievements"]:
                 addAchievement(achievement["name"],achievement["description"],achievement["image"])
                 addPlayerAchievement(achievement["image"],ID,achievement["newAchievement"],achievement["achievedDate"],achievement["progressA"],achievement["progressB"])
-                
+endTime = datetime.datetime.now()
+f = open("Stats.txt","a+")
+f.write("Queried {0} players' achievements, operation completed after {1}. \t\n".format(len(targetIDs),endTime - startTime ))
+f.close()
