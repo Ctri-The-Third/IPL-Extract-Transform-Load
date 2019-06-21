@@ -35,9 +35,9 @@ def addPlayer(playerID,GamerTag,Joined,missions,level):
     query = """select * from LaserScraper.dbo.Players 
     where playerID = '{0}' """.format(playerID)
     cursor.execute (query)
-    print("Query = {0}".format(query))
+    #print("Query = {0}".format(query))
     result = cursor.fetchone()
-    print("Result = {0}".format(result))
+    #print("Result = {0}".format(result))
 
     if result == None:
         query =  """insert into LaserScraper.dbo.Players 

@@ -7,9 +7,13 @@ from FetchHelper import fetchPlayer_root
 
 
 def findNewPlayers():
+    startTime = datetime.datetime.now()
     conn = connectToSource()
     cursor = conn.cursor()
 
+    conn = connectToSource()
+    cursor = conn.cursor()
+    sitestring = "7-9-"
 
 
     query = """
@@ -24,6 +28,27 @@ def findNewPlayers():
         MaxPlayer = 99 #LaserForce seems to start numbering players at 100
     else: 
         MaxPlayer = result[0]
+
+    #MaxPlayer = 382 #OVERRIDE, remove before committing
+    consecutiveMisses = 0
+    currentTarget = MaxPlayer
+    while consecutiveMisses <= 50:
+        player =  fetchPlayer_root('',7,9,currentTarget)
+        if 'centre' in player:
+            PlayerID = "%s%i" % (sitestring,currentTarget)
+            codeName = player["centre"][0]["codename"]
+            dateJoined = player["centre"][0]["joined"]
+            missionsPlayed = player["centre"][0]["missions"]
+            skillLevelNum = player["centre"][0]["skillLevelNum"]
+            addPlayer("%s%i" % (sitestring,currentTarget),codeName,dateJoined,missionsPlayed,skillLevelNum)
+            consecutiveMisses = 0
+        else: 
+            consecutiveMisses = consecutiveMisses + 1
+        currentTarget = currentTarget + 1 
+
+    f = open("Stats.txt","a+")
+    f.write("searched for {0} players, operation completed after {1}. \t\n".format(currentTarget-MaxPlayer,endTime - startTime ))
+    f.close()
     conn.commit()
     conn.close()
 def updateExistingPlayers():
@@ -42,4 +67,4 @@ def updateExistingPlayers():
     f = open("Stats.txt","a+")
     f.write("Queried {0} players' aggregates, operation completed after {1}. \t\n".format(len(results),endTime - startTime ))
     f.close()
-updateExistingPlayers()
+findNewPlayers()
