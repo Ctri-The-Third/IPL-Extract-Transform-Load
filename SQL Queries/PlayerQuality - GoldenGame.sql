@@ -1,9 +1,4 @@
-import requests
-import json
-import importlib
-
-
-goldenQuery = """with PlayersInGame as (
+with PlayersInGame as (
 	SELECT 
 	Count (Players.GamerTag) as playersInGame, 
 	Games.GameUUID as gameID
@@ -40,4 +35,6 @@ Vanquished as (
 	and g.gamePosition < r.gamePosition
 
 
-)	select * from Vanquished"""
+)
+
+	select * from Vanquished
