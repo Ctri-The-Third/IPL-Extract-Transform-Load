@@ -114,13 +114,68 @@ def addAchievement(achName, Description, image):
         print ("SQLHelper.addAchievement: Added it!")
         conn.commit()
         conn.close()
+
     else:
         print ("SQLHelper.addAchievement: found [{0}], no changes to it".format(achName))
 
     print(result)
 
 def addPlayerAchievement(image,playerID,newAchievement,achievedDate,progressA,progressB):
-    #do something
-    print(image)
+#do something
+    conn =  connectToSource()
+    cursor = conn.cursor()
+    query = """
+    SELECT *
+    FROM PlayerAchievement
+    where image = ? 
+    and playerID = ?
+    """
+    results = cursor.execute(query,(image,playerID))
+    result = results.fetchone()
+    if achievedDate == "0000-00-00" :
+        achievedDate = None
+    if result == None:
+        print("SQLHelper.addPlayerAchievement: Player has just discvered this, adding it")
+        
+        query = """
+        insert into PlayerAchievement
+        (Image,PlayerID,newAchievement,achievedDate,progressA,progressB)
+        VALUES ( ?, ?, ?, ?, ?, ?)
+        
 
+        """
+        results = cursor.execute(query,(image,playerID,newAchievement,achievedDate,progressA,progressB))
+    else:
+        
+        print("SQLHelper.addPlayerAchievement: found achievement progress, updating it")
+        query = """
+        UPDATE PlayerAchievement
+        SET newAchievement = ?, 
+        achievedDate = ?,
+        progressA = ?,
+        progressB = ?
 
+        WHERE Image = ? 
+        AND PlayerID = ?
+
+        """
+        results = cursor.execute(query,(newAchievement,achievedDate,progressA,progressB,image,playerID))
+        print(image)
+    conn.commit()
+    conn.close()
+
+def addPlayerAchievementScore (playerID, score):
+    conn = connectToSource()
+    cursor = conn.cursor()
+    query = "select playerID from players where playerID = ? "
+    cursor.execute(query,(playerID))
+
+    if cursor.fetchone() == None:
+        print("[Warning] SQLHelper.addPlayerAchievementScore didn't find the player, could not update score")
+    else:
+        print ("SQLHelper.addPlayerAchievementScore found the player, updating their achievement score")
+        query = "update players set AchievementScore = ? where playerID = ?"
+        cursor.execute(query,(score,playerID))
+
+    conn.commit()
+    conn.close()

@@ -76,7 +76,7 @@ def fetchPlayerAcheivement_root(token,region,site,code):
     'token':str(token)} 
 
     r = requests.post(url = API_AchievementsURL, data = data)
-    print (r.text)
+    #print (r.text)
     responseJSON = json.loads(r.text)
     #print (responseJSON)
     if 'centre'  in responseJSON and len(responseJSON['centre']) >= 1:
