@@ -29,7 +29,7 @@ def findNewPlayers():
     else: 
         MaxPlayer = result[0]
 
-    #MaxPlayer = 382 #OVERRIDE, remove before committing
+    MaxPlayer = 243 #OVERRIDE, remove before committing
     consecutiveMisses = 0
     currentTarget = MaxPlayer
     while consecutiveMisses <= 50:
@@ -45,8 +45,9 @@ def findNewPlayers():
         else: 
             consecutiveMisses = consecutiveMisses + 1
         currentTarget = currentTarget + 1 
-
+    endTime = datetime.datetime.now()
     f = open("Stats.txt","a+")
+    
     f.write("searched for {0} players, operation completed after {1}. \t\n".format(currentTarget-MaxPlayer,endTime - startTime ))
     f.close()
     conn.commit()
@@ -67,4 +68,6 @@ def updateExistingPlayers():
     f = open("Stats.txt","a+")
     f.write("Queried {0} players' aggregates, operation completed after {1}. \t\n".format(len(results),endTime - startTime ))
     f.close()
+
 findNewPlayers()
+updateExistingPlayers()
