@@ -152,9 +152,11 @@ SkillLevelName = ["Recruit","Gunner","Trooper","Captain","Star Lord","Laser Mast
 JSONobject = {}
 JSONobject["PlayerName"] = row[1]
 JSONobject["HomeArenaTrunc"] = "Laserstation Edinburgh"
-JSONobject["skillLevelName"] = SkillLevelName[row[2]]
+JSONobject["SkillLevelName"] = SkillLevelName[row[2]]
 JSONobject["MonthlyGamesPlayed"] = row[5]
 JSONobject["AllGamesPlayed"] = row[4]
 JSONobject["StarQuality"] = row[7]
 JSONobject["Achievements"] = row[9]
-print(JSONobject)
+f = open("JSONBlobs\\PlayerBlob.json", "w+")
+f.write(json.dumps(JSONobject))
+print ("Player profile blobs written!")
