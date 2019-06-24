@@ -29,7 +29,8 @@ def findNewPlayers():
     else: 
         MaxPlayer = result[0]
 
-    MaxPlayer = 243 #OVERRIDE, remove before committing
+
+    #MaxPlayer = 243 #OVERRIDE, remove before committing
     consecutiveMisses = 0
     currentTarget = MaxPlayer
     while consecutiveMisses <= 50:
@@ -57,7 +58,8 @@ def updateExistingPlayers():
     conn = connectToSource()
     cursor = conn.cursor()
 
-    query = """select PlayerID from Players"""
+    query = """select PlayerID, Missions, Level from Players
+            order by Level desc, Missions desc"""
     results = cursor.execute(query)
     for result in results:
         ID = result[0].split('-')

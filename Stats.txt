@@ -4,3 +4,9 @@ Queried <method-wrapper '__len__' of set object at 0x0000021B19C0A208> players i
  Queried 1 players, operation completed after 0:00:02.885085. 	
  Queried 1 players, operation completed after 0:00:02.809882. 	
  Queried 59 players' achievements, operation completed after 0:02:55.805836. 	
+Queried 89 players' recent games, operation completed after 0:03:54.713234. 	
+Queried 89 players' achievements, operation completed after 0:04:38.650566. 	
+Queried 89 players' recent games, operation completed after 0:03:53.532592. 	
+Queried 89 players' achievements, operation completed after 0:04:32.448542. 	
+searched for 58 players, operation completed after 0:00:40.791048. 	
+Queried 78 players' recent games, operation completed after 0:03:25.357385. 	
