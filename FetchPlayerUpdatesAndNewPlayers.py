@@ -29,7 +29,7 @@ def findNewPlayers():
     else: 
         MaxPlayer = result[0]
 
-    MaxPlayer = 243 #OVERRIDE, remove before committing
+    #MaxPlayer = 243 #OVERRIDE, remove before committing
     consecutiveMisses = 0
     currentTarget = MaxPlayer
     while consecutiveMisses <= 50:
@@ -69,5 +69,12 @@ def updateExistingPlayers():
     f.write("Queried {0} players' aggregates, operation completed after {1}. \t\n".format(len(results),endTime - startTime ))
     f.close()
 
-findNewPlayers()
+def manualTarget():
+    rootID = '9-6-106' 
+    ID = rootID.split('-')
+    player = fetchPlayer_root('',ID[0],ID[1],ID[2])
+        #print(player)
+    addPlayer(rootID,player["centre"][0]["codename"],player["centre"][0]["joined"],player["centre"][0]["missions"],player["centre"][0]["skillLevelNum"])
+
+#findNewPlayers()
 updateExistingPlayers()
