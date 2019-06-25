@@ -5,3 +5,4 @@ __pycache__/
 *.pyc
 __
 JSONBlobs/
+SQLconnector.py
