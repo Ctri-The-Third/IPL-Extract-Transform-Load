@@ -3,7 +3,8 @@ import json
 import importlib
 
 from SQLconnector import connectToSource
-targetID = '9-6-106'
+
+targetID = '7-9-126'
 startDate = '2019-06-01'
 endDate = '2019-07-01'
 

@@ -1,3 +1,8 @@
+DECLARE @startDate as date
+DECLARE @endDate as date;
+SET @startDate = '2019-06-01';
+SET @endDate = '2019-07-01';
+
 with PlayersInGame as (
 	SELECT 
 	Count (Players.GamerTag) as playersInGame, 
@@ -5,8 +10,8 @@ with PlayersInGame as (
 	FROM [LaserScraper].[dbo].[Games] as Games
 	join Participation on participation.GameUUID = Games.GameUUID
 	join Players on Participation.PlayerID = Players.PlayerID
-	where GameTimestamp >= '2019-06-01' 
-	and GameTimeStamp < '2019-07-01'
+	where GameTimestamp >= @startDate
+	and GameTimeStamp < @endDate
 	group by Games.GameUUID ),
 averageOpponents as 
 (
@@ -22,8 +27,8 @@ totalGamesPlayed as
 	select count(*) as gamesPlayed,  Participation.PlayerID
 	from Participation 
 	join Games on Games.GameUUID = Participation.GameUUID
-	where GameTimestamp >= '2019-06-01' 
-	and GameTimeStamp < '2019-07-01'
+	where GameTimestamp >= @startDate
+	and GameTimeStamp < @endDate
 	group by Participation.PlayerID
 ),
 Ranks as 
@@ -40,7 +45,7 @@ AverageRanks as
 
 
 
-select Players.PlayerID, GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed, round(AverageRank,2) as AverageRank, 
+SELECT Players.PlayerID, GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed, round(AverageRank,2) as AverageRank, 
 round((AverageOpponents *  1/(AverageRank/AverageOpponents)),2) as AvgQualityPerGame,
 round((AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents)),2) as TotalQualityScore from Players
 join totalGamesPlayed on totalGamesPlayed.PlayerID = Players.PlayerID
