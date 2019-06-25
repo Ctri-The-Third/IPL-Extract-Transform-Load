@@ -12,6 +12,9 @@ from SQLHelper import getInterestingPlayersRoster
 
 
 targetIDs = getInterestingPlayersRoster()
+#targetIDs = {
+#    '7-8-0839'
+#}
 startTime = datetime.datetime.now()
 for ID in targetIDs:
     IDpieces = ID.split("-")

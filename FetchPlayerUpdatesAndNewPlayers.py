@@ -72,7 +72,7 @@ def updateExistingPlayers():
     f.close()
 
 def manualTarget():
-    rootID = '9-6-106' 
+    rootID = '7-8-0839' 
     ID = rootID.split('-')
     player = fetchPlayer_root('',ID[0],ID[1],ID[2])
         #print(player)
