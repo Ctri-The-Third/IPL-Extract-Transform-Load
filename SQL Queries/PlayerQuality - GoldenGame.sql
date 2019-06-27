@@ -1,3 +1,11 @@
+DECLARE @targetID as varchar(20)
+DECLARE @startDate as Date
+DECLARE @endDate as Date
+
+SET @targetID = '9-6-106'
+SET @startDate = '2019-06-01'
+SET @endDate = '2019-07-01';
+
 with PlayersInGame as (
 	SELECT 
 	Count (Players.GamerTag) as playersInGame, 
@@ -22,9 +30,9 @@ GoldenGame as (
 	select  top (1) r.Score, r.GamerTag,r.GameUUID, GameName, r.PlayerID, gamePosition, playersInGame, GameTimestamp
 	,round((playersInGame *  (playersInGame/gamePosition)),2) as StarQuality
 	from Ranks r join PlayersInGame pig on r.GameUUID = pig.gameID
-	where PlayerID = '7-9-220040'
-	and GameTimestamp >= '2019-06-01' 
-	and GameTimeStamp < '2019-07-01'
+	where PlayerID = @targetID
+	and GameTimestamp >= @startDate
+	and GameTimeStamp < @endDate
 	order by StarQuality desc, score desc 
 	
 	),

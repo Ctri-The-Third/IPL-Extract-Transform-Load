@@ -14,7 +14,7 @@ targetIDs = getInterestingPlayersRoster()
 
 
 #targetIDs = {
-    #'7-9-5940', #Kai
+#    '7-8-0839'
 #}
 
 startTime = datetime.datetime.now()

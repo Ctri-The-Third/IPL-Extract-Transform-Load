@@ -3,7 +3,8 @@ import json
 import importlib
 
 from SQLconnector import connectToSource
-targetID = '9-6-106'
+
+targetID = '7-9-126'
 startDate = '2019-06-01'
 endDate = '2019-07-01'
 
@@ -79,7 +80,15 @@ where Players.playerID = @targetID
 """
 
 
-goldenGameQuery = """with PlayersInGame as (
+goldenGameQuery = """DECLARE @targetID as varchar(20)
+DECLARE @startDate as date
+DECLARE @endDate as date
+
+SET @targetID = ?
+SET @startDate = ?
+SET @endDate = ?;
+
+with PlayersInGame as (
 	SELECT 
 	Count (Players.GamerTag) as playersInGame, 
 	Games.GameUUID as gameID
@@ -103,9 +112,9 @@ GoldenGame as (
 	select  top (1) r.Score, r.GamerTag,r.GameUUID, GameName, r.PlayerID, gamePosition, playersInGame, GameTimestamp
 	,round((playersInGame *  (playersInGame/gamePosition)),2) as StarQuality
 	from Ranks r join PlayersInGame pig on r.GameUUID = pig.gameID
-	where PlayerID = '7-9-220040'
-	and GameTimestamp >= '2019-06-01' 
-	and GameTimeStamp < '2019-07-01'
+	where PlayerID = @targetID
+	and GameTimestamp >= @startDate
+	and GameTimeStamp < @endDate
 	order by StarQuality desc, score desc 
 	
 	),
@@ -116,10 +125,12 @@ Vanquished as (
 	and g.gamePosition < r.gamePosition
 
 
-)	select * from Vanquished"""
+)
+
+	select * from Vanquished"""
 
 goldenAchievementQuery = """DECLARE @TargetID as Varchar(10)
-SET @TargetID = '7-8-1196';
+SET @TargetID = ? ;
 
 
 with firstEarned as (
@@ -154,9 +165,35 @@ JSONobject["PlayerName"] = row[1]
 JSONobject["HomeArenaTrunc"] = "Laserstation Edinburgh"
 JSONobject["SkillLevelName"] = SkillLevelName[row[2]]
 JSONobject["MonthlyGamesPlayed"] = row[5]
-JSONobject["AllGamesPlayed"] = row[4]
+JSONobject["AllGamesPlayed"] = row[3]
 JSONobject["StarQuality"] = row[7]
 JSONobject["Achievements"] = row[9]
-f = open("JSONBlobs\\PlayerBlob.json", "w+")
+
+result = cursor.execute(goldenGameQuery,(targetID,startDate,endDate))
+rows = result.fetchall()
+row = rows[0]
+print(row)
+print ("g.PlayerID, g.GameTimestamp, victoryPos,   victorName,  victorScore, g.GameName, victorStarQuality,  vanquishedID, vanquishedName , vanquishedPos")
+ordinalranks = ["0th","1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th"]
+JSONobject["GGName"] = row[5]
+JSONobject["GGRank"] = ordinalranks[row[2]]
+JSONobject["GGStars"] = "%i stars" % row[6]
+JSONobject["GGVanq1"] = rows[0][8]
+JSONobject["GGVanq2"] = rows[1][8]
+JSONobject["GGVanq3"] = rows[2][8]
+JSONobject["GGVanq4"] = '%i others' % (len(rows) - 3)
+
+result = cursor.execute(goldenAchievementQuery,(targetID))
+row = result.fetchone()
+print (row)
+JSONobject["GAName"] = row[1]
+JSONobject["GADesc"] = row[2]
+
+ordinalOthers = ["No one else has","Only one other person has","Only two others have","Only %i others have" % row[4]]
+
+JSONobject["GAOthers"] = ordinalOthers[min(row[4],3)]
+
+
+f = open("JSONBlobs\\playerBlob.json", "w+")
 f.write(json.dumps(JSONobject))
 print ("Player profile blobs written!")
