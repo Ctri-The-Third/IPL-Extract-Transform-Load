@@ -38,6 +38,8 @@ Ranks as
 	from Games 
 	join Participation on Games.GameUUID = Participation.GameUUID
 	join Players on Participation.PlayerID = Players.PlayerID
+	where GameTimestamp >= @startDate
+	and GameTimestamp < @endDate
 ),
 AverageRanks as 
 ( select PlayerID, AVG(CONVERT(float,gamePosition)) as AverageRank from Ranks
@@ -51,13 +53,6 @@ round((AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents)),2) as 
 join totalGamesPlayed on totalGamesPlayed.PlayerID = Players.PlayerID
 join averageOpponents on averageOpponents.PlayerID = Players.PlayerID
 join AverageRanks on AverageRanks.PlayerID = Players.PlayerID
-
-
 order by AvgQualityPerGame desc
---order by TotalQualityScore desc
 
 
---quality is measured by: 
---* Number of games multiplied by 
---* the average number of members they play with
---* divided by their average rank within those players

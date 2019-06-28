@@ -101,9 +101,12 @@ BestAchiever as(
 
 
 
-select * , 'Top3' as source from GoldenTop3 
+select p.PlayerID , GamerTag, playerRank, 'Top3' as source from GoldenTop3 p
+join Players pl on pl.PlayerID = p.PlayerID
 union 
-select * , 4 as playerRank, 'BestScorer' as source from BestScorer
+select  p.PlayerID , GamerTag, 4 as playerRank, 'BestScorer' as source from BestScorer p
+join Players pl on pl.PlayerID = p.PlayerID
 union 
-select * , 5 as playerRank, 'BestAchiever' as source from BestAchiever
+select  p.PlayerID , GamerTag, 5 as playerRank, 'BestAchiever' as source from BestAchiever p
+join Players pl on pl.PlayerID = p.PlayerID
 order by playerRank asc

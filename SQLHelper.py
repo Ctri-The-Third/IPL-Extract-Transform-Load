@@ -202,7 +202,7 @@ def addPlayerAchievementScore (playerID, score):
     conn.commit()
     conn.close()
 
-def getTop5PlayersRoster():
+def getTop5PlayersRoster(startDate,endDate):
     conn = connectToSource()
     cursor = conn.cursor()
     query = """DECLARE @startDate as date
@@ -314,7 +314,9 @@ select * , 4 as playerRank, 'BestScorer' as source from BestScorer
 union 
 select * , 5 as playerRank, 'BestAchiever' as source from BestAchiever
 order by playerRank asc
+
 """
+    cursor.execute(query,(startDate,endDate))
     rows = cursor.fetchall()
     if rows == None:
         print("[Warning] SQLHelper.getTop5Players didn't find any players. Is there data in all tables?/")
