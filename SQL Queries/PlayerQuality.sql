@@ -55,13 +55,6 @@ round((AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents)),2) as 
 join totalGamesPlayed on totalGamesPlayed.PlayerID = Players.PlayerID
 join averageOpponents on averageOpponents.PlayerID = Players.PlayerID
 join AverageRanks on AverageRanks.PlayerID = Players.PlayerID
-
-
 order by AvgQualityPerGame desc
---order by TotalQualityScore desc
 
 
---quality is measured by: 
---* Number of games multiplied by 
---* the average number of members they play with
---* divided by their average rank within those players

@@ -23,7 +23,7 @@ totalPlayersPerGame as
 	group by g.GameUUID
 )
 
-select ranks.GameUUID,GameTimestamp,GameName,PlayerID,GamerTag,gamePosition,playerCount, playerCount * (gamePosition / playerCount) as SQ
+select ranks.GameUUID,GameTimestamp,GameName,PlayerID,GamerTag,gamePosition,playerCount, playerCount  * ( playerCount  / gamePosition ) as SQ
 from ranks join totalPlayersPerGame tppg 
 on ranks.GameUUID = tppg.GameUUID
 where PlayerID = @targetID

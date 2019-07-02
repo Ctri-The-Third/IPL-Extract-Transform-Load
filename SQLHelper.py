@@ -202,7 +202,7 @@ def addPlayerAchievementScore (playerID, score):
     conn.commit()
     conn.close()
 
-def getTop5PlayersRoster():
+def getTop5PlayersRoster(startDate,endDate):
     conn = connectToSource()
     cursor = conn.cursor()
     query = """DECLARE @startDate as date
@@ -243,8 +243,11 @@ Ranks as
 	select GameTimestamp, GameName, Players.PlayerID, GamerTag, Score, 
 		ROW_NUMBER() over (partition by GameTimestamp order by score desc) as gamePosition
 	from Games 
+
 	join Participation on Games.GameUUID = Participation.GameUUID
 	join Players on Participation.PlayerID = Players.PlayerID
+	where GameTimestamp >= @startDate
+	and GameTimeStamp < @endDate
 ),
 AverageRanks as 
 ( select PlayerID, AVG(CONVERT(float,gamePosition)) as AverageRank from Ranks
@@ -305,16 +308,18 @@ BestAchiever as(
 	order by Players.AchievementScore desc
 )
 
-
-
-
-select * , 'Top3' as source from GoldenTop3 
+select p.PlayerID , GamerTag, playerRank, 'Top3' as source from GoldenTop3 p
+join Players pl on pl.PlayerID = p.PlayerID
 union 
-select * , 4 as playerRank, 'BestScorer' as source from BestScorer
+select  p.PlayerID , GamerTag, 4 as playerRank, 'BestScorer' as source from BestScorer p
+join Players pl on pl.PlayerID = p.PlayerID
 union 
-select * , 5 as playerRank, 'BestAchiever' as source from BestAchiever
+select  p.PlayerID , GamerTag, 5 as playerRank, 'BestAchiever' as source from BestAchiever p
+join Players pl on pl.PlayerID = p.PlayerID
 order by playerRank asc
+
 """
+    cursor.execute(query,(startDate,endDate))
     rows = cursor.fetchall()
     if rows == None:
         print("[Warning] SQLHelper.getTop5Players didn't find any players. Is there data in all tables?/")

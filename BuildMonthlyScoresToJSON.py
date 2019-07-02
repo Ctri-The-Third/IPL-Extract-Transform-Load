@@ -1,8 +1,8 @@
 import json
 
 from SQLconnector import connectToSource
-startDate = '2019-06-01'
-endDate = '2019-07-01'
+startDate = '2019-07-01'
+endDate = '2019-08-01'
 SQL = '''SELECT 
 	Participation.PlayerID, 
 	GamerTag, 
@@ -22,7 +22,7 @@ SQL = '''SELECT
 conn = connectToSource()
 cursor = conn.cursor()
 
-cursor.execute(SQL,('2019-06-01','2019-07-01'))
+cursor.execute(SQL,(startDate,endDate))
 JSON = {
     'ScoreTitle' : "Average Scores for known players, in Standard Games, between {0} and {1}" .format(startDate,endDate),
     'ScoreGreaterOrEqualDate' : startDate,
