@@ -36,8 +36,11 @@ Ranks as
 	select GameTimestamp, GameName, Players.PlayerID, GamerTag, Score, 
 		ROW_NUMBER() over (partition by GameTimestamp order by score desc) as gamePosition
 	from Games 
+
 	join Participation on Games.GameUUID = Participation.GameUUID
 	join Players on Participation.PlayerID = Players.PlayerID
+	where GameTimestamp >= @startDate
+	and GameTimeStamp < @endDate
 ),
 AverageRanks as 
 ( select PlayerID, AVG(CONVERT(float,gamePosition)) as AverageRank from Ranks
