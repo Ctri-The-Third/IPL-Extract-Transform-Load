@@ -5,7 +5,8 @@ import importlib
 from SQLconnector import connectToSource
 from SQLHelper import getTop5PlayersRoster
 
-
+startDate = '2019-07-01'
+endDate = '2019-08-01'
 
 
 def buildPlayerBlob (startDate,endDate,targetID):
@@ -199,8 +200,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 
 	
 
-startDate = '2019-06-01'
-endDate = '2019-07-01'
+
 targetIDs = getTop5PlayersRoster(startDate,endDate)
 print(targetIDs)
 
@@ -208,11 +208,16 @@ print(targetIDs)
 
 print ("Player profile blobs written!")
 JSONobject = {}
-JSONobject["GoldenPlayer"] = buildPlayerBlob(startDate,endDate,targetIDs[0][0])
-JSONobject["SilverPlayer"] = buildPlayerBlob(startDate,endDate,targetIDs[1][0])
-JSONobject["BronzePlayer"] = buildPlayerBlob(startDate,endDate,targetIDs[2][0])
-JSONobject["OtherPlayer1"] = buildPlayerBlob(startDate,endDate,targetIDs[3][0])
-JSONobject["OtherPlayer2"] = buildPlayerBlob(startDate,endDate,targetIDs[4][0])
+if len(targetIDs) >= 1:
+	JSONobject["GoldenPlayer"] = buildPlayerBlob(startDate,endDate,targetIDs[0][0])
+if len(targetIDs) >= 2:
+	JSONobject["SilverPlayer"] = buildPlayerBlob(startDate,endDate,targetIDs[1][0])
+if len(targetIDs) >= 3:
+	JSONobject["BronzePlayer"] = buildPlayerBlob(startDate,endDate,targetIDs[2][0])
+if len(targetIDs) >= 4:
+	JSONobject["OtherPlayer1"] = buildPlayerBlob(startDate,endDate,targetIDs[3][0])
+if len(targetIDs) >= 5:
+	JSONobject["OtherPlayer2"] = buildPlayerBlob(startDate,endDate,targetIDs[4][0])
 
 f = open("JSONBlobs\\playerBlob.json", "w+")
 f.write(json.dumps(JSONobject))
