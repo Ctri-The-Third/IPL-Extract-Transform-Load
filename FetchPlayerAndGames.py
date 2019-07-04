@@ -10,7 +10,8 @@ from SQLHelper import addGame
 from SQLHelper import addParticipation
 from SQLHelper import getInterestingPlayersRoster
 
-targetIDs = getInterestingPlayersRoster()
+startDate = '2019-08-01'
+targetIDs = getInterestingPlayersRoster(False,startDate,60)
 
 
 #targetIDs = {

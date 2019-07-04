@@ -36,7 +36,7 @@ def findNewPlayers():
     while consecutiveMisses <= 50:
         player =  fetchPlayer_root('',7,9,currentTarget)
         if 'centre' in player:
-            PlayerID = "%s%i" % (sitestring,currentTarget)
+            
             codeName = player["centre"][0]["codename"]
             dateJoined = player["centre"][0]["joined"]
             missionsPlayed = player["centre"][0]["missions"]

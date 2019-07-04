@@ -4,27 +4,41 @@ import uuid
 
 from SQLconnector import connectToSource
 
-def getInterestingPlayersRoster():
+
+
+def getInterestingPlayersRoster(includeChurned,startDate,period):
 
     conn = connectToSource()
     cursor = conn.cursor()
+    if includeChurned == True:
+        query = """
+        select  * from InterestingPlayers
+        order by Level desc, Missions desc, SeenIn60Days Asc
+        """
+        cursor.execute(query,(startDate,period))
+    else:
+        query = """
+    declare @startDate as date
+    declare @period as int
+    set @startDate = ?
+    set @period = ?
 
-    query = """
-    select playerID, Gamertag, players.Level, Missions 
-    from players
-    where (Level = 6) 
-    or (Level = 5) 
-    or players.Missions > 15
-    order by Level desc, Missions desc
-    """
+    select  * from InterestingPlayers
+    where mostRecent > DATEADD(day, -@period, @startDate)
+    order by Level desc, Missions desc, SeenIn60Days Asc
+        """
 
-    results = cursor.execute(query)
+    cursor.execute(query,(startDate,period))
+    results = cursor.fetchall()
     playerList = []
     for result in results:
         #print (result[0])
         playerList.append(result[0])
-    return playerList
 
+    conn.commit()
+    conn.close()
+    return playerList
+    
 
 def addPlayer(playerID,GamerTag,Joined,missions,level):
 
