@@ -1,8 +1,12 @@
 import json
 
 from SQLconnector import connectToSource
-startDate = '2019-07-01'
-endDate = '2019-08-01'
+from ConfigHelper import getConfig
+
+
+config = getConfig()
+startDate = config["StartDate"]
+endDate = config["EndDate"]
 SQL = '''SELECT 
 	Participation.PlayerID, 
 	GamerTag, 

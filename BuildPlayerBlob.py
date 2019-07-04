@@ -4,10 +4,12 @@ import importlib
 
 from SQLconnector import connectToSource
 from SQLHelper import getTop5PlayersRoster
+from ConfigHelper import getConfig
 
-startDate = '2019-07-01'
-endDate = '2019-08-01'
+config = getConfig()
 
+startDate = config["StartDate"]
+endDate = config["EndDate"]
 
 def buildPlayerBlob (startDate,endDate,targetID):
 	infoQuery = """declare @startDate as date;

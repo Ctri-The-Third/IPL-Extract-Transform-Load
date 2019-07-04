@@ -4,6 +4,7 @@ import string
 from SQLconnector import connectToSource
 from SQLHelper import addPlayer
 from FetchHelper import fetchPlayer_root
+from ConfigHelper import getConfig
 
 
 def findNewPlayers():
@@ -13,16 +14,17 @@ def findNewPlayers():
 
     conn = connectToSource()
     cursor = conn.cursor()
-    sitestring = "7-9-"
+    config = getConfig()
+    sitePrefix = config["ID Prefix"]
 
 
     query = """
     select max(CONVERT(int,SUBSTRING(PlayerID,5,20))) as MaxPlayerID
     from players
-    where SUBSTRING(PlayerID,1,4) = '7-9-'                  --only locals
+    where SUBSTRING(PlayerID,1,4) = ?                       --only locals
     and CONVERT(int,SUBSTRING(PlayerID,5,20)) < 100000      --not players with messed up cards
     """
-    results = cursor.execute(query)
+    results = cursor.execute(query,(sitePrefix))
     result = results.fetchone()
     if result == None:
         MaxPlayer = 99 #LaserForce seems to start numbering players at 100
@@ -41,7 +43,7 @@ def findNewPlayers():
             dateJoined = player["centre"][0]["joined"]
             missionsPlayed = player["centre"][0]["missions"]
             skillLevelNum = player["centre"][0]["skillLevelNum"]
-            addPlayer("%s%i" % (sitestring,currentTarget),codeName,dateJoined,missionsPlayed,skillLevelNum)
+            addPlayer("%s%i" % (sitePrefix,currentTarget),codeName,dateJoined,missionsPlayed,skillLevelNum)
             consecutiveMisses = 0
         else: 
             consecutiveMisses = consecutiveMisses + 1

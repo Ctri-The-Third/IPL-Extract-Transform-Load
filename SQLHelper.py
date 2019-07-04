@@ -33,7 +33,7 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
     playerList = []
     for result in results:
         #print (result[0])
-        playerList.append(result[0])
+        playerList.append(result[2])
 
     conn.commit()
     conn.close()
