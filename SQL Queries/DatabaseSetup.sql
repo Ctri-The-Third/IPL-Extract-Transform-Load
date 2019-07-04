@@ -241,3 +241,50 @@ GO
 
 
 
+
+USE [LaserScraper]
+GO
+
+/****** Object:  View [dbo].[InterestingPlayers]    Script Date: 7/4/2019 4:25:31 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE VIEW [dbo].[InterestingPlayers]
+AS
+SELECT        TOP (100) PERCENT dbo.Players.Missions, dbo.Players.[Level], dbo.Players.PlayerID, dbo.MostRecentGame.mostRecent, CASE WHEN dbo.MostRecentGame.mostRecent < DATEADD(day, - 60, GETDATE()) 
+                         THEN 'Churned' ELSE 'Active' END AS SeenIn60Days
+FROM            dbo.Players INNER JOIN
+                         dbo.MostRecentGame ON dbo.Players.PlayerID = dbo.MostRecentGame.PlayerID
+WHERE        (dbo.Players.Missions > 15) OR
+                         (dbo.Players.[Level] >= 4)
+GO
+
+
+
+
+USE [LaserScraper]
+GO
+
+/****** Object:  View [dbo].[MostRecentGame]    Script Date: 7/4/2019 4:16:37 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE VIEW [dbo].[MostRecentGame]
+AS
+SELECT        MAX(g.GameTimestamp) AS mostRecent, p.PlayerID
+FROM            dbo.Participation AS p INNER JOIN
+                         dbo.Games AS g ON p.GameUUID = g.GameUUID
+GROUP BY p.PlayerID
+GO
+
+
+
+
+
+

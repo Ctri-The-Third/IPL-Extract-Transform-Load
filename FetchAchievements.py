@@ -11,7 +11,7 @@ from SQLHelper import addPlayerAchievementScore
 from SQLHelper import getInterestingPlayersRoster
 
 
-targetIDs = getInterestingPlayersRoster()
+targetIDs = getInterestingPlayersRoster(True,'',0)
 #targetIDs = {
 #    '7-9-5940'
 #}
