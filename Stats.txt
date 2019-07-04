@@ -32,3 +32,8 @@ Queried 78 players' achievements, operation completed after 2 days, 19:45:00.333
 Queried 80 players' achievements, operation completed after 0:05:30.615043. 	
 Queried 80 players' recent games, operation completed after 0:03:42.824200. 	
 Queried 80 players' achievements, operation completed after 0:04:16.155419. 	
+Queried 80 players' recent games, operation completed after 0:03:47.385484. 	
+Queried 80 players' achievements, operation completed after 0:04:21.396317. 	
+searched for 162 players, operation completed after 0:02:53.397133. 	
+Queried 80 players' recent games, operation completed after 0:03:48.472038. 	
+Queried 80 players' achievements, operation completed after 0:04:35.628601. 	
