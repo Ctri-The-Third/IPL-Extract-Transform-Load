@@ -1,5 +1,5 @@
 declare @TargetID as varchar (20)
-SET @TargetID = '7-9-3242';
+SET @TargetID = '9-6-106';
 declare @TotalGamesPlayed as float
 
 
@@ -13,7 +13,7 @@ with data as (
 	join Participation pa on pl.PlayerID = pa.PlayerID
 	where pl.PlayerID = @TargetID )
 
-select GamerTag, p.PlayerID, count ( GamerTag) gamesPlayedTogether, count ( GamerTag) / @TotalGamesPlayed
+select GamerTag, p.PlayerID, count ( GamerTag) gamesPlayedTogether, round((count ( GamerTag) / @TotalGamesPlayed) * 100,2) as PlayedTogetherPercent
 from Participation pa 
 inner join data d on pa.GameUUID = d.GameUUID
 join Players p on pa.PlayerID = p.PlayerID

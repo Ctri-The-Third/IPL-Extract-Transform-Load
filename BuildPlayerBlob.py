@@ -197,7 +197,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	JSONobject["GAName"] = row[1]
 	JSONobject["GADesc"] = row[2]
 
-	ordinalOthers = ["No one else has","Only one other person has","Only two others have","Only %i others have" % row[4]]
+	ordinalOthers = ["No one else has","Only one other person has","Only two others have","%i others have" % row[4]]
 
 	JSONobject["GAOthers"] = ordinalOthers[min(row[4]-1,3)]
 	return JSONobject

@@ -9,7 +9,7 @@ select GameTimestamp, GameName, Players.PlayerID, GamerTag, Score,
 	join Participation on Games.GameUUID = Participation.GameUUID
 	join Players on Participation.PlayerID = Players.PlayerID
 	
-	and CONVERT(int,GameTimestamp) % 7 = 4  --Thursdays
+	and CONVERT(int,GameTimestamp) % 7 = 3  --Thursdays
 	
 	--and convert(dateTime,GameTimestamp,8) > '19:50:00'
 	--and convert(dateTime,GameTimestamp,8) < '21:10:00'
