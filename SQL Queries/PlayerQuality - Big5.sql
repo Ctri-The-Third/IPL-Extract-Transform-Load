@@ -1,7 +1,7 @@
 DECLARE @startDate as date
 DECLARE @endDate as date;
-SET @startDate = '2019-06-01';
-SET @endDate = '2019-07-01';
+SET @startDate = '2019-07-01';
+SET @endDate = '2019-08-01';
 
 with PlayersInGame as (
 	SELECT 

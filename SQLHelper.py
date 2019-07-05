@@ -279,7 +279,7 @@ AverageScores as (
 	join AverageRanks on AverageRanks.PlayerID = Players.PlayerID
 	where Games.GameTimestamp >= @startDate
 	AND Games.GameTimestamp < @endDate
-	and Games.GameName in ('2 Teams','3 Teams','4 Teams', 'Colour Ranked','Individual')
+	and Games.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual')
 	group by Players.PlayerID
  ),
 StarQuality as

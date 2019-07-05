@@ -18,7 +18,7 @@ SQL = '''SELECT
 
   where Games.GameTimestamp >= ? AND 
   Games.GameTimestamp < ?
-  and Games.GameName in ('2 Teams','3 Teams','4 Teams', 'Colour Ranked','Individual')
+  and Games.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual')
   
   GROUP BY Participation.PlayerID, Players.GamerTag
   order by 3 desc
