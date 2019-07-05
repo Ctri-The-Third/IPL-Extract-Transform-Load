@@ -3,5 +3,6 @@
     "ID Prefix" : "7-9-",
     "StartDate" : "2019-07-01",
     "EndDate" : "2019-08-01",
+    "LastMonthStart" : "2019-06-01",
     "ChurnDuration" : 60  
 }

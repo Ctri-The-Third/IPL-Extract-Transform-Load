@@ -5,74 +5,55 @@ from ConfigHelper import getConfig
 
 config = getConfig()
 
-startDate = config["StartDate"]
-endDate = config["EndDate"]
-SQL = '''DECLARE @startDate as date
-DECLARE @endDate as date;
-SET @startDate = ?;
-SET @endDate = ?;
+curMonth = config["StartDate"]
+lastMonth  = config["LastMonthStart"]
+SQL = '''declare @lastMonth as varChar(7)
+declare @curMonth as varChar(7)
+set @curMonth = ?
+set @lastMonth = ?
 
-with PlayersInGame as (
-	SELECT 
-	Count (Players.GamerTag) as playersInGame, 
-	Games.GameUUID as gameID
-	FROM [LaserScraper].[dbo].[Games] as Games
-	join Participation on participation.GameUUID = Games.GameUUID
-	join Players on Participation.PlayerID = Players.PlayerID
-	where GameTimestamp >= @startDate
-	and GameTimeStamp < @endDate
-	group by Games.GameUUID ),
-averageOpponents as 
-(
-	select avg(cast(playersInGame as float)) as AverageOpponents,  players.PlayerID from Participation 
-	join PlayersInGame on Participation.GameUUID = PlayersInGame.gameID
-	join Games on Games.GameUUID = PlayersInGame.gameID
-	join Players on Participation.PlayerID = players.PlayerID
-	group by  players.PlayerID
-		
-),
-totalGamesPlayed as 
-(
-	select count(*) as gamesPlayed,  Participation.PlayerID
-	from Participation 
-	join Games on Games.GameUUID = Participation.GameUUID
-	where GameTimestamp >= @startDate
-	and GameTimeStamp < @endDate
-	group by Participation.PlayerID
-),
-Ranks as 
-(
-	select GameTimestamp, GameName, Players.PlayerID, GamerTag, Score, 
-		ROW_NUMBER() over (partition by GameTimestamp order by score desc) as gamePosition
-	from Games 
-	join Participation on Games.GameUUID = Participation.GameUUID
-	join Players on Participation.PlayerID = Players.PlayerID
-	where GameTimestamp >= @startDate
-	and GameTimestamp < @endDate
-),
-AverageRanks as 
-( select PlayerID, AVG(CONVERT(float,gamePosition)) as AverageRank from Ranks
-	group by PlayerID)
+;
 
+with data as (
+	select pl.PlayerID, pl.GamerTag, GameName, GameTimestamp, p.score, 
+	ROW_NUMBER() over (partition by GameTimestamp order by GameTimestamp desc, score desc)  as rank, 
+	count(p.PlayerID) over (partition by GameTimestamp order by GameTimestamp desc) as playerCount,
+	convert(varchar(7),GameTimestamp,126) as GameMonth
+	from Participation p join Games g on p.GameUUID = g.GameUUID 
+	join Players pl on p.PlayerID = pl.PlayerID
+), 
+ranksAndCountsAndStars as (
+	select PlayerID, GamerTag, count(*) as gamesPlayed, avg (convert(float,rank)) as AverageRank, avg(convert(float,playerCount)) as AveragePlayerCount, GameMonth  --average(rank) over (partition by GameTimestamp
+	,avg(convert(float,playerCount)) *  (avg(convert(float,playerCount))/avg (convert(float,rank))) as AverageStarQuality
+	from data
+	where GameMonth in (@curMonth,@lastMonth)
+	group by PlayerID, GamerTag, GameMonth
+)
 
+select r1.PlayerID, r1.GamerTag,
+round (r1.AverageStarQuality,2) as AverageStarQuality, 
+round (r1.AverageStarQuality * r1.gamesPlayed,2) as TotalStarQuality,
+round (r1.AveragePlayerCount,2) as AveragePlayerCount, 
+round (r1.AverageRank,2) as AverageRank, 
+r1.gamesPlayed as GamesPlayed,
+round (r2.AverageRank - r1.AverageRank,2) as changeInRank, 
+round (r1.AveragePlayerCount-r2.AveragePlayerCount,2) as changeInPlayers,
+round (r1.AverageStarQuality - r2.AverageStarQuality,2) as changeInStars
+from ranksAndCountsAndStars r1 left join ranksAndCountsAndStars r2 
+on r1.PlayerID = r2.PlayerID and r1.GameMonth != r2.GameMonth
+where r1.GameMonth = @curMonth
+order by AverageStarQuality desc
 
-SELECT Players.PlayerID, GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed, round(AverageRank,2) as AverageRank, 
-round((AverageOpponents *  1/(AverageRank/AverageOpponents)),2) as AvgQualityPerGame,
-round((AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents)),2) as TotalQualityScore from Players
-join totalGamesPlayed on totalGamesPlayed.PlayerID = Players.PlayerID
-join averageOpponents on averageOpponents.PlayerID = Players.PlayerID
-join AverageRanks on AverageRanks.PlayerID = Players.PlayerID
-order by AvgQualityPerGame desc
 
 '''
 conn = connectToSource()
 cursor = conn.cursor()
 
-cursor.execute(SQL,(startDate,endDate))
+cursor.execute(SQL,(curMonth,lastMonth))
 JSON = {
-    'ScoreTitle' : "Star Quality for all known players, between {0} and {1}" .format(startDate,endDate),
-    'ScoreGreaterOrEqualDate' : startDate,
-    'ScoreLessDate' : endDate,
+    'ScoreTitle' : "Star Quality for all known players, between {0} and {1}" .format(curMonth,lastMonth),
+    'ScoreGreaterOrEqualDate' : curMonth,
+    'ScoreLessDate' : lastMonth,
     'Player' : [{
     #    'Name' : "C'tri",
     #    'AverageScore' : -1,
@@ -80,11 +61,28 @@ JSON = {
     }],
     }
 for result in cursor.fetchall():
-    print (result)
-    JSON['Player'].append({'Name' : result[1], 'AverageOpponents' : result[2], 'gamesPlayed' : result[3], 'AverageRank' : result[4], 'StarQualityPerGame' : result[5], 'TotalStarQuality' : result[6]})
+	print (result)
+	ChangeInRank  = None
+	ChangeInPlayers = None 
+	ChangeInStars = None
+	if result[7] is not None: ChangeInRank = "↑%s" % result[7]  if result[7] > 0 else "↓%s" % abs(result[7])
+	if result[8] is not None: ChangeInPlayers = "↑%s" % result[8]  if result[8] > 0 else "↓%s" % abs(result[8])
+	if result[9] is not None: ChangeInStars = "↑%s" % result[9]  if result[9] > 0 else "↓%s" % abs(result[9])
+
+	JSON['Player'].append(
+	{'Name' : result[1], 
+	'StarQualityPerGame' : result[2], 
+	'TotalStarQuality' : result[3],
+	'AverageOpponents' : result[4], 
+	'gamesPlayed' : result[6], 
+	'AverageRank' : result[5], 
+	'ChangeInRank' : ChangeInRank,
+	'ChangeInPlayers' : ChangeInPlayers,
+	'ChangeInSQPerGame' : ChangeInStars,
+	})
 
 f = open("JSONBlobs\\StarQualityLatest.json", "w+")
 f.write(json.dumps(JSON))
-f = open("JSONBlobs\\StarQuality{0}to{1}.json".format(startDate,endDate), "w+")
+f = open("JSONBlobs\\StarQuality{0}to{1}.json".format(curMonth,lastMonth), "w+")
 f.write(json.dumps(JSON))
 print ("Star Quality blobs written!")
