@@ -175,17 +175,21 @@ def buildPlayerBlob (startDate,endDate,targetID):
 
 	result = cursor.execute(goldenGameQuery,(targetID,startDate,endDate))
 	rows = result.fetchall()
-	row = rows[0]
-	print(row)
-	print ("g.PlayerID, g.GameTimestamp, victoryPos,   victorName,  victorScore, g.GameName, victorStarQuality,  vanquishedID, vanquishedName , vanquishedPos")
-	ordinalranks = ["0th","1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th"]
-	JSONobject["GGName"] = row[5]
-	JSONobject["GGRank"] = ordinalranks[row[2]]
-	JSONobject["GGStars"] = "%i stars" % row[6]
-	JSONobject["GGVanq1"] = rows[0][8]
-	JSONobject["GGVanq2"] = rows[1][8]
-	JSONobject["GGVanq3"] = rows[2][8]
-	JSONobject["GGVanq4"] = '%i others' % (len(rows) - 3)
+	if len(rows) > 0:
+		row = rows[0]
+		print(row)
+		print ("g.PlayerID, g.GameTimestamp, victoryPos,   victorName,  victorScore, g.GameName, victorStarQuality,  vanquishedID, vanquishedName , vanquishedPos")
+		ordinalranks = ["0th","1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th"]
+		JSONobject["GGName"] = row[5]
+		JSONobject["GGRank"] = ordinalranks[row[2]]
+		JSONobject["GGStars"] = "%i stars" % row[6]
+		JSONobject["GGVanq1"] = rows[0][8]
+		if len(rows) >= 2:
+			JSONobject["GGVanq2"] = rows[1][8]
+		if len(rows) >= 3:
+			JSONobject["GGVanq3"] = rows[2][8]
+		if len(rows) >= 4:
+			JSONobject["GGVanq4"] = '%i others' % (len(rows) - 3)
 
 	result = cursor.execute(goldenAchievementQuery,(targetID))
 	row = result.fetchone()
@@ -195,7 +199,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 
 	ordinalOthers = ["No one else has","Only one other person has","Only two others have","Only %i others have" % row[4]]
 
-	JSONobject["GAOthers"] = ordinalOthers[min(row[4],3)]
+	JSONobject["GAOthers"] = ordinalOthers[min(row[4]-1,3)]
 	return JSONobject
 
 	
