@@ -9,9 +9,10 @@ from SQLHelper import addAchievement
 from SQLHelper import addPlayerAchievement
 from SQLHelper import addPlayerAchievementScore
 from SQLHelper import getInterestingPlayersRoster
+from ConfigHelper import getConfig
 
-
-targetIDs = getInterestingPlayersRoster(True,'',0)
+config = getConfig()
+targetIDs = getInterestingPlayersRoster(False,config['EndDate'],config['ChurnDuration'])
 #targetIDs = {
 #    '7-9-5940'
 #}
