@@ -62,11 +62,14 @@ def updateExistingPlayers():
 
     query = """select PlayerID, Missions, Level from Players
             order by Level desc, Missions desc"""
-    results = cursor.execute(query)
+    results = cursor.execute(query).fetchall()
+    totalTargetsToUpdate = len(results)
+    counter = 0
     for result in results:
+        counter = counter + 1
         ID = result[0].split('-')
         player = fetchPlayer_root('',ID[0],ID[1],ID[2])
-        #print(player)
+        print("Summary update for player %s-%s-%s, [%i/%i]" % (ID[0],ID[1],ID[2],counter,totalTargetsToUpdate))
         addPlayer(result[0],player["centre"][0]["codename"],player["centre"][0]["joined"],player["centre"][0]["missions"],player["centre"][0]["skillLevelNum"])
     endTime = datetime.datetime.now()
     f = open("Stats.txt","a+")

@@ -15,7 +15,7 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
         select  * from InterestingPlayers
         order by Level desc, Missions desc, SeenIn60Days Asc
         """
-        cursor.execute(query,(startDate,period))
+        cursor.execute(query)
     else:
         query = """
     declare @startDate as date
@@ -28,7 +28,7 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
     order by Level desc, Missions desc, SeenIn60Days Asc
         """
 
-    cursor.execute(query,(startDate,period))
+        cursor.execute(query,(startDate,period))
     results = cursor.fetchall()
     playerList = []
     for result in results:
@@ -58,14 +58,14 @@ def addPlayer(playerID,GamerTag,Joined,missions,level):
         VALUES
         (?,?,?,?,?);""" 
         cursor.execute(query,[playerID,GamerTag,Joined,missions,level])
-        print("Added player {0}!".format(playerID))
+        #print("Added player {0}!".format(playerID))
     else:
         query = """update LaserScraper.dbo.Players
         SET Missions = ?,
         Level = ?
         WHERE PlayerID = ?"""
-        response = cursor.execute(query,[missions,level,playerID])
-        print("Updated player {0}, {1}!".format(playerID,response))
+        cursor.execute(query,[missions,level,playerID])
+        #print("Updated player {0}, {1}!".format(playerID,response))
 
     conn.commit()
     conn.close()
@@ -139,7 +139,7 @@ def addAchievement(achName, Description, image):
     result = results.fetchone()
 
     if result == None:
-        print("SQLHelper.addAchievement: Didn't find [{0}], adding it".format(achName))
+        #print("SQLHelper.addAchievement: Didn't find [{0}], adding it".format(achName))
         query = """
         INSERT into AllAchievements
          (AchName, image, Description)
@@ -147,14 +147,14 @@ def addAchievement(achName, Description, image):
         
         """
         cursor.execute(query,(achName,image,Description))
-        print ("SQLHelper.addAchievement: Added it!")
+        #print ("SQLHelper.addAchievement: Added it!")
         conn.commit()
         conn.close()
 
-    else:
-        print ("SQLHelper.addAchievement: found [{0}], no changes to it".format(achName))
+    #else:
+        #print ("SQLHelper.addAchievement: found [{0}], no changes to it".format(achName))
 
-    print(result)
+    #print(result)
 
 def addPlayerAchievement(image,playerID,newAchievement,achievedDate,progressA,progressB):
 #do something
@@ -171,7 +171,7 @@ def addPlayerAchievement(image,playerID,newAchievement,achievedDate,progressA,pr
     if achievedDate == "0000-00-00" :
         achievedDate = None
     if result == None:
-        print("SQLHelper.addPlayerAchievement: Player has just discvered this, adding it")
+        #print("SQLHelper.addPlayerAchievement: Player has just discvered this, adding it")
         
         query = """
         insert into PlayerAchievement
@@ -183,7 +183,7 @@ def addPlayerAchievement(image,playerID,newAchievement,achievedDate,progressA,pr
         results = cursor.execute(query,(image,playerID,newAchievement,achievedDate,progressA,progressB))
     else:
         
-        print("SQLHelper.addPlayerAchievement: found achievement progress, updating it")
+        #print("SQLHelper.addPlayerAchievement: found achievement progress, updating it")
         query = """
         UPDATE PlayerAchievement
         SET newAchievement = ?, 
@@ -196,7 +196,7 @@ def addPlayerAchievement(image,playerID,newAchievement,achievedDate,progressA,pr
 
         """
         results = cursor.execute(query,(newAchievement,achievedDate,progressA,progressB,image,playerID))
-        print(image)
+        #print(image)
     conn.commit()
     conn.close()
 
@@ -209,7 +209,7 @@ def addPlayerAchievementScore (playerID, score):
     if cursor.fetchone() == None:
         print("[Warning] SQLHelper.addPlayerAchievementScore didn't find the player, could not update score")
     else:
-        print ("SQLHelper.addPlayerAchievementScore found the player, updating their achievement score")
+        #print ("SQLHelper.addPlayerAchievementScore found the player, updating their achievement score")
         query = "update players set AchievementScore = ? where playerID = ?"
         cursor.execute(query,(score,playerID))
 
