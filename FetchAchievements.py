@@ -15,8 +15,11 @@ targetIDs = getInterestingPlayersRoster(True,'',0)
 #targetIDs = {
 #    '7-9-5940'
 #}
+totalToUpdate = len(targetIDs)
 startTime = datetime.datetime.now()
+playerCounter = 0
 for ID in targetIDs:
+    playerCounter = playerCounter + 1
     IDpieces = ID.split("-")
     allAchievements = fetchPlayerAcheivement_root('',IDpieces[0],IDpieces[1],IDpieces[2])
 
@@ -29,6 +32,8 @@ for ID in targetIDs:
             for achievement in centre["achievements"]:
                 addAchievement(achievement["name"],achievement["description"],achievement["image"])
                 addPlayerAchievement(achievement["image"],ID,achievement["newAchievement"],achievement["achievedDate"],achievement["progressA"],achievement["progressB"])
+        totalAchievemnts = len(centre["achievements"])
+    print ("Updated %i achievements for player %s. [%i/%i]" % (totalAchievemnts,ID,playerCounter,totalToUpdate))
 endTime = datetime.datetime.now()
 f = open("Stats.txt","a+")
 f.write("Queried {0} players' achievements, operation completed after {1}. \t\n".format(len(targetIDs),endTime - startTime ))

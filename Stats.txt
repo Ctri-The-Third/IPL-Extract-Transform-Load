@@ -41,3 +41,4 @@ searched for 156 players, operation completed after 0:02:37.069850.
 Queried 80 players' recent games, operation completed after 0:03:38.404732. 	
 Queried 36 players' recent games, operation completed after 0:01:42.083222. 	
 Queried 1 players' recent games, operation completed after 0:00:02.684161. 	
+Queried 33 players' recent games, operation completed after 0:01:29.579616. 	
