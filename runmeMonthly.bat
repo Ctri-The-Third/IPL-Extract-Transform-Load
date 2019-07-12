@@ -4,3 +4,4 @@ FetchAchievements.py
 BuildMonthlyScoresToJSON.py
 BuildMonthlyStarQualityToJSON.py
 BuildAchievementScoresToJSON.py
+BuildHeadToHeadsToJSON.py

@@ -58,3 +58,7 @@ Queried 36 players' achievements, operation completed after 0:02:06.426047.
 Queried 36 players' recent games, operation completed after 0:01:42.222497. 	
 Queried 36 players' achievements, operation completed after 0:02:04.340000. 	
 Queried 33 players' recent games, operation completed after 0:01:29.579616. 	
+Queried 33 players' recent games, operation completed after 0:01:29.167088. 	
+Queried 33 players' achievements, operation completed after 0:01:46.515813. 	
+Queried 33 players' recent games, operation completed after 0:01:31.928957. 	
+Queried 33 players' recent games, operation completed after 0:01:28.801750. 	
