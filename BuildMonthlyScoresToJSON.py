@@ -9,12 +9,14 @@ def executeMonthlyScoresBuild():
   startDate = config["StartDate"]
   endDate = config["EndDate"]
   LastMonthStart = config["LastMonthStart"]
+  arenaName = config["SiteNameReal"]
   SQL = '''
   declare @curMonth as varchar(7)
   declare @lastMonth as varchar(7)
+  declare @arenaName as varchar(50)
   set @curMonth = ?
-  set @lastMonth = ?;
-
+  set @lastMonth = ?
+  set @arenaName = ?;
   with data as  ( select 
     p.PlayerID, 
     GamerTag, 
@@ -26,6 +28,7 @@ def executeMonthlyScoresBuild():
     inner join Games g on p.GameUUID = g.GameUUID
     where convert(varchar(7),GameTimestamp,126) in (@curMonth,@lastMonth)
     and g.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual')
+    and g.ArenaName = @arenaName
     GROUP BY p.PlayerID, pl.GamerTag, convert(varchar(7),GameTimestamp,126)
   )
     
@@ -38,7 +41,7 @@ def executeMonthlyScoresBuild():
   conn = connectToSource()
   cursor = conn.cursor()
 
-  cursor.execute(SQL,(startDate,LastMonthStart))
+  cursor.execute(SQL,(startDate,LastMonthStart,arenaName))
   JSON = {
       'ScoreTitle' : "Average Scores for known players, in Standard Games, between {0} and {1}" .format(startDate,endDate),
       'ScoreGreaterOrEqualDate' : startDate,
@@ -61,3 +64,4 @@ def executeMonthlyScoresBuild():
   f = open("JSONBlobs\\MonthlyScore{0}to{1}.json".format(startDate,endDate), "w+")
   f.write(json.dumps(JSON))
   print ("Monthly average score blobs written!")
+

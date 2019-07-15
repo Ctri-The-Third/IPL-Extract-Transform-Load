@@ -10,7 +10,6 @@ config = getConfig()
 
 
 
-
 def buildHeadToHeads ():
 	query = """
 with data as ( 
@@ -21,6 +20,7 @@ with data as (
 	join players pl on pl.PlayerID = p.PlayerID
 
 	where GameName in ('Individual', 'Colour Ranked', 'Highlander','Individual Supercharge','Gladiator (Individual)','Shadows (Individual)')
+	and ArenaName = ?
 )
 	select top(7) d1.PlayerID, d1.Score, d1.GamerTag,  d2.PlayerID, d2.GamerTag, d2.Score,  d1.GameName, convert(varchar(20),d1.GameTimestamp,106) as GT, d1.gameMonth
 	from data d1 join data d2 on d1.GameTimestamp = d2.GameTimestamp and d1.PlayerID != d2.PlayerID and d1.Score >= d2.Score
@@ -33,7 +33,7 @@ with data as (
 	conn = connectToSource()
 	cursor = conn.cursor()
 
-	results = cursor.execute(query)
+	results = cursor.execute(query,(config["SiteNameReal"]))
 	
 		
 	JSONobject = {"ScoreTitle":"Recent Head to Head games!",

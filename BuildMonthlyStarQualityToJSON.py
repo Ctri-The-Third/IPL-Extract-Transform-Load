@@ -9,10 +9,13 @@ def executeBuildMonthlyStars():
 
 	curMonth = config["StartDate"]
 	lastMonth  = config["LastMonthStart"]
+	arenaName = config["SiteNameReal"]
 	SQL = '''declare @lastMonth as varChar(7)
 	declare @curMonth as varChar(7)
+	declare @arenaName as varChar(50)
 	set @curMonth = ?
 	set @lastMonth = ?
+	set @arenaName = ?
 
 	;
 
@@ -23,6 +26,7 @@ def executeBuildMonthlyStars():
 		convert(varchar(7),GameTimestamp,126) as GameMonth
 		from Participation p join Games g on p.GameUUID = g.GameUUID 
 		join Players pl on p.PlayerID = pl.PlayerID
+		where g.ArenaName = @arenaName
 	), 
 	ranksAndCountsAndStars as (
 		select PlayerID, GamerTag, count(*) as gamesPlayed, avg (convert(float,rank)) as AverageRank, avg(convert(float,playerCount)) as AveragePlayerCount, GameMonth  --average(rank) over (partition by GameTimestamp
@@ -51,7 +55,7 @@ def executeBuildMonthlyStars():
 	conn = connectToSource()
 	cursor = conn.cursor()
 
-	cursor.execute(SQL,(curMonth,lastMonth))
+	cursor.execute(SQL,(curMonth,lastMonth,arenaName))
 	JSON = {
 		'ScoreTitle' : "Star Quality for all known players, between {0} and {1}" .format(curMonth,lastMonth),
 		'ScoreGreaterOrEqualDate' : curMonth,
