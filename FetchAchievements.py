@@ -18,10 +18,11 @@ from ConfigHelper import getConfig
 #}
 def executeFetchAchievements ():
     config = getConfig()
-    targetIDs = getInterestingPlayersRoster(False,config['StartDate'],config['EndDate'])
+    targetIDs = getInterestingPlayersRoster(False,config['StartDate'],config['ChurnDuration'])
     fetchAllAchievements(targetIDs)
 
 def fetchAllAchievements (targetIDs):
+    config = getConfig()
     totalToUpdate = len(targetIDs)
     startTime = datetime.datetime.now()
     playerCounter = 0
@@ -31,7 +32,7 @@ def fetchAllAchievements (targetIDs):
         allAchievements = fetchPlayerAcheivement_root('',IDpieces[0],IDpieces[1],IDpieces[2])
 
         for centre in allAchievements["centre"]:
-            if centre["name"] == "Funstation Ltd, Edinburgh, Scotland":
+            if centre["name"] == config["SiteNameReal"]:
 
 
                 addPlayerAchievementScore(ID,centre["score"])

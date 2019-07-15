@@ -43,7 +43,7 @@ def executeMonthlyScoresBuild():
 
   cursor.execute(SQL,(startDate,LastMonthStart,arenaName))
   JSON = {
-      'ScoreTitle' : "Average Scores for known players, in Standard Games, between {0} and {1}" .format(startDate,endDate),
+      'ScoreTitle' : "Average Scores for known players, in Standard Games, between {1} and {0}" .format(startDate,endDate),
       'ScoreGreaterOrEqualDate' : startDate,
       'ScoreLessDate' : endDate,
       'Player' : [{
@@ -60,8 +60,8 @@ def executeMonthlyScoresBuild():
       JSON['Player'].append({'Name' : result[1], 'AverageScore' : result[2], 'MissionsPlayed' : result[3], "ChangeInScore": changeInScore})
 
   f = open("JSONBlobs\\MonthlyScoreLatest.json", "w+")
-  f.write(json.dumps(JSON))
-  f = open("JSONBlobs\\MonthlyScore{0}to{1}.json".format(startDate,endDate), "w+")
-  f.write(json.dumps(JSON))
+  f.write(json.dumps(JSON,indent=4))
+  f = open("JSONBlobs\\MonthlyScore{1}to{0}.json".format(startDate,endDate), "w+")
+  f.write(json.dumps(JSON,indent=4))
   print ("Monthly average score blobs written!")
 

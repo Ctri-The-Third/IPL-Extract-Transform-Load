@@ -28,5 +28,5 @@ def executeAchievementBuild():
         JSON['Player'].append({'Name' : result[1], 'AchievementScore' : result[2], 'AchievementsCompleted' : result[3]})
 
     f = open("JSONBlobs\\AchievementsLatest.json", "w+")
-    f.write(json.dumps(JSON))
+    f.write(json.dumps(JSON,indent=4))
     print ("Achievement score blob written!")

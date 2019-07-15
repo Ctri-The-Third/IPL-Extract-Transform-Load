@@ -57,7 +57,7 @@ def executeBuildMonthlyStars():
 
 	cursor.execute(SQL,(curMonth,lastMonth,arenaName))
 	JSON = {
-		'ScoreTitle' : "Star Quality for all known players, between {0} and {1}" .format(curMonth,lastMonth),
+		'ScoreTitle' : "Star Quality for all known players, between {1} and {0}" .format(curMonth,lastMonth),
 		'ScoreGreaterOrEqualDate' : curMonth,
 		'ScoreLessDate' : lastMonth,
 		'Player' : [{
@@ -88,7 +88,7 @@ def executeBuildMonthlyStars():
 		})
 
 	f = open("JSONBlobs\\StarQualityLatest.json", "w+")
-	f.write(json.dumps(JSON))
-	f = open("JSONBlobs\\StarQuality{0}to{1}.json".format(curMonth,lastMonth), "w+")
-	f.write(json.dumps(JSON))
+	f.write(json.dumps(JSON,indent=4))
+	f = open("JSONBlobs\\StarQuality{1}to{0}.json".format(curMonth,lastMonth), "w+")
+	f.write(json.dumps(JSON,indent=4))
 	print ("Star Quality blobs written!")

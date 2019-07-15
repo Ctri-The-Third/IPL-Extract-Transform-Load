@@ -22,7 +22,7 @@ config = getConfig()
 #}
 def executeQueryGames( ):
     config = getConfig()
-    targetIDs = getInterestingPlayersRoster(False,config['StartDate'],config['EndDate'])
+    targetIDs = getInterestingPlayersRoster(False,config['StartDate'],config['ChurnDuration'])
     queryPlayers(targetIDs)
 
 def queryPlayers (targetIDs):

@@ -53,19 +53,11 @@ with data as (
 		print(row)
 
 	f = open("JSONBlobs\\HeadToHeads.json", "w+")
-	f.write(json.dumps(JSONobject))
+	f.write(json.dumps(JSONobject,indent=4))
 	f.close()
 	print("Head to Head matches written!")
 
-	
 
-	
-
-
-
-
-
-buildHeadToHeads()
 
 
 
