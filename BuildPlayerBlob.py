@@ -206,26 +206,26 @@ def buildPlayerBlob (startDate,endDate,targetID):
 
 	
 
+def executeBuildPlayerBlobs():
+	targetIDs = getTop5PlayersRoster(startDate,endDate)
+	print(targetIDs)
 
-targetIDs = getTop5PlayersRoster(startDate,endDate)
-print(targetIDs)
 
 
+	print ("Player profile blobs written!")
+	JSONobject = {}
+	if len(targetIDs) >= 1:
+		JSONobject["GoldenPlayer"] = buildPlayerBlob(startDate,endDate,targetIDs[0][0])
+	if len(targetIDs) >= 2:
+		JSONobject["SilverPlayer"] = buildPlayerBlob(startDate,endDate,targetIDs[1][0])
+	if len(targetIDs) >= 3:
+		JSONobject["BronzePlayer"] = buildPlayerBlob(startDate,endDate,targetIDs[2][0])
+	if len(targetIDs) >= 4:
+		JSONobject["OtherPlayer1"] = buildPlayerBlob(startDate,endDate,targetIDs[3][0])
+	if len(targetIDs) >= 5:
+		JSONobject["OtherPlayer2"] = buildPlayerBlob(startDate,endDate,targetIDs[4][0])
 
-print ("Player profile blobs written!")
-JSONobject = {}
-if len(targetIDs) >= 1:
-	JSONobject["GoldenPlayer"] = buildPlayerBlob(startDate,endDate,targetIDs[0][0])
-if len(targetIDs) >= 2:
-	JSONobject["SilverPlayer"] = buildPlayerBlob(startDate,endDate,targetIDs[1][0])
-if len(targetIDs) >= 3:
-	JSONobject["BronzePlayer"] = buildPlayerBlob(startDate,endDate,targetIDs[2][0])
-if len(targetIDs) >= 4:
-	JSONobject["OtherPlayer1"] = buildPlayerBlob(startDate,endDate,targetIDs[3][0])
-if len(targetIDs) >= 5:
-	JSONobject["OtherPlayer2"] = buildPlayerBlob(startDate,endDate,targetIDs[4][0])
-
-f = open("JSONBlobs\\playerBlob.json", "w+")
-f.write(json.dumps(JSONobject))
-f.close()
+	f = open("JSONBlobs\\playerBlob.json", "w+")
+	f.write(json.dumps(JSONobject))
+	f.close()
 

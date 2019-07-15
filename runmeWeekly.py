@@ -1,0 +1,15 @@
+from FetchPlayerAndGames import executeQueryGames
+from FetchAchievements import executeFetchAchievements
+from BuildMonthlyScoresToJSON import executeMonthlyScoresBuild
+from BuildMonthlyStarQualityToJSON import executeBuildMonthlyStars
+from BuildAchievementScoresToJSON import executeAchievementBuild
+from BuildPlayerBlob import executeBuildPlayerBlobs
+from BuildHeadToHeadsToJSON import buildHeadToHeads
+
+executeQueryGames()
+executeFetchAchievements()
+executeMonthlyScoresBuild()
+executeBuildMonthlyStars()
+executeAchievementBuild()
+executeBuildPlayerBlobs()
+buildHeadToHeads()

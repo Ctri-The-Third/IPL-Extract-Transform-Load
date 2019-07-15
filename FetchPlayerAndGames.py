@@ -14,13 +14,18 @@ from ConfigHelper import getConfig
 
 config = getConfig()
  #The query starts at the date in question and looks backwards. We use the "End Date" from the config.
-targetIDs = getInterestingPlayersRoster(False,config['EndDate'],config['ChurnDuration'])
+#targetIDs = getInterestingPlayersRoster(False,config['EndDate'],config['ChurnDuration'])
 
 
 #targetIDs = {
 #    '7-8-0839'
 #}
-def queryPlayers( targetIDs):
+def executeQueryGames( ):
+    config = getConfig()
+    targetIDs = getInterestingPlayersRoster(False,config['StartDate'],config['EndDate'])
+    queryPlayers(targetIDs)
+
+def queryPlayers (targetIDs):
     totalPlayerCount = len(targetIDs)
     counter = 0
     startTime = datetime.datetime.now()
@@ -57,4 +62,5 @@ def queryPlayers( targetIDs):
     f.write("Queried {0} players' recent games, operation completed after {1}. \t\n".format(len(targetIDs),endTime - startTime ))
     f.close()
 
-    queryPlayers(targetIDs)
+def manualTargetForGames(targetID):
+    queryPlayers([targetID])

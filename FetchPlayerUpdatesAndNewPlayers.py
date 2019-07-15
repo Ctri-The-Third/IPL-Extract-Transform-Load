@@ -76,12 +76,9 @@ def updateExistingPlayers():
     f.write("Queried {0} players' aggregates, operation completed after {1}. \t\n".format(len(results),endTime - startTime ))
     f.close()
 
-def manualTarget():
-    rootID = '7-8-0839' 
+def manualTargetSummary(rootID):
     ID = rootID.split('-')
     player = fetchPlayer_root('',ID[0],ID[1],ID[2])
-        #print(player)
+    print("Manual update of player sumary complete")
     addPlayer(rootID,player["centre"][0]["codename"],player["centre"][0]["joined"],player["centre"][0]["missions"],player["centre"][0]["skillLevelNum"])
 
-updateExistingPlayers()
-findNewPlayers()

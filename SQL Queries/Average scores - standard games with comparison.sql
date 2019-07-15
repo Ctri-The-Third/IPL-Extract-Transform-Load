@@ -21,7 +21,7 @@ with data as  ( select
 select d1.PlayerID, d1.GamerTag, d1.averageScore,d1.gamesPlayed, d1.averageScore -d2.averageScore as changeInScore 
 from data d1 left join data d2 on d1.PlayerID = d2.PlayerID and d1.GameMonth != d2.GameMonth
 where d1.GameMonth = @curMonth	
-
+order by averageScore desc
 
 
 
