@@ -48,24 +48,33 @@ def addPlayer(playerID,GamerTag,Joined,missions,level):
     query = """select * from LaserScraper.dbo.Players 
     where playerID = '{0}' """.format(playerID)
     cursor.execute (query)
-    #print("Query = {0}".format(query))
+    
     result = cursor.fetchone()
-    #print("Result = {0}".format(result))
-
+    
+    
     if result == None:
         query =  """insert into LaserScraper.dbo.Players 
         (PlayerID,GamerTag,Joined,Missions,Level)
         VALUES
         (?,?,?,?,?);""" 
         cursor.execute(query,[playerID,GamerTag,Joined,missions,level])
-        #print("Added player {0}!".format(playerID))
-    else:
+        
+        print("  DBG: SQLHelper.AddPlayer - Added new player %s" % playerID)
+        return 1 
+    elif  result[3] != missions:
         query = """update LaserScraper.dbo.Players
         SET Missions = ?,
         Level = ?
         WHERE PlayerID = ?"""
         cursor.execute(query,[missions,level,playerID])
-        #print("Updated player {0}, {1}!".format(playerID,response))
+        
+        print("  DBG: SQLHelper.AddPlayer - Updated player's missions [%s] to [%s]" % (result[3]),missions)
+        return 2
+    else: 
+        
+        #print("  DBG: SQLHelper.AddPlayer - No change to missions, no change.")
+        return 0
+        
 
     conn.commit()
     conn.close()
@@ -343,3 +352,33 @@ order by playerRank asc
     conn.commit()
     conn.close()
     return rows
+
+def dumpParticipantsAndGamesToCSV():
+    conn = connectToSource()
+    cursor = conn.cursor()
+    query = """select * From Participation"""
+    cursor.execute(query)
+    count = 0 
+    file = open("CSV dump - participation","w+")
+    for row in cursor.fetchall():
+        count = count + 1
+        file.write("%s,%s,%i\n" % (row[0],row[1],row[2]))
+    file.close()
+    
+    print("Dumped %i rows to CSV dump - participation.csv" % (count))
+    query = """select * From Games"""
+    cursor.execute(query)
+    count = 0 
+    file = open("CSV dump - Games","w+")
+    for row in cursor.fetchall():
+        count = count + 1
+        file.write("%s,%s,%s\n" % (row[0],row[1],row[2]))
+    file.close()
+    conn.close()
+    print("Dumped %i rows to CSV dump - Games.csv" % (count))
+
+
+
+def impParticipantsAndGamesToCSV():
+    print("Not implemented yet")
+

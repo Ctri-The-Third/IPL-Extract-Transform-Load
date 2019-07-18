@@ -5,22 +5,28 @@
     "Player": [
         {},
         {
+            "Name": "JammyDodger",
+            "AverageScore": 15979,
+            "MissionsPlayed": 4,
+            "ChangeInScore": "\u21917860"
+        },
+        {
             "Name": "C'tri",
             "AverageScore": 15976,
             "MissionsPlayed": 11,
             "ChangeInScore": "\u21932138"
         },
         {
-            "Name": "Cheese Sandwich",
-            "AverageScore": 15132,
+            "Name": "Rayth",
+            "AverageScore": 14100,
             "MissionsPlayed": 5,
-            "ChangeInScore": "\u21917947"
+            "ChangeInScore": "\u2191712"
         },
         {
-            "Name": "Rayth",
-            "AverageScore": 11769,
-            "MissionsPlayed": 2,
-            "ChangeInScore": "\u21931619"
+            "Name": "Cheese Sandwich",
+            "AverageScore": 12859,
+            "MissionsPlayed": 7,
+            "ChangeInScore": "\u21915674"
         },
         {
             "Name": "T D",
@@ -35,10 +41,10 @@
             "ChangeInScore": "\u21932792"
         },
         {
-            "Name": "PlagueDoctor",
-            "AverageScore": 10738,
-            "MissionsPlayed": 3,
-            "ChangeInScore": "\u21912074"
+            "Name": "Kyurin",
+            "AverageScore": 10735,
+            "MissionsPlayed": 1,
+            "ChangeInScore": "\u2193976"
         },
         {
             "Name": "Robo_h34d",
@@ -47,16 +53,46 @@
             "ChangeInScore": "\u21911028"
         },
         {
+            "Name": "PlagueDoctor",
+            "AverageScore": 10137,
+            "MissionsPlayed": 5,
+            "ChangeInScore": "\u21911473"
+        },
+        {
+            "Name": "Jj",
+            "AverageScore": 9607,
+            "MissionsPlayed": 6,
+            "ChangeInScore": "\u21913237"
+        },
+        {
             "Name": "Arran",
-            "AverageScore": 8808,
-            "MissionsPlayed": 3,
-            "ChangeInScore": "\u21911036"
+            "AverageScore": 9144,
+            "MissionsPlayed": 5,
+            "ChangeInScore": "\u21911372"
         },
         {
             "Name": "ThatGuysFriend",
-            "AverageScore": 8364,
-            "MissionsPlayed": 1,
-            "ChangeInScore": "\u2191113"
+            "AverageScore": 8979,
+            "MissionsPlayed": 2,
+            "ChangeInScore": "\u2191728"
+        },
+        {
+            "Name": "Billybob",
+            "AverageScore": 8355,
+            "MissionsPlayed": 2,
+            "ChangeInScore": "\u2193703"
+        },
+        {
+            "Name": "Minime",
+            "AverageScore": 7763,
+            "MissionsPlayed": 2,
+            "ChangeInScore": null
+        },
+        {
+            "Name": "Aiden",
+            "AverageScore": 7670,
+            "MissionsPlayed": 3,
+            "ChangeInScore": "\u21911277"
         },
         {
             "Name": "The Ghost",
@@ -65,40 +101,16 @@
             "ChangeInScore": null
         },
         {
-            "Name": "Aiden",
-            "AverageScore": 7314,
-            "MissionsPlayed": 1,
-            "ChangeInScore": "\u2191921"
-        },
-        {
-            "Name": "Billybob",
-            "AverageScore": 6685,
-            "MissionsPlayed": 1,
-            "ChangeInScore": "\u21932373"
-        },
-        {
-            "Name": "JammyDodger",
-            "AverageScore": 6634,
-            "MissionsPlayed": 1,
-            "ChangeInScore": "\u21931485"
-        },
-        {
             "Name": "Smokey Bandit",
             "AverageScore": 6478,
             "MissionsPlayed": 2,
             "ChangeInScore": "\u21932212"
         },
         {
-            "Name": "Jj",
-            "AverageScore": 2320,
-            "MissionsPlayed": 1,
-            "ChangeInScore": "\u21934050"
-        },
-        {
             "Name": "OctoKing",
-            "AverageScore": 990,
-            "MissionsPlayed": 1,
-            "ChangeInScore": "\u21934385"
+            "AverageScore": 3528,
+            "MissionsPlayed": 3,
+            "ChangeInScore": "\u21931847"
         }
     ]
 }
