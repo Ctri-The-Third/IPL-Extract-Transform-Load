@@ -26,15 +26,15 @@ def findNewPlayers():
     """
     results = cursor.execute(query,(sitePrefix))
     result = results.fetchone()
-    if result == None:
-        MaxPlayer = 99 #LaserForce seems to start numbering players at 100
+    if result[0] == None:
+        MaxPlayer = 199 #LaserForce seems to start numbering players at 100
     else: 
         MaxPlayer = result[0]
 
 
     #MaxPlayer = 243 #OVERRIDE, remove before committing
     consecutiveMisses = 0
-    currentTarget = MaxPlayer
+    currentTarget = MaxPlayer - 100 #we've had situations where the system adds user IDs behind the maximum. This is a stopgap dragnet to catch trailing players.
     while consecutiveMisses <= 50:
         player =  fetchPlayer_root('',7,9,currentTarget)
         if 'centre' in player:
