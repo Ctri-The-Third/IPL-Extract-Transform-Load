@@ -1,6 +1,6 @@
 import pyodbc
 import uuid
-
+import csv 
 
 from SQLconnector import connectToSource
 
@@ -60,6 +60,8 @@ def addPlayer(playerID,GamerTag,Joined,missions,level):
         cursor.execute(query,[playerID,GamerTag,Joined,missions,level])
         
         print("  DBG: SQLHelper.AddPlayer - Added new player %s" % playerID)
+        conn.commit()
+        conn.close()
         return 1 
     elif  result[3] != missions:
         query = """update LaserScraper.dbo.Players
@@ -68,16 +70,18 @@ def addPlayer(playerID,GamerTag,Joined,missions,level):
         WHERE PlayerID = ?"""
         cursor.execute(query,[missions,level,playerID])
         
-        print("  DBG: SQLHelper.AddPlayer - Updated player's missions [%s] to [%s]" % (result[3]),missions)
+        print("  DBG: SQLHelper.AddPlayer - Updated player's missions [%s] to [%s]" % (result[3],missions))
+        conn.commit()
+        conn.close()
         return 2
     else: 
         
         #print("  DBG: SQLHelper.AddPlayer - No change to missions, no change.")
+        conn.commit()
+        conn.close()
         return 0
         
 
-    conn.commit()
-    conn.close()
 
 def addGame(timestamp, arena, gametype):
     # returns UUID of existing game if already exists, otherwise creates
@@ -381,4 +385,8 @@ def dumpParticipantsAndGamesToCSV():
 
 def impParticipantsAndGamesToCSV():
     print("Not implemented yet")
+
+    conn = connectToSource()
+    cursor = conn.cursor()
+    Query = """BULK INSERT """
 
