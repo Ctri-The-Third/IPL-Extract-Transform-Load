@@ -46,8 +46,8 @@ def addPlayer(playerID,GamerTag,Joined,missions,level):
     cursor = conn.cursor()
 
     query = """select * from LaserScraper.dbo.Players 
-    where playerID = '{0}' """.format(playerID)
-    cursor.execute (query)
+    where playerID = ? """
+    cursor.execute (query,(playerID))
     
     result = cursor.fetchone()
     
@@ -68,7 +68,7 @@ def addPlayer(playerID,GamerTag,Joined,missions,level):
         SET Missions = ?,
         Level = ?
         WHERE PlayerID = ?"""
-        cursor.execute(query,[missions,level,playerID])
+        cursor.execute(query,(missions,level,playerID))
         
         print("  DBG: SQLHelper.AddPlayer - Updated player's missions [%s] to [%s]" % (result[3],missions))
         conn.commit()

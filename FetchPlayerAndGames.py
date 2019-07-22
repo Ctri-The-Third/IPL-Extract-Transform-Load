@@ -11,7 +11,7 @@ from SQLHelper import addParticipation
 from SQLHelper import getInterestingPlayersRoster
 from ConfigHelper import getConfig
 
-
+ 
 config = getConfig()
  #The query starts at the date in question and looks backwards. We use the "End Date" from the config.
 #targetIDs = getInterestingPlayersRoster(False,config['EndDate'],config['ChurnDuration'])
@@ -20,13 +20,14 @@ config = getConfig()
 #targetIDs = {
 #    '7-8-0839' 
 #}
-
+updatedPlayers = []
 def executeQueryGames( ):
     config = getConfig()
     targetIDs = getInterestingPlayersRoster(False,config['StartDate'],config['ChurnDuration'])
     queryPlayers(targetIDs)
 
 def queryPlayers (targetIDs):
+    updatedPlayers = []
     totalPlayerCount = len(targetIDs)
     counter = 0
     startTime = datetime.datetime.now()
@@ -49,8 +50,9 @@ def queryPlayers (targetIDs):
             joined = min(datetime_list)
             codeName = str(summaryJson["centre"][0]["codename"])
             playerNeedsUpdated = addPlayer(ID,codeName,joined,missions,level)
-        
+            
             if playerNeedsUpdated != 0:
+                updatedPlayers.append(ID)
                 missionsJson = fetchPlayerRecents_root('',region,site,IDPart)
                 for mission in missionsJson["mission"]:
                 

@@ -69,8 +69,21 @@ def updateExistingPlayers():
         counter = counter + 1
         ID = result[0].split('-')
         player = fetchPlayer_root('',ID[0],ID[1],ID[2])
+
+        datetime_list = []
+        missions = 0
+        level = 0
+        for i in player["centre"]:
+            datetime_list.append (str(i["joined"]))
+            missions += int(i["missions"])
+            level = max(level,int(i["skillLevelNum"]))
+        joined = min(datetime_list)
+        codeName = str(player["centre"][0]["codename"])
+
+
         print("Summary update for player %s-%s-%s, [%i/%i]" % (ID[0],ID[1],ID[2],counter,totalTargetsToUpdate))
-        addPlayer(result[0],player["centre"][0]["codename"],player["centre"][0]["joined"],player["centre"][0]["missions"],player["centre"][0]["skillLevelNum"])
+        addPlayer(result[0],codeName,joined,missions,level)
+
     endTime = datetime.datetime.now()
     f = open("Stats.txt","a+")
     f.write("Queried {0} players' aggregates, operation completed after {1}. \t\n".format(len(results),endTime - startTime ))

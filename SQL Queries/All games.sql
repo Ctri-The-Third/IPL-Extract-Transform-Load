@@ -1,19 +1,7 @@
-/****** Script for SelectTopNRows command from SSMS  ******/
-SELECT 
-	Participation.PlayerID as PID, 
-	GamerTag, 
-	GameTimestamp, 
-	GameName,
-    Score
-  FROM [LaserScraper].[dbo].[Participation]
-  inner join Players on Participation.PlayerID = Players.PlayerID
-  inner join Games on Participation.GameUUID = Games.GameUUID
-  where GamerTag in ('Youtube Candle', 'Deadpool')
-  Order by GameTimestamp desc;
+with IPs as (
 
+select playerID from InterestingPlayers
 
-
-
-
-
-
+) 
+update players set Missions = Missions - 1 
+where Players.PlayerID in (IPs.playerID)

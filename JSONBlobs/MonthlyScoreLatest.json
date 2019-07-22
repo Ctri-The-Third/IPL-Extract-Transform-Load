@@ -5,16 +5,16 @@
     "Player": [
         {},
         {
-            "Name": "JammyDodger",
-            "AverageScore": 15979,
-            "MissionsPlayed": 4,
-            "ChangeInScore": "\u21917860"
+            "Name": "C'tri",
+            "AverageScore": 16085,
+            "MissionsPlayed": 13,
+            "ChangeInScore": "\u21932029"
         },
         {
-            "Name": "C'tri",
-            "AverageScore": 15976,
-            "MissionsPlayed": 11,
-            "ChangeInScore": "\u21932138"
+            "Name": "JammyDodger",
+            "AverageScore": 14592,
+            "MissionsPlayed": 5,
+            "ChangeInScore": "\u21916473"
         },
         {
             "Name": "Rayth",
@@ -36,9 +36,9 @@
         },
         {
             "Name": "Achilles",
-            "AverageScore": 11442,
-            "MissionsPlayed": 10,
-            "ChangeInScore": "\u21932792"
+            "AverageScore": 10974,
+            "MissionsPlayed": 12,
+            "ChangeInScore": "\u21933260"
         },
         {
             "Name": "Kyurin",
@@ -55,7 +55,7 @@
         {
             "Name": "PlagueDoctor",
             "AverageScore": 10137,
-            "MissionsPlayed": 5,
+            "MissionsPlayed": 8,
             "ChangeInScore": "\u21911473"
         },
         {
@@ -83,6 +83,12 @@
             "ChangeInScore": "\u2193703"
         },
         {
+            "Name": "Reboot",
+            "AverageScore": 7960,
+            "MissionsPlayed": 2,
+            "ChangeInScore": "\u21933902"
+        },
+        {
             "Name": "Minime",
             "AverageScore": 7763,
             "MissionsPlayed": 2,
@@ -105,6 +111,12 @@
             "AverageScore": 6478,
             "MissionsPlayed": 2,
             "ChangeInScore": "\u21932212"
+        },
+        {
+            "Name": "Ruth",
+            "AverageScore": 3798,
+            "MissionsPlayed": 3,
+            "ChangeInScore": "\u21931317"
         },
         {
             "Name": "OctoKing",
