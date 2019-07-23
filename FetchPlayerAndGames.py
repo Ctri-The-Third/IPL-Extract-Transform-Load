@@ -21,12 +21,16 @@ config = getConfig()
 #    '7-8-0839' 
 #}
 updatedPlayers = []
-def executeQueryGames( ):
+def executeQueryGames(scope ): #Scope should be "full" or "partial"
     config = getConfig()
-    targetIDs = getInterestingPlayersRoster(False,config['StartDate'],config['ChurnDuration'])
-    queryPlayers(targetIDs)
+    if scope == "full": 
+        targetIDs = getInterestingPlayersRoster(False,config['StartDate'],config['ChurnDuration'])
+    else: 
+        targetIDs = getInterestingPlayersRoster(True,config['StartDate'],config['ChurnDuration'])
 
-def queryPlayers (targetIDs):
+    queryPlayers(targetIDs,scope)
+
+def queryPlayers (targetIDs,scope):
     updatedPlayers = []
     totalPlayerCount = len(targetIDs)
     counter = 0
@@ -51,7 +55,7 @@ def queryPlayers (targetIDs):
             codeName = str(summaryJson["centre"][0]["codename"])
             playerNeedsUpdated = addPlayer(ID,codeName,joined,missions,level)
             
-            if playerNeedsUpdated != 0:
+            if playerNeedsUpdated != 0 or scope == "full":
                 updatedPlayers.append(ID)
                 missionsJson = fetchPlayerRecents_root('',region,site,IDPart)
                 for mission in missionsJson["mission"]:

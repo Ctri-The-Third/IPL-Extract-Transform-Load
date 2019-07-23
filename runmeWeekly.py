@@ -6,7 +6,7 @@ from BuildAchievementScoresToJSON import executeAchievementBuild
 from BuildPlayerBlob import executeBuildPlayerBlobs
 from BuildHeadToHeadsToJSON import buildHeadToHeads
 
-executeQueryGames()
+executeQueryGames("partial")
 executeFetchAchievements()
 executeMonthlyScoresBuild()
 executeBuildMonthlyStars()

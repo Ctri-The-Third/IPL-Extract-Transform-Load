@@ -12,7 +12,7 @@ from FetchPlayerAndGames import executeQueryGames
 updateExistingPlayers()
 findNewPlayers()
 
-executeQueryGames()
+executeQueryGames("full") 
 executeFetchAchievements()
 executeMonthlyScoresBuild()
 executeBuildMonthlyStars()
