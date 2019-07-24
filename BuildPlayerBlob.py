@@ -10,14 +10,16 @@ config = getConfig()
 
 startDate = config["StartDate"]
 endDate = config["EndDate"]
-
+targetArena = config["SiteNameReal"]
 def buildPlayerBlob (startDate,endDate,targetID):
 	infoQuery = """declare @startDate as date;
 	declare @endDate as date;
 	declare @targetID as varchar(20);
+	declare @targetArena as varchar(50);
 	set @startDate = ?;
 	set @endDate = ?;
 	set @targetID = ?;
+	set @targetArena = ?;
 
 
 
@@ -30,6 +32,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 		join Players on Participation.PlayerID = Players.PlayerID
 		where GameTimestamp >= @startDate
 		and GameTimeStamp < @endDate
+		and Games.ArenaName = @targetArena
 		group by Games.GameUUID ),
 	averageOpponents as 
 	(
@@ -158,7 +161,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	conn = connectToSource()
 	cursor = conn.cursor()
 
-	result = cursor.execute(infoQuery,(startDate,endDate,targetID))
+	result = cursor.execute(infoQuery,(startDate,endDate,targetID,targetArena))
 	row = result.fetchone()
 	print(row)
 	print ("Players.PlayerID, GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed,  AverageRank")
@@ -229,3 +232,4 @@ def executeBuildPlayerBlobs():
 	f.write(json.dumps(JSONobject))
 	f.close()
 
+executeBuildPlayerBlobs()
