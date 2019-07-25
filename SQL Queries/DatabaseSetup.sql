@@ -130,12 +130,10 @@ CREATE TABLE [dbo].[Games](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-
-
 USE [LaserScraper]
 GO
 
-/****** Object:  Table [dbo].[Participation]    Script Date: 6/20/2019 10:01:28 AM ******/
+/****** Object:  Table [dbo].[Participation]    Script Date: 7/25/2019 4:10:54 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -146,6 +144,7 @@ CREATE TABLE [dbo].[Participation](
 	[PlayerID] [varchar](15) NOT NULL,
 	[GameUUID] [varchar](50) NOT NULL,
 	[Score] [int] NOT NULL,
+	[insertedTimestamp] [datetime] NULL,
  CONSTRAINT [PK_Participation] PRIMARY KEY CLUSTERED 
 (
 	[PlayerID] ASC,
@@ -153,6 +152,7 @@ CREATE TABLE [dbo].[Participation](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+
 
 
 USE [LaserScraper]
