@@ -11,22 +11,22 @@
             "ChangeInScore": "\u21932029"
         },
         {
-            "Name": "JammyDodger",
-            "AverageScore": 14592,
-            "MissionsPlayed": 5,
-            "ChangeInScore": "\u21916473"
-        },
-        {
             "Name": "Rayth",
             "AverageScore": 14100,
             "MissionsPlayed": 5,
             "ChangeInScore": "\u2191712"
         },
         {
+            "Name": "JammyDodger",
+            "AverageScore": 13866,
+            "MissionsPlayed": 8,
+            "ChangeInScore": "\u21915747"
+        },
+        {
             "Name": "Cheese Sandwich",
-            "AverageScore": 12859,
-            "MissionsPlayed": 7,
-            "ChangeInScore": "\u21915674"
+            "AverageScore": 12656,
+            "MissionsPlayed": 10,
+            "ChangeInScore": "\u21915471"
         },
         {
             "Name": "T D",
@@ -60,9 +60,9 @@
         },
         {
             "Name": "Jj",
-            "AverageScore": 9607,
-            "MissionsPlayed": 6,
-            "ChangeInScore": "\u21913237"
+            "AverageScore": 9239,
+            "MissionsPlayed": 8,
+            "ChangeInScore": "\u21912869"
         },
         {
             "Name": "Arran",
@@ -75,6 +75,12 @@
             "AverageScore": 8979,
             "MissionsPlayed": 2,
             "ChangeInScore": "\u2191728"
+        },
+        {
+            "Name": "Aiden",
+            "AverageScore": 8820,
+            "MissionsPlayed": 6,
+            "ChangeInScore": "\u21912427"
         },
         {
             "Name": "Billybob",
@@ -95,12 +101,6 @@
             "ChangeInScore": null
         },
         {
-            "Name": "Aiden",
-            "AverageScore": 7670,
-            "MissionsPlayed": 3,
-            "ChangeInScore": "\u21911277"
-        },
-        {
             "Name": "The Ghost",
             "AverageScore": 7601,
             "MissionsPlayed": 3,
@@ -111,12 +111,6 @@
             "AverageScore": 6478,
             "MissionsPlayed": 2,
             "ChangeInScore": "\u21932212"
-        },
-        {
-            "Name": "Ruth",
-            "AverageScore": 3798,
-            "MissionsPlayed": 3,
-            "ChangeInScore": "\u21931317"
         },
         {
             "Name": "OctoKing",

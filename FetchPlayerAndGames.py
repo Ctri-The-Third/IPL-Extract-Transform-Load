@@ -24,9 +24,9 @@ updatedPlayers = []
 def executeQueryGames(scope ): #Scope should be "full" or "partial"
     config = getConfig()
     if scope == "full": 
-        targetIDs = getInterestingPlayersRoster(False,config['StartDate'],config['ChurnDuration'])
-    else: 
         targetIDs = getInterestingPlayersRoster(True,config['StartDate'],config['ChurnDuration'])
+    else: 
+        targetIDs = getInterestingPlayersRoster(False,config['StartDate'],config['ChurnDuration'])
 
     queryPlayers(targetIDs,scope)
 
