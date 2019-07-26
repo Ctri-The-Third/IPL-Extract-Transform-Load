@@ -107,12 +107,12 @@ def addGame(timestamp, arena, gametype):
         """
         gameUUID = str(uuid.uuid4())
         cursor.execute(query,(timestamp,arena,gametype,gameUUID))
-        print ("SQLconnector.insertGame: Insert game check added a game! : %s" % result)
+        #print ("SQLconnector.insertGame: Insert game check added a game! : %s" % result)
         conn.commit()
         conn.close()
         return gameUUID
     else: 
-         print ("SQLconnector: Insert game check found an exiting game! : %s" % result)
+        # print ("SQLconnector: Insert game check found an exiting game! : %s" % result)
          return result.GameUUID
 
     return ''
@@ -133,10 +133,10 @@ def addParticipation(gameUUID, playerID, score):
         (?,?,?, CURRENT_TIMESTAMP)
         """
         result = cursor.execute(query,(gameUUID,playerID,score))
-        print ("SQLconnector.addParticipation: Added player to game! : %s" % gameUUID)
+        #print ("SQLconnector.addParticipation: Added player to game! : %s" % gameUUID)
         conn.commit()
-    else: 
-        print ("SQLconnector.addParticipation: We already know this player played this game! : %s" % gameUUID)
+    #else: 
+        #print ("SQLconnector.addParticipation: We already know this player played this game! : %s" % gameUUID)
 
     
     conn.close()
