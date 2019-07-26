@@ -40,6 +40,9 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
     return playerList
     
 
+def getPlayersWhoMightNeedAchievementUpdates(scope):
+    return ""
+
 def addPlayer(playerID,GamerTag,Joined,missions,level):
 
     conn = connectToSource()
@@ -107,6 +110,7 @@ def addGame(timestamp, arena, gametype):
         print ("SQLconnector.insertGame: Insert game check added a game! : %s" % result)
         conn.commit()
         conn.close()
+        return gameUUID
     else: 
          print ("SQLconnector: Insert game check found an exiting game! : %s" % result)
          return result.GameUUID

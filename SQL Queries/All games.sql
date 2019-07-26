@@ -1,7 +1,8 @@
-with IPs as (
-
-select playerID from InterestingPlayers
-
-) 
-update players set Missions = Missions - 1 
-where Players.PlayerID in (IPs.playerID)
+with data as (
+	select GamerTag, GameTimestamp, GameName, Score, insertedTimestamp
+	from Participation p
+	join players pl on p.PlayerID = pl.PlayerID
+	join games g on g.GameUUID = p.GameUUID 
+)
+select * from data 
+order by GameTimestamp desc
