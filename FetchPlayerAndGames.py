@@ -76,4 +76,4 @@ def queryPlayers (targetIDs,scope):
     f.close()
 
 def manualTargetForGames(targetID):
-    queryPlayers([targetID])
+    queryPlayers([targetID],"full")
