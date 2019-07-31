@@ -232,4 +232,4 @@ def executeBuildPlayerBlobs():
 	f.write(json.dumps(JSONobject))
 	f.close()
 
-executeBuildPlayerBlobs()
+#executeBuildPlayerBlobs()

@@ -13,7 +13,7 @@ updateExistingPlayers()
 findNewPlayers()
 
 executeQueryGames("full") 
-executeFetchAchievements()
+executeFetchAchievements("full")
 executeMonthlyScoresBuild()
 executeBuildMonthlyStars()
 executeAchievementBuild()

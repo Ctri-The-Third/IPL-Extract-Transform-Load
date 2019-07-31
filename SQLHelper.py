@@ -41,7 +41,24 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
     
 
 def getPlayersWhoMightNeedAchievementUpdates(scope):
-    return ""
+    conn = connectToSource()
+    cursor = conn.cursor()
+    query = """
+    select distinct PlayerID from Participation
+    where insertedTimestamp > dateadd(d,-6,getdate()) 
+    """
+    cursor.execute(query)
+    results = cursor.fetchall()
+    playerList = []
+    for result in results:
+        #print (result[0])
+        playerList.append(result[2])
+
+    conn.commit()
+    
+    conn.close()
+    return playerList
+    
 
 def addPlayer(playerID,GamerTag,Joined,missions,level):
 

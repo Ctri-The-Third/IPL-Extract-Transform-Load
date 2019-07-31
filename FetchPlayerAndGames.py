@@ -77,3 +77,4 @@ def queryPlayers (targetIDs,scope):
 
 def manualTargetForGames(targetID):
     queryPlayers([targetID],"full")
+ 

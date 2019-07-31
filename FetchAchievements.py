@@ -9,6 +9,7 @@ from SQLHelper import addAchievement
 from SQLHelper import addPlayerAchievement
 from SQLHelper import addPlayerAchievementScore
 from SQLHelper import getInterestingPlayersRoster
+from SQLHelper import getPlayersWhoMightNeedAchievementUpdates
 from ConfigHelper import getConfig
 
 #config = getConfig()
@@ -16,9 +17,12 @@ from ConfigHelper import getConfig
 #targetIDs = {
 #    '7-9-5940'
 #}
-def executeFetchAchievements ():
+def executeFetchAchievements (scope):
     config = getConfig()
-    targetIDs = getInterestingPlayersRoster(False,config['StartDate'],config['ChurnDuration'])
+    if scope == "full":
+        targetIDs = getInterestingPlayersRoster(True,config['StartDate'],config['ChurnDuration'])
+    else:
+        targetIDs = getPlayersWhoMightNeedAchievementUpdates(scope)
     fetchAllAchievements(targetIDs)
 
 def fetchAllAchievements (targetIDs):
