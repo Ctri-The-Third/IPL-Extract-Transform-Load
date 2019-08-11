@@ -1,9 +1,20 @@
 {
-    "SiteNameReal" : "Funstation Ltd, Edinburgh, Scotland",
-	"SiteNameShort" : "Funstation Edinburgh",
-    "ID Prefix" : "7-9-",
-    "StartDate" : "2019-07-01",
-    "EndDate" : "2019-08-01",
-    "LastMonthStart" : "2019-06-01",
-    "ChurnDuration" : 60  
+    "SiteNameReal" : "Laserforce Peterborough", 
+    "SiteNameShort" : "Laserforce Peterborough",
+    "ID Prefix" : "7-2-",
+    "StartDate" : "2019-08-01",
+    "EndDate" : "2019-09-01",
+    "LastMonthStart" : "2019-07-01",
+    "ChurnDuration" : 60,
+    
+    "configs" : [{
+        "SiteNameReal" : "Funstation Ltd, Edinburgh, Scotland",
+        "SiteNameShort" : "Funstation Edinburgh",
+        "ID Prefix" : "7-9-"
+        },
+    {"SiteNameReal" : "Laserforce Peterborough",
+        "SiteNameShort" : "Laserforce Peterborough",
+        "ID Prefix" : "7-2-"
+	}]
 }
+

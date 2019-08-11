@@ -12,8 +12,11 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
     cursor = conn.cursor()
     if includeChurned == True:
         query = """
-        select  * from InterestingPlayers
+        with data as (
+        select top 1700  * from InterestingPlayers
         order by Level desc, Missions desc, SeenIn60Days Asc
+        )
+        select * from InterestingPlayers where PlayerID not in (select playerID from data)
         """
         cursor.execute(query)
     else:
@@ -52,7 +55,7 @@ def getPlayersWhoMightNeedAchievementUpdates(scope):
     playerList = []
     for result in results:
         #print (result[0])
-        playerList.append(result[2])
+        playerList.append(result[0])
 
     conn.commit()
     
@@ -159,7 +162,7 @@ def addParticipation(gameUUID, playerID, score):
     conn.close()
     return ''
 
-def addAchievement(achName, Description, image):
+def addAchievement(achName, Description, image, arenaName):
     #do something
     conn =  connectToSource()
     cursor = conn.cursor()
@@ -176,11 +179,11 @@ def addAchievement(achName, Description, image):
         #print("SQLHelper.addAchievement: Didn't find [{0}], adding it".format(achName))
         query = """
         INSERT into AllAchievements
-         (AchName, image, Description)
-        VALUES (?,?,?)
+         (AchName, image, Description, ArenaName)
+        VALUES (?,?,?,?)
         
         """
-        cursor.execute(query,(achName,image,Description))
+        cursor.execute(query,(achName,image,Description,arenaName))
         #print ("SQLHelper.addAchievement: Added it!")
         conn.commit()
         conn.close()
@@ -332,6 +335,7 @@ StarQuality as
 GoldenTop3 as 
 (
 	select top (3) PlayerID, ROW_NUMBER() over (order by avgQualityPerGame desc) as playerRank from StarQuality
+	where StarQuality.gamesPlayed >= 3
 	order by AvgQualityPerGame desc
 ),
 BestScorer as (
@@ -402,12 +406,4 @@ def dumpParticipantsAndGamesToCSV():
     conn.close()
     print("Dumped %i rows to CSV dump - Games.csv" % (count))
 
-
-
-def impParticipantsAndGamesToCSV():
-    print("Not implemented yet")
-
-    conn = connectToSource()
-    cursor = conn.cursor()
-    Query = """BULK INSERT """
 

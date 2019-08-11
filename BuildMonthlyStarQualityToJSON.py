@@ -9,6 +9,7 @@ def executeBuildMonthlyStars():
 
 	curMonth = config["StartDate"]
 	lastMonth  = config["LastMonthStart"]
+	endDate = config["EndDate"]
 	arenaName = config["SiteNameReal"]
 	SQL = '''declare @lastMonth as varChar(7)
 	declare @curMonth as varChar(7)
@@ -89,6 +90,6 @@ def executeBuildMonthlyStars():
 
 	f = open("JSONBlobs\\StarQualityLatest.json", "w+")
 	f.write(json.dumps(JSON,indent=4))
-	f = open("JSONBlobs\\StarQuality{1}to{0}.json".format(curMonth,lastMonth), "w+")
+	f = open("JSONBlobs\\StarQuality{0}to{1}.json".format(curMonth,endDate), "w+")
 	f.write(json.dumps(JSON,indent=4))
 	print ("Star Quality blobs written!")

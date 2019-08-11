@@ -17,7 +17,7 @@ def findNewPlayers():
     config = getConfig()
     sitePrefix = config["ID Prefix"]
 
-
+#
     query = """
     select max(CONVERT(int,SUBSTRING(PlayerID,5,20))) as MaxPlayerID
     from players
@@ -30,13 +30,14 @@ def findNewPlayers():
         MaxPlayer = 199 #LaserForce seems to start numbering players at 100
     else: 
         MaxPlayer = result[0]
-
+        MaxPlayer = 38100 #LaserForce seems to start numbering players at 100
+    
 
     #MaxPlayer = 243 #OVERRIDE, remove before committing
     consecutiveMisses = 0
     currentTarget = MaxPlayer - 100 #we've had situations where the system adds user IDs behind the maximum. This is a stopgap dragnet to catch trailing players.
-    while consecutiveMisses <= 50:
-        player =  fetchPlayer_root('',7,9,currentTarget)
+    while consecutiveMisses <= 500:
+        player =  fetchPlayer_root('',7,2,currentTarget)
         if 'centre' in player:
             
             codeName = player["centre"][0]["codename"]
@@ -46,6 +47,7 @@ def findNewPlayers():
             addPlayer("%s%i" % (sitePrefix,currentTarget),codeName,dateJoined,missionsPlayed,skillLevelNum)
             consecutiveMisses = 0
         else: 
+            print("DBG: FetchPlayerUpdatesAndNewPlayers.findNewPlayers - Missed a player 7-X-%s" % (currentTarget))
             consecutiveMisses = consecutiveMisses + 1
         currentTarget = currentTarget + 1 
     endTime = datetime.datetime.now()
@@ -62,6 +64,7 @@ def updateExistingPlayers():
 
     query = """select PlayerID, Missions, Level from Players
             order by Level desc, Missions desc"""
+            #offset 1500 rows"""
     results = cursor.execute(query).fetchall()
     totalTargetsToUpdate = len(results)
     counter = 0
@@ -94,4 +97,6 @@ def manualTargetSummary(rootID):
     player = fetchPlayer_root('',ID[0],ID[1],ID[2])
     print("Manual update of player sumary complete")
     addPlayer(rootID,player["centre"][0]["codename"],player["centre"][0]["joined"],player["centre"][0]["missions"],player["centre"][0]["skillLevelNum"])
+
+
 

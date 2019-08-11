@@ -5,6 +5,7 @@ import importlib
 from SQLconnector import connectToSource
 from SQLHelper import getTop5PlayersRoster
 from ConfigHelper import getConfig
+from DBG import DBG
 
 config = getConfig()
 
@@ -160,12 +161,12 @@ def buildPlayerBlob (startDate,endDate,targetID):
 
 	conn = connectToSource()
 	cursor = conn.cursor()
-
+	DBG("BuildPlayerBlob.buildPlayerBlob start[%s], end[%s], target[%s], arena[%s]" % (startDate,endDate,targetID,targetArena),3)
 	result = cursor.execute(infoQuery,(startDate,endDate,targetID,targetArena))
 	row = result.fetchone()
 	print(row)
 	print ("Players.PlayerID, GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed,  AverageRank")
-	SkillLevelName = ["Recruit","Gunner","Trooper","Captain","Star Lord","Laser Master"]
+	SkillLevelName = ["Recruit","Gunner","Trooper","Captain","Star Lord","Laser Master","Level 7","Level 8","Level 9"]
 
 	JSONobject = {}
 	JSONobject["PlayerName"] = row[1]

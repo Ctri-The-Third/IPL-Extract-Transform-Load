@@ -23,6 +23,8 @@ def executeFetchAchievements (scope):
         targetIDs = getInterestingPlayersRoster(True,config['StartDate'],config['ChurnDuration'])
     else:
         targetIDs = getPlayersWhoMightNeedAchievementUpdates(scope)
+    
+    print("Scope : %s" % (scope))
     fetchAllAchievements(targetIDs)
 
 def fetchAllAchievements (targetIDs):
@@ -34,18 +36,18 @@ def fetchAllAchievements (targetIDs):
         playerCounter = playerCounter + 1
         IDpieces = ID.split("-")
         allAchievements = fetchPlayerAcheivement_root('',IDpieces[0],IDpieces[1],IDpieces[2])
+        if allAchievements.__len__() > 0:
+            for centre in allAchievements["centre"]:
+                if centre["name"] == config["SiteNameReal"]:
 
-        for centre in allAchievements["centre"]:
-            if centre["name"] == config["SiteNameReal"]:
 
-
-                addPlayerAchievementScore(ID,centre["score"])
-                #print (allAchievements)
-                for achievement in centre["achievements"]:
-                    addAchievement(achievement["name"],achievement["description"],achievement["image"])
-                    addPlayerAchievement(achievement["image"],ID,achievement["newAchievement"],achievement["achievedDate"],achievement["progressA"],achievement["progressB"])
-            totalAchievemnts = len(centre["achievements"])
-        print ("Updated %i achievements for player %s. [%i/%i]" % (totalAchievemnts,ID,playerCounter,totalToUpdate))
+                    addPlayerAchievementScore(ID,centre["score"])
+                    #print (allAchievements)
+                    for achievement in centre["achievements"]:
+                        addAchievement(achievement["name"],achievement["description"],achievement["image"], config["SiteNameReal"])
+                        addPlayerAchievement(achievement["image"],ID,achievement["newAchievement"],achievement["achievedDate"],achievement["progressA"],achievement["progressB"])
+                totalAchievemnts = len(centre["achievements"])
+            print ("Updated %i achievements for player %s. [%i/%i]" % (totalAchievemnts,ID,playerCounter,totalToUpdate))
     endTime = datetime.datetime.now()
     f = open("Stats.txt","a+")
     f.write("Queried {0} players' achievements, operation completed after {1}. \t\n".format(len(targetIDs),endTime - startTime ))
@@ -53,3 +55,4 @@ def fetchAllAchievements (targetIDs):
 
 def manualTargetAchievements(targetID):
     fetchAllAchievements([targetID])
+

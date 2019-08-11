@@ -17,25 +17,31 @@ def executeMonthlyScoresBuild():
   set @curMonth = ?
   set @lastMonth = ?
   set @arenaName = ?;
+
   with data as  ( select 
-    p.PlayerID, 
-    GamerTag, 
-    avg(Score) as averageScore,
-    count(GamerTag) as gamesPlayed,
-    convert(varchar(7),GameTimestamp,126) as GameMonth
-    FROM Participation p
-    inner join Players pl on p.PlayerID = pl.PlayerID
-    inner join Games g on p.GameUUID = g.GameUUID
-    where convert(varchar(7),GameTimestamp,126) in (@curMonth,@lastMonth)
-    and g.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual')
-    and g.ArenaName = @arenaName
-    GROUP BY p.PlayerID, pl.GamerTag, convert(varchar(7),GameTimestamp,126)
+	p.PlayerID, 
+	GamerTag, 
+	avg(Score) as averageScore,
+	count(GamerTag) as gamesPlayed,
+	convert(varchar(7),GameTimestamp,126) as GameMonth
+	
+  FROM Participation p
+  inner join Players pl on p.PlayerID = pl.PlayerID
+  inner join Games g on p.GameUUID = g.GameUUID
+  where convert(varchar(7),GameTimestamp,126) in (@curMonth,@lastMonth)
+  and (--g.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual') or
+   g.GameName in ('Continous Ind','Standard 2 Team','Standard 3 Team','Standard 4 Team','Standard Individual','Standard Multi team' ) or 1 = 1 
   )
-    
-  select d1.PlayerID, d1.GamerTag, d1.averageScore,d1.gamesPlayed, d1.averageScore -d2.averageScore as changeInScore 
-  from data d1 left join data d2 on d1.PlayerID = d2.PlayerID and d1.GameMonth != d2.GameMonth
-  where d1.GameMonth = @curMonth	
-  order by d1.averageScore desc
+  and g.ArenaName = @currentArena
+  GROUP BY p.PlayerID, pl.GamerTag, convert(varchar(7),GameTimestamp,126)
+)
+  
+select d1.PlayerID, d1.GamerTag, d1.averageScore,d1.gamesPlayed, d1.averageScore -d2.averageScore as changeInScore 
+from data d1 left join data d2 on d1.PlayerID = d2.PlayerID and d1.GameMonth != d2.GameMonth
+where d1.GameMonth = @curMonth	
+order by averageScore desc
+;
+
 
   '''
   conn = connectToSource()
@@ -61,7 +67,7 @@ def executeMonthlyScoresBuild():
 
   f = open("JSONBlobs\\MonthlyScoreLatest.json", "w+")
   f.write(json.dumps(JSON,indent=4))
-  f = open("JSONBlobs\\MonthlyScore{1}to{0}.json".format(startDate,endDate), "w+")
+  f = open("JSONBlobs\\MonthlyScore{0}to{1}.json".format(startDate,endDate), "w+")
   f.write(json.dumps(JSON,indent=4))
   print ("Monthly average score blobs written!")
 

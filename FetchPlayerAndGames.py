@@ -58,11 +58,12 @@ def queryPlayers (targetIDs,scope):
             if playerNeedsUpdated != 0 or scope == "full":
                 updatedPlayers.append(ID)
                 missionsJson = fetchPlayerRecents_root('',region,site,IDPart)
-                for mission in missionsJson["mission"]:
-                
-                    missionUUID = addGame(mission[0],mission[1],mission[2])
-                    "FetchPlayerAndGames: %s, %s " % (missionUUID, mission)
-                    addParticipation(missionUUID,ID,mission[3])
+                if missionsJson != None:
+                    for mission in missionsJson["mission"]:
+                 
+                        missionUUID = addGame(mission[0],mission[1],mission[2])
+                        "FetchPlayerAndGames: %s, %s " % (missionUUID, mission)
+                        addParticipation(missionUUID,ID,mission[3])
         else:
             DBGstring += "WARNING no data received for user."
             print(DBGstring)
@@ -78,3 +79,4 @@ def queryPlayers (targetIDs,scope):
 def manualTargetForGames(targetID):
     queryPlayers([targetID],"full")
  
+
