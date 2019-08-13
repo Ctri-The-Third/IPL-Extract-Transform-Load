@@ -12,3 +12,5 @@ Stats.txt
 CSV dump - Games
 CSV dump - participation
 SQL Queries/PlayerQuality - DarklightHandicap.sql
+*.un~
+*.py~
