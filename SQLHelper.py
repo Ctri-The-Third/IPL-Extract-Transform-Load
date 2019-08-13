@@ -253,14 +253,16 @@ def addPlayerAchievementScore (playerID, score):
     conn.commit()
     conn.close()
 
-def getTop5PlayersRoster(startDate,endDate):
+def getTop5PlayersRoster(startDate,endDate,ArenaName):
     conn = connectToSource()
     cursor = conn.cursor()
     query = """DECLARE @startDate as date
 DECLARE @endDate as date;
+DECLARE @targetArena as varchar(50);
 SET @startDate = ?;
 SET @endDate = ?;
-
+SET @targetArena = ?;
+	
 with PlayersInGame as (
 	SELECT 
 	Count (Players.GamerTag) as playersInGame, 
@@ -270,6 +272,7 @@ with PlayersInGame as (
 	join Players on Participation.PlayerID = Players.PlayerID
 	where GameTimestamp >= @startDate
 	and GameTimeStamp < @endDate
+	and games.ArenaName = @targetArena
 	group by Games.GameUUID ),
 averageOpponents as 
 (
@@ -277,6 +280,7 @@ averageOpponents as
 	join PlayersInGame on Participation.GameUUID = PlayersInGame.gameID
 	join Games on Games.GameUUID = PlayersInGame.gameID
 	join Players on Participation.PlayerID = players.PlayerID
+	where games.ArenaName = @targetArena
 	group by  players.PlayerID
 		
 ),
@@ -287,6 +291,7 @@ totalGamesPlayed as
 	join Games on Games.GameUUID = Participation.GameUUID
 	where GameTimestamp >= @startDate
 	and GameTimeStamp < @endDate
+	and games.ArenaName = @targetArena
 	group by Participation.PlayerID
 ),
 Ranks as 
@@ -299,6 +304,7 @@ Ranks as
 	join Players on Participation.PlayerID = Players.PlayerID
 	where GameTimestamp >= @startDate
 	and GameTimeStamp < @endDate
+	and games.ArenaName = @targetArena
 ),
 AverageRanks as 
 ( select PlayerID, AVG(CONVERT(float,gamePosition)) as AverageRank from Ranks
@@ -317,6 +323,7 @@ AverageScores as (
 	where Games.GameTimestamp >= @startDate
 	AND Games.GameTimestamp < @endDate
 	and Games.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual')
+	and games.ArenaName = @targetArena
 	group by Players.PlayerID
  ),
 StarQuality as
@@ -371,7 +378,7 @@ join Players pl on pl.PlayerID = p.PlayerID
 order by playerRank asc
 
 """
-    cursor.execute(query,(startDate,endDate))
+    cursor.execute(query,(startDate,endDate,ArenaName))
     rows = cursor.fetchall()
     if rows == None:
         print("[Warning] SQLHelper.getTop5Players didn't find any players. Is there data in all tables?/")

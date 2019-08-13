@@ -32,7 +32,7 @@ def executeMonthlyScoresBuild():
   and (--g.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual') or
    g.GameName in ('Continous Ind','Standard 2 Team','Standard 3 Team','Standard 4 Team','Standard Individual','Standard Multi team' ) or 1 = 1 
   )
-  and g.ArenaName = @currentArena
+  and g.ArenaName = @arenaName
   GROUP BY p.PlayerID, pl.GamerTag, convert(varchar(7),GameTimestamp,126)
 )
   
