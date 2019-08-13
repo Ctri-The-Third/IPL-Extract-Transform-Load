@@ -88,13 +88,14 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	"""
 
 
-	goldenGameQuery = """DECLARE @targetID as varchar(20)
-	DECLARE @startDate as date
-	DECLARE @endDate as date
-
-	SET @targetID = ?
-	SET @startDate = ?
-	SET @endDate = ?;
+	goldenGameQuery = """declare @startDate as date;
+	declare @endDate as date;
+	declare @targetID as varchar(20);
+	declare @targetArena as varchar(50);
+	set @startDate = ?;
+	set @endDate = ?;
+	set @targetID = ?;
+	set @targetArena = ?;
 
 	with PlayersInGame as (
 		SELECT 
@@ -103,7 +104,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 		FROM [LaserScraper].[dbo].[Games] as Games
 		join Participation on participation.GameUUID = Games.GameUUID
 		join Players on Participation.PlayerID = Players.PlayerID
-
+		where games.ArenaName = @targetArena
 		group by Games.GameUUID ),
 
 	Ranks as 
@@ -113,6 +114,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 		from Games 
 		join Participation on Games.GameUUID = Participation.GameUUID
 		join Players on Participation.PlayerID = Players.PlayerID
+		where games.ArenaName = @targetArena
 	),
 	GoldenGame as (
 
@@ -166,18 +168,18 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	row = result.fetchone()
 	print(row)
 	print ("Players.PlayerID, GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed,  AverageRank")
-	SkillLevelName = ["Recruit","Gunner","Trooper","Captain","Star Lord","Laser Master","Level 7","Level 8","Level 9"]
+	SkillLevelName = ["Recruit","Gunner","Trooper","Captain","Star Lord","Laser Master","Level 7","Level 8","Laser Elite"]
 
 	JSONobject = {}
 	JSONobject["PlayerName"] = row[1]
-	JSONobject["HomeArenaTrunc"] = "Laserstation Edinburgh"
+	JSONobject["HomeArenaTrunc"] = config["SiteNameShort"]
 	JSONobject["SkillLevelName"] = SkillLevelName[row[2]]
 	JSONobject["MonthlyGamesPlayed"] = row[5]
 	JSONobject["AllGamesPlayed"] = row[3]
 	JSONobject["StarQuality"] = row[7]
 	JSONobject["Achievements"] = row[9]
 
-	result = cursor.execute(goldenGameQuery,(targetID,startDate,endDate))
+	result = cursor.execute(goldenGameQuery,(startDate,endDate,targetID,targetArena))
 	rows = result.fetchall()
 	if len(rows) > 0:
 		row = rows[0]
@@ -211,7 +213,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	
 
 def executeBuildPlayerBlobs():
-	targetIDs = getTop5PlayersRoster(startDate,endDate)
+	targetIDs = getTop5PlayersRoster(startDate,endDate,targetArena)
 	print(targetIDs)
 
 
