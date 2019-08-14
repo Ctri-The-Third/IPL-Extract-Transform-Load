@@ -1,13 +1,18 @@
 import os
+import time
 import colorama
 import threading
+import queue
+from renderProgressBar import renderBar
 from colorama import Fore
 from colorama import Back
 from ConfigHelper import getConfig 
 from ConfigHelper import setActive
 from ConfigHelper import setNewDates
 
+from FetchIndividual import fetchIndividual
 from FetchPlayerAndGames import executeQueryGames
+import FetchPlayerAndGames
 
 # This application class serves as a wrapper for the initialization of curses
 # and also manages the actual forms of the application
@@ -29,6 +34,7 @@ def drawDateMenu():
     print ("%s or 'x' to go back            %s" % (Fore.YELLOW, Fore.WHITE))
     return input()
 def drawMainMenu():
+    time.sleep(0.05)
     emptyString = "                           "
     inputS = ""
     
@@ -38,7 +44,9 @@ def drawMainMenu():
 
     print ("%s ***** LF Profiler      ***** %s" % (Fore.YELLOW, Fore.WHITE))
 
-    print ("Start Date:          [ %s%s%s ]          |" % ( Fore.GREEN,  config["StartDate"], Fore.WHITE))
+    outStr  = "Start Date:          [ %s%s%s ]          | " % ( Fore.GREEN,  config["StartDate"], Fore.WHITE)
+    outStr = outStr + renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),Fore.BLACK,Back.GREEN)
+    print(outStr)
     print ("End Date:            [ %s%s%s ]          |" % ( Fore.GREEN, config["EndDate"],Fore.WHITE))
     print ("Target site:         [ %s%s%s ]|" % (Fore.GREEN,config["SiteNameShort"][0:20],Fore.WHITE))
     print ("")
@@ -64,13 +72,19 @@ def drawMainMenu():
     print ("%s ***** Select Option    ***** %s" % (Fore.YELLOW, Fore.WHITE))
     
     return input()
-        
-    
+
 
 inputS = ""
 
+
+
 while inputS != "x":
+    FetchPlayerAndGames.StatusOfFetchPlayer 
+    if not FetchPlayerAndGames.StatusOfFetchPlayer.empty():
+        CurrentWorkerStatus = FetchPlayerAndGames.StatusOfFetchPlayer.get() #fetch the latest update
+        FetchPlayerAndGames.StatusOfFetchPlayer.queue.clear() #purge older updates
     inputS = drawMainMenu()
+    #drawMainMenu()
     feedback.append(inputS)
     
     if inputS == "110":
@@ -93,23 +107,24 @@ while inputS != "x":
         feedback.append("Blobs written")
     elif inputS == "61":
         
-        import ExecuteFetchIndividual
+        fetchIndividual()
         
         input ("Press any key to continue...")
     elif inputS == "66":
         feedback.append("Performing partial update in background...")
         t = threading.Thread(target=executeQueryGames, args=("partial",))
-        
         threads.append(t)
         t.start()      
         
         feedback.append("Completed partial update.")
+        inputS = ""
     elif inputS == "666":
         feedback.append("Completed full update.")
         import runmeMonthly
         input ("Press any key to continue...")
+for thread in threads:
+    thread._stop()
 
 
 
-GuiQueue.put()
 

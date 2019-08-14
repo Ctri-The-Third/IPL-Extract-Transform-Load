@@ -2,7 +2,7 @@ import requests
 import json
 import importlib
 import datetime
-
+import queue
 from FetchHelper import fetchPlayer_root
 from FetchHelper import fetchPlayerRecents_root
 from SQLHelper import addPlayer
@@ -31,6 +31,7 @@ def executeQueryGames(scope ): #Scope should be "full" or "partial"
     queryPlayers(targetIDs,scope)
 
 def queryPlayers (targetIDs,scope):
+    
     updatedPlayers = []
     totalPlayerCount = len(targetIDs)
     counter = 0
@@ -40,10 +41,16 @@ def queryPlayers (targetIDs,scope):
         region = ID.split("-")[0]
         site =  ID.split("-")[1]
         IDPart = ID.split("-")[2]
+        
         DBGstring = "Seeking games for %s-%s-%s, [%i / %i] : " % (region,site,IDPart,counter,totalPlayerCount)
+        WorkerStatus = {}
+        WorkerStatus["CurEntry"] = counter
+        WorkerStatus["TotalEntries"] = totalPlayerCount
+        WorkerStatus["CurrentAction"] = "Seeking games for %s-%s-%s" % (region,site,IDPart)
+        StatusOfFetchPlayer.put((WorkerStatus)) 
         summaryJson = fetchPlayer_root('',region,site,IDPart)
         if summaryJson is not None:
-            print(DBGstring)
+            #print(DBGstring)
             datetime_list = []
             missions = 0
             level = 0
@@ -66,7 +73,7 @@ def queryPlayers (targetIDs,scope):
                         addParticipation(missionUUID,ID,mission[3])
         else:
             DBGstring += "WARNING no data received for user."
-            print(DBGstring)
+            #print(DBGstring)
             
             
 
@@ -80,3 +87,9 @@ def manualTargetForGames(targetID):
     queryPlayers([targetID],"full")
  
 
+StatusOfFetchPlayer = queue.Queue()
+WorkerStatus = {}
+WorkerStatus["CurEntry"] = 0
+WorkerStatus["TotalEntries"] = 1
+WorkerStatus["CurrentAction"] = "idle"
+StatusOfFetchPlayer.put(WorkerStatus)
