@@ -3,6 +3,7 @@ import json
 import importlib
 import datetime
 import queue
+from colorama import Fore
 from FetchHelper import fetchPlayer_root
 from FetchHelper import fetchPlayerRecents_root
 from SQLHelper import addPlayer
@@ -46,7 +47,8 @@ def queryPlayers (targetIDs,scope):
         WorkerStatus = {}
         WorkerStatus["CurEntry"] = counter
         WorkerStatus["TotalEntries"] = totalPlayerCount
-        WorkerStatus["CurrentAction"] = "Seeking games for %s-%s-%s" % (region,site,IDPart)
+        WorkerStatus["CurrentAction"] = "games for %s-%s-%s%s" % (region,site,IDPart," "*20) 
+        WorkerStatus["CurrentAction"] = "[%s%s%s]" % (Fore.GREEN,WorkerStatus["CurrentAction"][0:20], Fore.WHITE)
         StatusOfFetchPlayer.put((WorkerStatus)) 
         summaryJson = fetchPlayer_root('',region,site,IDPart)
         if summaryJson is not None:
@@ -91,5 +93,5 @@ StatusOfFetchPlayer = queue.Queue()
 WorkerStatus = {}
 WorkerStatus["CurEntry"] = 0
 WorkerStatus["TotalEntries"] = 1
-WorkerStatus["CurrentAction"] = "idle"
+WorkerStatus["CurrentAction"] = "[%s        idle        %s]" % (Fore.GREEN, Fore.WHITE)
 StatusOfFetchPlayer.put(WorkerStatus)

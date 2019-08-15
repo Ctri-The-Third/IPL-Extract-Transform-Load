@@ -13,6 +13,7 @@ def fetchIndividual():
     ##check if it's an ID
     conn = connectToSource()
     cursor = conn.cursor()
+    input() # clear the other inputs
     userInput = input('Enter a player ID or gamertag\n')
     if re.match("([0-9]+)-([0-9]+)-([0-9]+)",userInput):
 

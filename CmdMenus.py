@@ -14,6 +14,9 @@ from FetchIndividual import fetchIndividual
 from FetchPlayerAndGames import executeQueryGames
 import FetchPlayerAndGames
 
+from pynput.keyboard import Key, Listener
+import KeyboardReader
+
 # This application class serves as a wrapper for the initialization of curses
 # and also manages the actual forms of the application
 
@@ -46,9 +49,10 @@ def drawMainMenu():
 
     outStr  = "Start Date:          [ %s%s%s ]          | " % ( Fore.GREEN,  config["StartDate"], Fore.WHITE)
     outStr = outStr + renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),Fore.BLACK,Back.GREEN)
+    outStr = outStr + "\nEnd Date:            [ %s%s%s ]          | " % ( Fore.GREEN, config["EndDate"],Fore.WHITE)
+    outStr = outStr + CurrentWorkerStatus["CurrentAction"]
+    outStr = outStr + "\nTarget site:         [ %s%s%s ]| " % (Fore.GREEN,config["SiteNameShort"][0:20],Fore.WHITE)
     print(outStr)
-    print ("End Date:            [ %s%s%s ]          |" % ( Fore.GREEN, config["EndDate"],Fore.WHITE))
-    print ("Target site:         [ %s%s%s ]|" % (Fore.GREEN,config["SiteNameShort"][0:20],Fore.WHITE))
     print ("")
 
     print ("%s ***** Menu             ***** %s" % (Fore.YELLOW, Fore.WHITE))
@@ -64,28 +68,45 @@ def drawMainMenu():
     print (" ")
     print ("[x] Exit")
     
-    if feedback.__len__() != 0:
+    if feedback.__len__() > 5:
+        print ("%s ***** Previous commands ***** %s" % (Fore.YELLOW, Fore.WHITE))
+        for var in feedback[-5:]:
+            print("%s%s%s%s%s" % (Back.GREEN,Fore.BLACK,var,Back.BLACK, Fore.WHITE))
+
+        
+    elif feedback.__len__() != 0:
         print ("%s ***** Previous commands ***** %s" % (Fore.YELLOW, Fore.WHITE))
         for var in feedback:
             print("%s%s%s%s%s" % (Back.GREEN,Fore.BLACK,var,Back.BLACK, Fore.WHITE))
 
     print ("%s ***** Select Option    ***** %s" % (Fore.YELLOW, Fore.WHITE))
+    print (preS)
     
-    return input()
 
 
+preS = ""
 inputS = ""
 
 
+    
 
-while inputS != "x":
+ 
+while inputS != "exit⏎" or inputS != "x⏎": 
+    while not KeyboardReader.q.empty():
+        preS = KeyboardReader.convertKey(preS,KeyboardReader.q.get())
+    
+    if preS[-1:] == "⏎":
+        inputS = preS[:-1]
+        feedback.append(inputS)
+        
     FetchPlayerAndGames.StatusOfFetchPlayer 
     if not FetchPlayerAndGames.StatusOfFetchPlayer.empty():
         CurrentWorkerStatus = FetchPlayerAndGames.StatusOfFetchPlayer.get() #fetch the latest update
         FetchPlayerAndGames.StatusOfFetchPlayer.queue.clear() #purge older updates
-    inputS = drawMainMenu()
+    drawMainMenu()
     #drawMainMenu()
-    feedback.append(inputS)
+
+    
     
     if inputS == "110":
         feedback.append(setActive(0))
@@ -106,7 +127,7 @@ while inputS != "x":
         import runmeWhenever
         feedback.append("Blobs written")
     elif inputS == "61":
-        
+        input() #clear the input
         fetchIndividual()
         
         input ("Press any key to continue...")
@@ -122,9 +143,15 @@ while inputS != "x":
         feedback.append("Completed full update.")
         import runmeMonthly
         input ("Press any key to continue...")
+    if preS[-1:] == "⏎":
+        preS = ""
+        inputS = ""
+    time.sleep(0.2)
+
+
+
 for thread in threads:
-    thread._stop()
-
-
+    thread.join()
+    thread.stop()
 
 
