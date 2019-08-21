@@ -2,7 +2,11 @@ import os
 import time
 import colorama
 import threading
-import queue
+import queue 
+from console import fg, bg, fx
+import console.utils
+import console.screen as screen
+
 from renderProgressBar import renderBar
 from colorama import Fore
 from colorama import Back
@@ -14,8 +18,8 @@ from FetchIndividual import fetchIndividual
 from FetchPlayerAndGames import executeQueryGames
 import FetchPlayerAndGames
 
-from pynput.keyboard import Key, Listener
-import KeyboardReader
+import InputReader
+
 
 # This application class serves as a wrapper for the initialization of curses
 # and also manages the actual forms of the application
@@ -23,18 +27,18 @@ import KeyboardReader
 feedback = []
 threads = []
 def drawDateMenu():
-    os.system('cls')
+    
     config = getConfig()
-    print ("%s ***** LF Profiler      ***** %s" % (Fore.YELLOW, Fore.WHITE))
+    print ("%s ***** LF Profiler      ***** %s" % (fg.yellow, fg.white))
 
-    print ("Start Date:          [ %s%s%s ]          |" % ( Fore.GREEN,  config["StartDate"], Fore.WHITE))
-    print ("End Date:            [ %s%s%s ]          |" % ( Fore.GREEN, config["EndDate"],Fore.WHITE))
-    print ("Target site:         [ %s%s%s ]|" % (Fore.GREEN,config["SiteNameShort"][0:20],Fore.WHITE))
+    print ("Start Date:          [ %s%s%s ]          |" % ( fg.green,  config["StartDate"], fg.white))
+    print ("End Date:            [ %s%s%s ]          |" % ( fg.green, config["EndDate"],fg.white))
+    print ("Target site:         [ %s%s%s ]|" % (fg.green,config["SiteNameShort"][0:20],fg.white))
     print ("")
 
-    print ("%s ***** Start Date       ***** %s" % (Fore.YELLOW, Fore.WHITE))
-    print ("%s In the form YYYY-MM-DD       %s" % (Fore.YELLOW, Fore.WHITE))
-    print ("%s or 'x' to go back            %s" % (Fore.YELLOW, Fore.WHITE))
+    print ("%s ***** Start Date       ***** %s" % (fg.yellow, fg.white))
+    print ("%s In the form YYYY-MM-DD       %s" % (fg.yellow, fg.white))
+    print ("%s or 'x' to go back            %s" % (fg.yellow, fg.white))
     return input()
 def drawMainMenu():
     time.sleep(0.05)
@@ -43,43 +47,43 @@ def drawMainMenu():
     
     config = getConfig()
     
-    os.system('cls')
+    
 
-    print ("%s ***** LF Profiler      ***** %s" % (Fore.YELLOW, Fore.WHITE))
+    print ("%s ***** LF Profiler      ***** %s" % (fg.yellow, fg.white))
 
-    outStr  = "Start Date:          [ %s%s%s ]          | " % ( Fore.GREEN,  config["StartDate"], Fore.WHITE)
-    outStr = outStr + renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),Fore.BLACK,Back.GREEN)
-    outStr = outStr + "\nEnd Date:            [ %s%s%s ]          | " % ( Fore.GREEN, config["EndDate"],Fore.WHITE)
+    outStr  = "Start Date:          [ %s%s%s ]          | " % ( fg.green,  config["StartDate"], fg.white)
+    outStr = outStr + renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),fg.black,bg.green)
+    outStr = outStr + "\nEnd Date:            [ %s%s%s ]          | " % ( fg.green, config["EndDate"],fg.white)
     outStr = outStr + CurrentWorkerStatus["CurrentAction"]
-    outStr = outStr + "\nTarget site:         [ %s%s%s ]| " % (Fore.GREEN,config["SiteNameShort"][0:20],Fore.WHITE)
+    outStr = outStr + "\nTarget site:         [ %s%s%s ]| " % (fg.green,config["SiteNameShort"][0:20],fg.white)
     print(outStr)
     print ("")
 
-    print ("%s ***** Menu             ***** %s" % (Fore.YELLOW, Fore.WHITE))
-    print ("["+Fore.YELLOW+"110"+Fore.WHITE+"] Select site - Edinburgh")
-    print ("["+Fore.YELLOW+"111"+Fore.WHITE+"] Select site - Peterborugh")
-    print ("["+Fore.YELLOW+"12 "+Fore.WHITE+"] Select different dates")
-    print ("["+Fore.YELLOW+" 5 "+Fore.WHITE+"] Run queries on specific player")
-    print ("["+Fore.YELLOW+" 6 "+Fore.WHITE+"] Rebuild the JSON blobs")
-    print ("["+Fore.YELLOW+"61 "+Fore.WHITE+"] Update individual player")
-    print ("["+Fore.YELLOW+"66 "+Fore.WHITE+"] Run partial DB refresh")
-    print ("["+Fore.YELLOW+"666"+Fore.WHITE+"] Run complete DB refresh")
+    print ("%s ***** Menu             ***** %s" % (fg.yellow, fg.white))
+    print ("["+fg.yellow+"110"+fg.white+"] Select site - Edinburgh")
+    print ("["+fg.yellow+"111"+fg.white+"] Select site - Peterborugh")
+    print ("["+fg.yellow+"12 "+fg.white+"] Select different dates")
+    print ("["+fg.yellow+" 5 "+fg.white+"] Run queries on specific player")
+    print ("["+fg.yellow+" 6 "+fg.white+"] Rebuild the JSON blobs")
+    print ("["+fg.yellow+"61 "+fg.white+"] Update individual player")
+    print ("["+fg.yellow+"66 "+fg.white+"] Run partial DB refresh")
+    print ("["+fg.yellow+"666"+fg.white+"] Run complete DB refresh")
 
     print (" ")
     print ("[x] Exit")
     
     if feedback.__len__() > 5:
-        print ("%s ***** Previous commands ***** %s" % (Fore.YELLOW, Fore.WHITE))
+        print ("%s ***** Previous commands ***** %s" % (fg.yellow, fg.white))
         for var in feedback[-5:]:
-            print("%s%s%s%s%s" % (Back.GREEN,Fore.BLACK,var,Back.BLACK, Fore.WHITE))
+            print("%s%s%s%s%s" % (bg.green,fg.black,var,bg.black, fg.white))
 
         
     elif feedback.__len__() != 0:
-        print ("%s ***** Previous commands ***** %s" % (Fore.YELLOW, Fore.WHITE))
+        print ("%s ***** Previous commands ***** %s" % (fg.yellow, fg.white))
         for var in feedback:
-            print("%s%s%s%s%s" % (Back.GREEN,Fore.BLACK,var,Back.BLACK, Fore.WHITE))
+            print("%s%s%s%s%s" % (bg.green,fg.black,var,bg.black, fg.white))
 
-    print ("%s ***** Select Option    ***** %s" % (Fore.YELLOW, Fore.WHITE))
+    print ("%s ***** Select Option    ***** %s" % (fg.yellow, fg.white))
     print (preS)
     
 
@@ -87,25 +91,31 @@ def drawMainMenu():
 preS = ""
 inputS = ""
 
-
+t = threading.Thread(target=InputReader.executeKeyboardLoop)
+threads.append(t)
+t.start()    
     
 
- 
-while inputS != "exit⏎" or inputS != "x⏎": 
-    while not KeyboardReader.q.empty():
-        preS = KeyboardReader.convertKey(preS,KeyboardReader.q.get())
-    
-    if preS[-1:] == "⏎":
-        inputS = preS[:-1]
+console.utils.clear(3)
+while inputS != "exit" and inputS != "x": 
+    console.utils.clear(1)
+    inputS = ""
+    while not InputReader.q.empty():
+        inputS = InputReader.q.get()
         feedback.append(inputS)
+        if inputS == "x":
+            True == True 
+    
+
         
     FetchPlayerAndGames.StatusOfFetchPlayer 
     if not FetchPlayerAndGames.StatusOfFetchPlayer.empty():
         CurrentWorkerStatus = FetchPlayerAndGames.StatusOfFetchPlayer.get() #fetch the latest update
         FetchPlayerAndGames.StatusOfFetchPlayer.queue.clear() #purge older updates
     drawMainMenu()
-    #drawMainMenu()
+    
 
+    
     
     
     if inputS == "110":
@@ -115,7 +125,7 @@ while inputS != "exit⏎" or inputS != "x⏎":
     if inputS == "12":
         
         startDate = drawDateMenu()
-        print ("%s ***** End Date         ***** %s" % (Fore.YELLOW, Fore.WHITE))
+        print ("%s ***** End Date         ***** %s" % (fg.yellow, fg.white))
         EndDate = input()
 
         if startDate != "x" and EndDate != "x":
@@ -143,15 +153,9 @@ while inputS != "exit⏎" or inputS != "x⏎":
         feedback.append("Completed full update.")
         import runmeMonthly
         input ("Press any key to continue...")
-    if preS[-1:] == "⏎":
-        preS = ""
-        inputS = ""
-    time.sleep(0.2)
+    time.sleep(2.5)
 
 
 
-for thread in threads:
-    thread.join()
-    thread.stop()
 
 
