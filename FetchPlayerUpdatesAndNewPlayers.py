@@ -1,6 +1,10 @@
+import math 
 import datetime
 import string 
-
+import colorama
+import queue
+import time 
+from colorama import Fore, Back
 from SQLconnector import connectToSource
 from SQLHelper import addPlayer
 from FetchHelper import fetchPlayer_root
@@ -70,8 +74,38 @@ def updateExistingPlayers():
     results = cursor.execute(query).fetchall()
     totalTargetsToUpdate = len(results)
     counter = 0
+    global WorkerStatus
     for result in results:
+        
         counter = counter + 1
+        WorkerStatus = {}
+        WorkerStatus["CurEntry"] = counter
+        WorkerStatus["TotalEntries"] = totalTargetsToUpdate
+        WorkerStatus["CurrentAction"] = "summary of %s%s" % (result[0]," "*20) 
+        WorkerStatus["CurrentAction"] = "[%s%s%s]" % (Fore.GREEN,WorkerStatus["CurrentAction"][0:20], Fore.WHITE)
+        if counter >= 20:
+            delta = ((datetime.datetime.now() - startTime).total_seconds() / counter) 
+            delta = (totalTargetsToUpdate - counter) * delta #seconds remaining
+            seconds = round(delta,0)
+            minutes = 0
+            hours = 0
+
+            if (seconds > 60 ):
+                minutes = math.floor(seconds / 60)
+                seconds = seconds % 60 
+            if (minutes > 60):
+                hours = math.floor(minutes / 60 )
+                minutes = minutes % 60
+            
+            delta = "%ih, %im, %is" % (hours,minutes,seconds)
+            paddingL = math.floor(10 - (len(delta)/2))
+            paddingR = math.ceil(10 - (len(delta)/2))
+            delta = "[%s%s%s%s%s]" % (Fore.GREEN," " * paddingL,delta," " * paddingR,Fore.WHITE)
+            WorkerStatus["ETA"] = delta 
+        else:
+            WorkerStatus["ETA"] = "[    Calculating     ]"
+        StatusOfFetchPlayer.put((WorkerStatus))
+
         ID = result[0].split('-')
         player = fetchPlayer_root('',ID[0],ID[1],ID[2])
 
@@ -86,7 +120,7 @@ def updateExistingPlayers():
         codeName = str(player["centre"][0]["codename"])
 
 
-        print("Summary update for player %s-%s-%s, [%i/%i]" % (ID[0],ID[1],ID[2],counter,totalTargetsToUpdate))
+        #print("Summary update for player %s-%s-%s, [%i/%i]" % (ID[0],ID[1],ID[2],counter,totalTargetsToUpdate))
         addPlayer(result[0],codeName,joined,missions,level)
 
     endTime = datetime.datetime.now()
@@ -102,3 +136,11 @@ def manualTargetSummary(rootID):
 
 
 
+
+StatusOfFetchPlayer = queue.Queue()
+WorkerStatus = {}
+WorkerStatus["CurEntry"] = 0
+WorkerStatus["TotalEntries"] = 1
+WorkerStatus["CurrentAction"] = "[%s        idle        %s]" % (Fore.GREEN, Fore.WHITE)
+WorkerStatus["ETA"] = "[%s      ETC: N/A      %s]" % (Fore.GREEN, Fore.WHITE)
+StatusOfFetchPlayer.put(WorkerStatus)

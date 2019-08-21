@@ -1,3 +1,4 @@
+import math 
 import requests
 import json
 import importlib
@@ -32,19 +33,42 @@ def executeQueryGames(scope ): #Scope should be "full" or "partial"
     queryPlayers(targetIDs,scope)
 
 def queryPlayers (targetIDs,scope):
-    
     updatedPlayers = []
     totalPlayerCount = len(targetIDs)
     counter = 0
     startTime = datetime.datetime.now()
+    global WorkerStatus
     for ID in targetIDs:
+        WorkerStatus = {}
+        if counter >= 20:
+            delta = ((datetime.datetime.now() - startTime).total_seconds() / counter) 
+            delta = (totalPlayerCount - counter) * delta #seconds remaining
+            seconds = round(delta,0)
+            minutes = 0
+            hours = 0
+
+            if (seconds > 60 ):
+                minutes = math.floor(seconds / 60)
+                seconds = seconds % 60 
+            if (minutes > 60):
+                hours = math.floor(minutes / 60 )
+                minutes = minutes % 60
+            
+            delta = "%ih, %im, %is" % (hours,minutes,seconds)
+            paddingL = math.floor(10 - (len(delta)/2))
+            paddingR = math.ceil(10 - (len(delta)/2))
+            delta = "[%s%s%s%s%s]" % (Fore.GREEN," " * paddingL,delta," " * paddingR,Fore.WHITE)
+            WorkerStatus["ETA"] = delta 
+        else:
+            WorkerStatus["ETA"] = "[    Calculating     ]"
+
         counter = counter + 1 
         region = ID.split("-")[0]
         site =  ID.split("-")[1]
         IDPart = ID.split("-")[2]
         
         DBGstring = "Seeking games for %s-%s-%s, [%i / %i] : " % (region,site,IDPart,counter,totalPlayerCount)
-        WorkerStatus = {}
+        
         WorkerStatus["CurEntry"] = counter
         WorkerStatus["TotalEntries"] = totalPlayerCount
         WorkerStatus["CurrentAction"] = "games for %s-%s-%s%s" % (region,site,IDPart," "*20) 
@@ -94,4 +118,6 @@ WorkerStatus = {}
 WorkerStatus["CurEntry"] = 0
 WorkerStatus["TotalEntries"] = 1
 WorkerStatus["CurrentAction"] = "[%s        idle        %s]" % (Fore.GREEN, Fore.WHITE)
+WorkerStatus["ETA"] = "[%s      ETC: N/A      %s]" % (Fore.GREEN, Fore.WHITE)
+
 StatusOfFetchPlayer.put(WorkerStatus)
