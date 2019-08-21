@@ -35,8 +35,19 @@ def fetchAllAchievements (targetIDs):
     for ID in targetIDs:
         playerCounter = playerCounter + 1
         IDpieces = ID.split("-")
+        
         allAchievements = fetchPlayerAcheivement_root('',IDpieces[0],IDpieces[1],IDpieces[2])
+        
+        totalAchievemnts = 0
+        
         if allAchievements.__len__() > 0:
+            if '1' in allAchievements["centre"]:
+                print("DBG: FetchAchievements.fetchAllAchivements: ABNORMAL RESPONSE handled for user %s" % (ID) )
+                print("DBG: FetchAchievements.fetchAllAchivements: Manually check they don't have multiple sites' achievements" )
+                holdingVar = []
+                holdingVar.append( allAchievements["centre"]['1'])
+                allAchievements["centre"] = holdingVar
+                #print (json.dumps(allAchievements["centre"]))
             for centre in allAchievements["centre"]:
                 if centre["name"] == config["SiteNameReal"]:
 
@@ -46,8 +57,9 @@ def fetchAllAchievements (targetIDs):
                     for achievement in centre["achievements"]:
                         addAchievement(achievement["name"],achievement["description"],achievement["image"], config["SiteNameReal"])
                         addPlayerAchievement(achievement["image"],ID,achievement["newAchievement"],achievement["achievedDate"],achievement["progressA"],achievement["progressB"])
-                totalAchievemnts = len(centre["achievements"])
+                    totalAchievemnts = len(centre["achievements"])
             print ("Updated %i achievements for player %s. [%i/%i]" % (totalAchievemnts,ID,playerCounter,totalToUpdate))
+        
     endTime = datetime.datetime.now()
     f = open("Stats.txt","a+")
     f.write("Queried {0} players' achievements, operation completed after {1}. \t\n".format(len(targetIDs),endTime - startTime ))
@@ -56,3 +68,6 @@ def fetchAllAchievements (targetIDs):
 def manualTargetAchievements(targetID):
     fetchAllAchievements([targetID])
 
+
+#manualTargetAchievements ("9-6-106")
+#manualTargetAchievements ("7-2-43548")
