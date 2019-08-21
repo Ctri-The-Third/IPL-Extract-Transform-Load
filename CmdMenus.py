@@ -3,9 +3,7 @@ import time
 import colorama
 import threading
 import queue 
-from console import fg, bg, fx
-import console.utils
-import console.screen as screen
+from console import fg, bg, fx 
 
 from renderProgressBar import renderBar
 from colorama import Fore
@@ -13,7 +11,7 @@ from colorama import Back
 from ConfigHelper import getConfig 
 from ConfigHelper import setActive
 from ConfigHelper import setNewDates
-
+from ctypes import *
 from FetchIndividual import fetchIndividual
 from FetchPlayerAndGames import executeQueryGames
 import FetchPlayerAndGames
@@ -26,22 +24,38 @@ import InputReader
 
 feedback = []
 threads = []
+
+###  https://rosettacode.org/wiki/Terminal_control/Cursor_positioning#Python ###
+class COORD(Structure):
+    pass
+STD_OUTPUT_HANDLE = -11
+COORD._fields_ = [("X", c_short), ("Y", c_short)]
+ 
+def print_at(r, c, s):
+    h = windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
+    windll.kernel32.SetConsoleCursorPosition(h, COORD(c, r))
+ 
+    c = s.encode("windows-1252")
+    windll.kernel32.WriteConsoleA(h, c_char_p(c), len(c), None, None)
+### END  https://rosettacode.org/wiki/Terminal_control/Cursor_positioning#Python ###
+
+
 def drawDateMenu():
     
     config = getConfig()
-    print ("%s ***** LF Profiler      ***** %s" % (fg.yellow, fg.white))
+    print_at (0,0,"%s ***** LF Profiler      ***** %s" % (fg.yellow, fg.white))
 
-    print ("Start Date:          [ %s%s%s ]          |" % ( fg.green,  config["StartDate"], fg.white))
-    print ("End Date:            [ %s%s%s ]          |" % ( fg.green, config["EndDate"],fg.white))
-    print ("Target site:         [ %s%s%s ]|" % (fg.green,config["SiteNameShort"][0:20],fg.white))
-    print ("")
+    print_at (1,0, "Start Date:          [ %s%s%s ]          |" % ( fg.green,  config["StartDate"], fg.white))
+    print_at (2,0,"End Date:            [ %s%s%s ]          |" % ( fg.green, config["EndDate"],fg.white))
+    print_at (3,0,"Target site:         [ %s%s%s ]|" % (fg.green,config["SiteNameShort"][0:20],fg.white))
+    
 
-    print ("%s ***** Start Date       ***** %s" % (fg.yellow, fg.white))
-    print ("%s In the form YYYY-MM-DD       %s" % (fg.yellow, fg.white))
-    print ("%s or 'x' to go back            %s" % (fg.yellow, fg.white))
+    print_at (4,0, "%s ***** Start Date       ***** %s" % (fg.yellow, fg.white))
+    print_at (5,0,"%s In the form YYYY-MM-DD       %s" % (fg.yellow, fg.white))
+    print_at (6,0,"%s or 'x' to go back            %s" % (fg.yellow, fg.white))
     return input()
 def drawMainMenu():
-    time.sleep(0.05)
+    #time.sleep(0.05)
     emptyString = "                           "
     inputS = ""
     
@@ -49,25 +63,25 @@ def drawMainMenu():
     
     
 
-    print ("%s ***** LF Profiler      ***** %s" % (fg.yellow, fg.white))
+    print_at (0,0,"%s ***** LF Profiler      ***** %s" % (fg.yellow, fg.white))
 
     outStr  = "Start Date:          [ %s%s%s ]          | " % ( fg.green,  config["StartDate"], fg.white)
     outStr = outStr + renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),fg.black,bg.green)
     outStr = outStr + "\nEnd Date:            [ %s%s%s ]          | " % ( fg.green, config["EndDate"],fg.white)
     outStr = outStr + CurrentWorkerStatus["CurrentAction"]
     outStr = outStr + "\nTarget site:         [ %s%s%s ]| " % (fg.green,config["SiteNameShort"][0:20],fg.white)
-    print(outStr)
-    print ("")
+    print_at (1,0,outStr)
+    print_at (4,0,"")
 
-    print ("%s ***** Menu             ***** %s" % (fg.yellow, fg.white))
-    print ("["+fg.yellow+"110"+fg.white+"] Select site - Edinburgh")
-    print ("["+fg.yellow+"111"+fg.white+"] Select site - Peterborugh")
-    print ("["+fg.yellow+"12 "+fg.white+"] Select different dates")
-    print ("["+fg.yellow+" 5 "+fg.white+"] Run queries on specific player")
-    print ("["+fg.yellow+" 6 "+fg.white+"] Rebuild the JSON blobs")
-    print ("["+fg.yellow+"61 "+fg.white+"] Update individual player")
-    print ("["+fg.yellow+"66 "+fg.white+"] Run partial DB refresh")
-    print ("["+fg.yellow+"666"+fg.white+"] Run complete DB refresh")
+    print_at (5,0,"%s ***** Menu             ***** %s" % (fg.yellow, fg.white))
+    print_at (6,0,"["+fg.yellow+"110"+fg.white+"] Select site - Edinburgh")
+    print_at (7,0,"["+fg.yellow+"111"+fg.white+"] Select site - Peterborugh")
+    print_at (8,0,"["+fg.yellow+"12 "+fg.white+"] Select different dates")
+    print_at (9,0,"["+fg.yellow+" 5 "+fg.white+"] Run queries on specific player")
+    print_at (10,0,"["+fg.yellow+" 6 "+fg.white+"] Rebuild the JSON blobs")
+    print_at (11,0,"["+fg.yellow+"61 "+fg.white+"] Update individual player")
+    print_at (12,0,"["+fg.yellow+"66 "+fg.white+"] Run partial DB refresh")
+    print_at (13,0,"["+fg.yellow+"666"+fg.white+"] Run complete DB refresh")
 
     print (" ")
     print ("[x] Exit")
@@ -96,9 +110,9 @@ threads.append(t)
 t.start()    
     
 
-console.utils.clear()
+os.system('CLS')
 while inputS != "exit" and inputS != "x": 
-    console.utils.clear()
+    
     inputS = ""
     while not InputReader.q.empty():
         inputS = InputReader.q.get()
@@ -153,7 +167,7 @@ while inputS != "exit" and inputS != "x":
         feedback.append("Completed full update.")
         import runmeMonthly
         input ("Press any key to continue...")
-    time.sleep(2.5)
+    time.sleep(.5)
 
 
 
