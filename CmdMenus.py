@@ -167,6 +167,9 @@ while inputS != "exit" and inputS != "x":
         feedback.append("Completed full update.")
         import runmeMonthly
         input ("Press any key to continue...")
+    elif inputS == "cls":
+        feedback.append("Clearing console")
+        os.system("cls")
     time.sleep(.5)
 
 
