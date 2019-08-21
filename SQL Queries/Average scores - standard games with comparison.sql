@@ -20,7 +20,7 @@ with data as  ( select
   and (--g.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual') or
    g.GameName in ('Continous Ind','Standard 2 Team','Standard 3 Team','Standard 4 Team','Standard Individual','Standard Multi team' ) or 1 = 1 
   )
- -- and g.ArenaName like '%@currentArena%'
+  and g.ArenaName = @currentArena
   GROUP BY p.PlayerID, pl.GamerTag, convert(varchar(7),GameTimestamp,126)
 )
   
@@ -29,6 +29,3 @@ from data d1 left join data d2 on d1.PlayerID = d2.PlayerID and d1.GameMonth != 
 where d1.GameMonth = @curMonth	
 order by averageScore desc
 ;
-
-select * from games g join Participation p on g.GameUUID = p.GameUUID
-where p.PlayerID = '7-2-32023'

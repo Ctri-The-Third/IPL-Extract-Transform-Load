@@ -23,7 +23,6 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	set @targetArena = ?;
 
 
-
 		with PlayersInGame as (
 		SELECT 
 		Count (Players.GamerTag) as playersInGame, 
@@ -51,6 +50,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 		join Games on Games.GameUUID = Participation.GameUUID
 		where GameTimestamp >= @startDate
 		and GameTimeStamp < @endDate
+		and ArenaName = @targetArena
 		group by Participation.PlayerID
 	),
 	Ranks as 
@@ -62,6 +62,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 		join Players on Participation.PlayerID = Players.PlayerID
 		where GameTimestamp >= @startDate
 		and GameTimeStamp < @endDate
+		and ArenaName = @targetArena
 	),
 	AverageRanks as 
 	( select PlayerID, AVG(CONVERT(float,gamePosition)) as AverageRank from Ranks

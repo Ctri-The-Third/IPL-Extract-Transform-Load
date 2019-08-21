@@ -18,6 +18,7 @@ def executeMonthlyScoresBuild():
   set @lastMonth = ?
   set @arenaName = ?;
 
+	
   with data as  ( select 
 	p.PlayerID, 
 	GamerTag, 
@@ -29,8 +30,8 @@ def executeMonthlyScoresBuild():
   inner join Players pl on p.PlayerID = pl.PlayerID
   inner join Games g on p.GameUUID = g.GameUUID
   where convert(varchar(7),GameTimestamp,126) in (@curMonth,@lastMonth)
-  and (--g.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual') or
-   g.GameName in ('Continous Ind','Standard 2 Team','Standard 3 Team','Standard 4 Team','Standard Individual','Standard Multi team' ) or 1 = 1 
+  and (g.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual') or
+   g.GameName in ('Continous Ind','Standard 2 Team','Standard 3 Team','Standard 4 Team','Standard Individual','Standard Multi team' )
   )
   and g.ArenaName = @arenaName
   GROUP BY p.PlayerID, pl.GamerTag, convert(varchar(7),GameTimestamp,126)
@@ -39,10 +40,7 @@ def executeMonthlyScoresBuild():
 select d1.PlayerID, d1.GamerTag, d1.averageScore,d1.gamesPlayed, d1.averageScore -d2.averageScore as changeInScore 
 from data d1 left join data d2 on d1.PlayerID = d2.PlayerID and d1.GameMonth != d2.GameMonth
 where d1.GameMonth = @curMonth	
-order by averageScore desc
-;
-
-
+order by averageScore desc;
   '''
   conn = connectToSource()
   cursor = conn.cursor()
