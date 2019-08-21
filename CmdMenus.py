@@ -96,7 +96,7 @@ threads.append(t)
 t.start()    
     
 
-console.utils.clear(3)
+console.utils.clear()
 while inputS != "exit" and inputS != "x": 
     console.utils.clear(1)
     inputS = ""
