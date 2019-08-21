@@ -98,7 +98,7 @@ t.start()
 
 console.utils.clear()
 while inputS != "exit" and inputS != "x": 
-    console.utils.clear(1)
+    console.utils.clear()
     inputS = ""
     while not InputReader.q.empty():
         inputS = InputReader.q.get()
