@@ -235,5 +235,7 @@ def executeBuildPlayerBlobs():
 	f = open("JSONBlobs\\playerBlob.json", "w+")
 	f.write(json.dumps(JSONobject))
 	f.close()
-
+	f = open("JSONBlobs\\%splayerBlob.json" % (config["ID Prefix"]), "w+")
+	f.write(json.dumps(JSONobject))
+	f.close()
 #executeBuildPlayerBlobs()
