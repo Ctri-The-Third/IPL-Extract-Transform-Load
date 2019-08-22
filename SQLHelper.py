@@ -3,8 +3,8 @@ import uuid
 import csv 
 
 from SQLconnector import connectToSource
-
-
+import ConfigHelper
+config = ConfigHelper.getConfig()
 
 def getInterestingPlayersRoster(includeChurned,startDate,period):
 
@@ -13,7 +13,7 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
     if includeChurned == True:
         query = """
         with data as (
-        select top 1700  * from InterestingPlayers
+        select  * from InterestingPlayers
         order by Level desc, Missions desc, SeenIn60Days Asc
         )
         select * from InterestingPlayers where PlayerID not in (select playerID from data)
@@ -23,15 +23,25 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
         query = """
     declare @startDate as date
     declare @period as int
+	declare @targetArena as varchar(50)
     set @startDate = ?
     set @period = ?
+	set @targetArena = ?;
 
-    select  * from InterestingPlayers
+	with MostRecentPerArena as 
+	
+	(select max(g.GameTimestamp) as mostRecent, p.playerID, missions, level
+	from Games g join Participation p on g.GameUUID = p.GameUUID 
+	join players pl on p.PlayerID = pl.playerID 
+	where ArenaName = @targetArena
+	group by p.PlayerID,Missions,level)
+
+    select  Missions, Level, PlayerID, MostRecent from MostRecentPerArena
     where mostRecent > DATEADD(day, -@period, @startDate)
-    order by Level desc, Missions desc, SeenIn60Days Asc
+    order by Level desc, Missions desc, mostRecent Asc
         """
-
-        cursor.execute(query,(startDate,period))
+        global config
+        cursor.execute(query,(startDate,period,config["SiteNameReal"]))
     results = cursor.fetchall()
     playerList = []
     for result in results:
