@@ -61,7 +61,7 @@ select ROW_NUMBER() over (partition by month order by month desc, avgSQ desc) SQ
  select *, ROW_NUMBER() over (partition by GameMonth order by averageScore desc) as stdRank from StdData0
  )
  
-select *
+select top (5) month,SQrank,avgSQ,games,stdRank,averageScore,gamesPlayed
 from starData2 sq
 join StdData1 sd on sq.PlayerID = sd.PlayerID and sq.month = sd.GameMonth
 where sq.PlayerID = @targetID 

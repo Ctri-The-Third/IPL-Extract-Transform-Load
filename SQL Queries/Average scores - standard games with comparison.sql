@@ -17,8 +17,8 @@ with data as  ( select
   inner join Players pl on p.PlayerID = pl.PlayerID
   inner join Games g on p.GameUUID = g.GameUUID
   where convert(varchar(7),GameTimestamp,126) in (@curMonth,@lastMonth)
-  and (--g.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual') or
-   g.GameName in ('Continous Ind','Standard 2 Team','Standard 3 Team','Standard 4 Team','Standard Individual','Standard Multi team' ) or 1 = 1 
+  and (g.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual') or
+   g.GameName in ('Continous Ind','Standard 2 Team','Standard 3 Team','Standard 4 Team','Standard Individual','Standard Multi team' )
   )
   and g.ArenaName = @currentArena
   GROUP BY p.PlayerID, pl.GamerTag, convert(varchar(7),GameTimestamp,126)

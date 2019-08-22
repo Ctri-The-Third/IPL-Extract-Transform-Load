@@ -12,17 +12,18 @@ from ConfigHelper import getConfig
 from ConfigHelper import setActive
 from ConfigHelper import setNewDates
 from ctypes import *
-from FetchIndividual import fetchIndividual
+
 from FetchPlayerAndGames import executeQueryGames
 from FetchPlayerUpdatesAndNewPlayers import updateExistingPlayers
 import FetchPlayerAndGames
 import FetchPlayerUpdatesAndNewPlayers
-
+import FetchIndividual  
 import InputReader
-
-
+import feedbackQueue # shared module that contains a queue for giving output to the UI
+ 
 # This application class serves as a wrapper for the initialization of curses
 # and also manages the actual forms of the application
+
 
 feedback = []
 threads = []
@@ -41,31 +42,10 @@ def print_at(r, c, s):
     windll.kernel32.WriteConsoleA(h, c_char_p(c), len(c), None, None)
 ### END  https://rosettacode.org/wiki/Terminal_control/Cursor_positioning#Python ###
 
-
-def drawDateMenu():
-    os.system('CLS')
-    config = getConfig()
-    print_at (0,0,"%s/***** LF Profiler **************************************************\ %s" % (fg.yellow, fg.white))
-
-    print_at (1,0, "Start Date:          [ %s%s%s ]          |" % ( fg.green,  config["StartDate"], fg.white))
-    print_at (2,0,"End Date:            [ %s%s%s ]          |" % ( fg.green, config["EndDate"],fg.white))
-    print_at (3,0,"Target site:         [ %s%s%s ]|" % (fg.green,config["SiteNameShort"][0:20],fg.white))
-    
-
-    print_at (4,0, "%s/***** Start Date ***************************************************\%s" % (fg.yellow, fg.white))
-    print_at (5,0,"%s In the form YYYY-MM-DD       %s" % (fg.yellow, fg.white))
-    print_at (6,0,"%s or 'x' to go back            %s" % (fg.yellow, fg.white))
-    print_at (7,0,"")
-    return input("Enter Start Date: ")
-def drawMainMenu():
-    #time.sleep(0.05)
-    emptyString = "                           "
-    inputS = ""
-    
-    config = getConfig()
+def drawHeader():
 
     print_at (0,0,"%s/***** LF Profiler **************************************************\ %s" % (fg.yellow, fg.white))
-
+    config = getConfig()
     outStr  = "Start Date:           [ %s%s%s ]          | " % ( fg.green,  config["StartDate"], fg.white)
     outStr = outStr + renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),fg.black,bg.green)
     outStr = outStr + "\nEnd Date:             [ %s%s%s ]          | " % ( fg.green, config["EndDate"],fg.white)
@@ -74,6 +54,25 @@ def drawMainMenu():
     outStr = outStr + "%s" % (CurrentWorkerStatus["ETA"]) 
     print_at (1,0,outStr)
     print_at (4,0,"")
+
+def drawDateMenu():
+    os.system('CLS')
+    config = getConfig()
+    drawHeader()
+
+    print_at (5,0, "%s/***** Start Date ***************************************************\%s" % (fg.yellow, fg.white))
+    print_at (6,0,"%s In the form YYYY-MM-DD       %s" % (fg.yellow, fg.white))
+    print_at (7,0,"%s or 'x' to go back            %s" % (fg.yellow, fg.white))
+    print_at (8,0,"")
+    return input("Enter Start Date: ")
+def drawMainMenu():
+    #time.sleep(0.05)
+    emptyString = "                           "
+    inputS = ""
+    
+    config = getConfig()
+
+    drawHeader()
 
     print_at (5,0,"%s/***** Menu *********************************************************\ %s" % (fg.yellow, fg.white))
     print_at (6,0,"["+fg.yellow+"110"+fg.white+"] Select site - Edinburgh")
@@ -106,6 +105,17 @@ def drawMainMenu():
     print ("%s/***** Select Option ************************************************\%s" % (fg.yellow, fg.white))
     print (preS)
     
+def drawOutputPane():
+    counter = 0
+    print_at (5,0,"%s/***** Output ******************************************************\%s" % (fg.yellow, fg.white))
+    for var in feedback[-15:]:
+        var = var + " " * 70 
+        var = var[0:70] 
+        counter = counter + 1
+        print_at(5+counter,0,("%s%s%s%s%s" % (bg.green,fg.black,var,bg.black, fg.white)))
+    if len(feedback) < 15:
+        for i in range(15 - len(feedback)):
+            print_at(5+counter+i+1,0," " * 70)
 
 
 preS = ""
@@ -117,15 +127,16 @@ t.start()
     
 
 os.system('CLS')
+waitingFunction = ""
 while inputS != "exit" and inputS != "x": 
     
     inputS = ""
+    while not feedbackQueue.q.empty():
+        feedback.append(feedbackQueue.q.get())
     while not InputReader.q.empty():
         inputS = InputReader.q.get()
         feedback.append(inputS)
-        if inputS == "x":
-            True == True 
-    
+
 
         
     
@@ -138,52 +149,78 @@ while inputS != "exit" and inputS != "x":
 
     #print(CurrentWorkerStatus)
     #currently prioritise minor update over major update
-    drawMainMenu()
+    
     
 
-    
-    
-    
-    if inputS == "110":
-        feedback.append(setActive(0))
-    if inputS == "111":
-        feedback.append(setActive(1))
-    if inputS == "12":
-        startDate = drawDateMenu()
-        print ("%s ***** End Date         ***** %s" % (fg.yellow, fg.white))
-        EndDate = input()
-
-        if startDate != "x" and EndDate != "x":
-            feedback.append(setNewDates(startDate,EndDate))
-    elif inputS == "5":
-        feedback.append("not yet implemented")
-    elif inputS == "6":
-        import runmeWhenever
-        feedback.append("Blobs written")
-        input ("Press any key to continue...")
-        os.system('CLS')
-
-    elif inputS == "61":
-        input() #clear the input
-        fetchIndividual()
+    if waitingFunction == "61" and inputS != '':
         
-        input ("Press any key to continue...")
-        os.system('CLS')
-    elif inputS == "66":
-        feedback.append("Performing partial update in background...")
-        t = threading.Thread(target=executeQueryGames, args=("partial",))
-        threads.append(t)
-        t.start()      
-        inputS = ""
-    elif inputS == "666":
-        feedback.append("Performing complete update in background...")
-        t = threading.Thread(target=updateExistingPlayers)
-        threads.append(t)
-        t.start()
-        inputS = ""
-    elif inputS == "cls":
-        feedback.append("Clearing console")
-        os.system("cls")
+        drawHeader()
+        drawOutputPane()
+        FetchIndividual.fetchIndividualWithID(inputS)
+        feedbackQueue.q.put("Enter A to continue...")
+        waitingFunction = "outputPane"
+        
+    elif waitingFunction == "5" and inputS != '':
+        
+        drawHeader()
+        drawOutputPane()
+        FetchIndividual.fetchIndividualWithID(inputS)
+        feedbackQueue.q.put("Enter A to continue...")
+        waitingFunction = "outputPane"
+        
+    elif waitingFunction == "outputPane":
+        if inputS == 'a':
+            waitingFunction = ""
+            os.system("cls") #TODO replace this by having the Menu be drawn better.        
+        else: 
+            drawHeader()
+            drawOutputPane()
+
+    elif waitingFunction == "": #The user is in the root menu
+        drawMainMenu()
+        if inputS == "110":
+            feedback.append(setActive(0))
+        if inputS == "111":
+            feedback.append(setActive(1))
+        if inputS == "12":
+            startDate = drawDateMenu()
+            print ("%s ***** End Date         ***** %s" % (fg.yellow, fg.white))
+            EndDate = input()
+
+            if startDate != "x" and EndDate != "x":
+                feedback.append(setNewDates(startDate,EndDate))
+        elif inputS == "5":
+            feedback.append("not yet implemented")
+            waitingFunction = "5"
+        elif inputS == "6":
+            import runmeWhenever
+            feedback.append("Blobs written")
+            
+            
+
+        elif inputS == "61":
+            
+            waitingFunction = "61"
+            feedback.append("Enter User ID or GamerTag to search")
+        elif inputS == "66":
+            feedback.append("Performing partial update in background...")
+            t = threading.Thread(target=executeQueryGames, args=("partial",))
+            threads.append(t)
+            t.start()      
+            inputS = ""
+        elif inputS == "666":
+            feedback.append("Performing complete update in background...")
+            t = threading.Thread(target=updateExistingPlayers)
+            threads.append(t)
+            t.start()
+            inputS = ""
+        elif inputS == "cls":
+            feedback.append("Clearing console")
+            os.system("cls")
+            waitingFunction = ""
+    else: 
+        drawHeader()
+        drawOutputPane()
     time.sleep(.5)
 
 
