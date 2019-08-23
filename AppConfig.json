@@ -16,6 +16,16 @@
       "SiteNameReal": "Laserforce Peterborough",
       "SiteNameShort": "Laserforce Peterborough",
       "ID Prefix": "7-2-"
+    },
+    {
+      "SiteNameReal": "LaserZone, Bradford, UK",
+      "SiteNameShort": "LaserZone Bradford",
+      "ID Prefix": "7-10-"
+    },
+    {
+      "SiteNameReal": "LaserZone, Huddersfield, UK",
+      "SiteNameShort": "LaserZone Huddersfield",
+      "ID Prefix": "7-8-"
     }
   ]
 }
