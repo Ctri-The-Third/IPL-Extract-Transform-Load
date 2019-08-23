@@ -55,8 +55,8 @@ def fetchAllAchievements (targetIDs):
                     addPlayerAchievementScore(ID,centre["score"])
                     #print (allAchievements)
                     for achievement in centre["achievements"]:
-                        addAchievement(achievement["name"],achievement["description"],achievement["image"], config["SiteNameReal"])
-                        addPlayerAchievement(achievement["image"],ID,achievement["newAchievement"],achievement["achievedDate"],achievement["progressA"],achievement["progressB"])
+                        uuid = addAchievement(achievement["name"],achievement["description"],achievement["image"], config["SiteNameReal"])
+                        addPlayerAchievement(uuid,ID,achievement["newAchievement"],achievement["achievedDate"],achievement["progressA"],achievement["progressB"])
                     totalAchievemnts = len(centre["achievements"])
             print ("Updated %i achievements for player %s. [%i/%i]" % (totalAchievemnts,ID,playerCounter,totalToUpdate))
         

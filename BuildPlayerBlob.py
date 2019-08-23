@@ -143,21 +143,20 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	goldenAchievementQuery = """DECLARE @TargetID as Varchar(10)
 	SET @TargetID = ? ;
 
-
 	with firstEarned as (
-	select distinct min (achievedDate) over (partition by Image) as firstAchieved, Image
+	select distinct min (achievedDate) over (partition by AchID) as firstAchieved, AchID
 	from PlayerAchievement
 	where achievedDate is not null
 
 	),
-	data as ( select count(*) playersEarned,  pa.image, achName from PlayerAchievement pa join AllAchievements aa on pa.Image = aa.image
+	data as ( select count(*) playersEarned,  pa.AchID, achName from PlayerAchievement pa join AllAchievements aa on pa.AchID = aa.AchID
 	where achievedDate is not null
-	group by AchName, pa.Image) 
+	group by AchName, pa.AchID) 
 
 	select top(10) PlayerID, data.AchName, Description, fe.firstAchieved, playersEarned from PlayerAchievement pa 
-	join data on data.Image = pa.Image
-	join firstEarned fe on fe.Image = data.Image
-	join AllAchievements aa on pa.Image = aa.image
+	join data on data.AchID = pa.AchID
+	join firstEarned fe on fe.AchID = data.AchID
+	join AllAchievements aa on pa.AchID = aa.AchID
 	where PlayerID = @TargetID
 	order by playersEarned asc, firstAchieved asc
 	"""

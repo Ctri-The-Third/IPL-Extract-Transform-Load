@@ -27,7 +27,7 @@ import feedbackQueue # shared module that contains a queue for giving output to 
 
 feedback = []
 threads = []
-
+config = getConfig()
 ###  https://rosettacode.org/wiki/Terminal_control/Cursor_positioning#Python ###
 class COORD(Structure):
     pass
@@ -75,14 +75,13 @@ def drawMainMenu():
     drawHeader()
 
     print_at (5,0,"%s/***** Menu *********************************************************\ %s" % (fg.yellow, fg.white))
-    print_at (6,0,"["+fg.yellow+"110"+fg.white+"] Select site - Edinburgh")
-    print_at (7,0,"["+fg.yellow+"111"+fg.white+"] Select site - Peterborugh")
-    print_at (8,0,"["+fg.yellow+"12 "+fg.white+"] Select different dates")
-    print_at (9,0,"["+fg.yellow+" 5 "+fg.white+"] Run queries on specific player")
-    print_at (10,0,"["+fg.yellow+" 6 "+fg.white+"] Rebuild the JSON blobs")
-    print_at (11,0,"["+fg.yellow+"61 "+fg.white+"] Update individual player")
-    print_at (12,0,"["+fg.yellow+"66 "+fg.white+"] Run partial DB refresh for active site")
-    print_at (13,0,"["+fg.yellow+"666"+fg.white+"] Run complete DB refresh for all players")
+    print_at (6,0,"["+fg.yellow+"11 "+fg.white+"] Select different site")
+    print_at (7,0,"["+fg.yellow+"12 "+fg.white+"] Select different dates")
+    print_at (8,0,"["+fg.yellow+" 5 "+fg.white+"] Run queries on specific player")
+    print_at (9,0,"["+fg.yellow+" 6 "+fg.white+"] Rebuild the JSON blobs")
+    print_at (10,0,"["+fg.yellow+"61 "+fg.white+"] Update individual player")
+    print_at (11,0,"["+fg.yellow+"66 "+fg.white+"] Run partial DB refresh for active site")
+    print_at (12,0,"["+fg.yellow+"666"+fg.white+"] Run complete DB refresh for all players")
 
     print (" ")
     print ("[x] Exit")
@@ -104,7 +103,18 @@ def drawMainMenu():
 
     print ("%s/***** Select Option ************************************************\%s" % (fg.yellow, fg.white))
     print (preS)
+def drawArenaMenu():
+    global config
+    counter = 5
+    print_at (5,0,"%s/***** Pick arena ***************************************************\ %s" % (fg.yellow, fg.white))
+    for arena in config["configs"]:
+        counter = counter + 1 
+        print_at (counter,0,"[%s%i%s] %s" % (Fore.YELLOW,counter -5 ,Fore.WHITE,arena["SiteNameShort"]))
+    counter = counter + 1
+    print_at (counter,0,"[%sB%s] Return to main menu" % (Fore.YELLOW, Fore.WHITE))
     
+
+
 def drawOutputPane():
     counter = 0
     print_at (5,0,"%s/***** Output ******************************************************\%s" % (fg.yellow, fg.white))
@@ -150,9 +160,21 @@ while inputS != "exit" and inputS != "x":
     #print(CurrentWorkerStatus)
     #currently prioritise minor update over major update
     
-    
+    if waitingFunction == "11":
+        
+        drawHeader()
+        drawArenaMenu()
+        print("\nEnter option...")
+        if inputS != "":
+            if inputS == "b":
+                waitingFunction = ""
+                
+            else:
+                setActive(int(inputS)-1)
+                waitingFunction = ""
+                
 
-    if waitingFunction == "61" and inputS != '':
+    elif waitingFunction == "61" and inputS != '':
         
         drawHeader()
         drawOutputPane()
@@ -167,7 +189,6 @@ while inputS != "exit" and inputS != "x":
         FetchIndividual.fetchIndividualWithID(inputS)
         feedbackQueue.q.put("Enter A to continue...")
         waitingFunction = "outputPane"
-        
     elif waitingFunction == "outputPane":
         if inputS == 'a':
             waitingFunction = ""
@@ -178,16 +199,15 @@ while inputS != "exit" and inputS != "x":
 
     elif waitingFunction == "": #The user is in the root menu
         drawMainMenu()
-        if inputS == "110":
-            feedback.append(setActive(0))
-        if inputS == "111":
-            feedback.append(setActive(1))
-        if inputS == "12":
+        if inputS == "11":
+            waitingFunction = "11"
+            os.system("cls")
+        if inputS == "12": #needs reworking
             startDate = drawDateMenu()
             print ("%s ***** End Date         ***** %s" % (fg.yellow, fg.white))
-            EndDate = input()
+            #EndDate = input()
 
-            if startDate != "x" and EndDate != "x":
+            if startDate != "B" and EndDate != "xB":
                 feedback.append(setNewDates(startDate,EndDate))
         elif inputS == "5":
             feedback.append("not yet implemented")

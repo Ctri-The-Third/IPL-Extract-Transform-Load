@@ -1,13 +1,13 @@
 USE [master]
 GO
 
-/****** Object:  Database [LaserScraper]    Script Date: 16-Aug-19 9:59:48 ******/
+/****** Object:  Database [LaserScraper]    Script Date: 08/23/2019 3:01:07 PM ******/
 CREATE DATABASE [LaserScraper]
  CONTAINMENT = NONE
  ON  PRIMARY 
-( NAME = N'LaserScraper', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL14.SQLEXPRESS\MSSQL\DATA\LaserScraper.mdf' , SIZE = 73728KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+( NAME = N'LaserScraper', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL14.SQLEXPRESS\MSSQL\DATA\LaserScraper2.mdf' , SIZE = 73728KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
  LOG ON 
-( NAME = N'LaserScraper_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL14.SQLEXPRESS\MSSQL\DATA\LaserScraper_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+( NAME = N'LaserScraper_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL14.SQLEXPRESS\MSSQL\DATA\LaserScraper2_0.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
 GO
 
 IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))

@@ -179,41 +179,47 @@ def addAchievement(achName, Description, image, arenaName):
     query = """
     SELECT *
     FROM AllAchievements
-    where image = ? 
+    where arenaName = ? 
     and achName = ?
     """
-    results = cursor.execute(query,(image,achName))
+    results = cursor.execute(query,(arenaName,achName))
     result = results.fetchone()
 
     if result == None:
         #print("SQLHelper.addAchievement: Didn't find [{0}], adding it".format(achName))
+        AchID = uuid.uuid4()
         query = """
         INSERT into AllAchievements
-         (AchName, image, Description, ArenaName)
-        VALUES (?,?,?,?)
+         (AchID, AchName, image, Description, ArenaName)
+        VALUES (?,?,?,?,?)
         
         """
-        cursor.execute(query,(achName,image,Description,arenaName))
+        cursor.execute(query,(AchID,achName,image,Description,arenaName))
         #print ("SQLHelper.addAchievement: Added it!")
         conn.commit()
         conn.close()
+        return AchID
+    else:
+        
+        return result[4]
+
 
     #else:
         #print ("SQLHelper.addAchievement: found [{0}], no changes to it".format(achName))
 
     #print(result)
 
-def addPlayerAchievement(image,playerID,newAchievement,achievedDate,progressA,progressB):
+def addPlayerAchievement(AchID,playerID,newAchievement,achievedDate,progressA,progressB):
 #do something
     conn =  connectToSource()
     cursor = conn.cursor()
     query = """
     SELECT *
     FROM PlayerAchievement
-    where image = ? 
+    where AchID = ? 
     and playerID = ?
     """
-    results = cursor.execute(query,(image,playerID))
+    results = cursor.execute(query,(AchID,playerID))
     result = results.fetchone()
     if achievedDate == "0000-00-00" :
         achievedDate = None
@@ -222,12 +228,12 @@ def addPlayerAchievement(image,playerID,newAchievement,achievedDate,progressA,pr
         
         query = """
         insert into PlayerAchievement
-        (Image,PlayerID,newAchievement,achievedDate,progressA,progressB)
-        VALUES ( ?, ?, ?, ?, ?, ?)
+        (AchID,PlayerID,newAchievement,achievedDate,progressA,progressB)
+        VALUES (?, ?, ?, ?, ?, ?)
         
 
         """
-        results = cursor.execute(query,(image,playerID,newAchievement,achievedDate,progressA,progressB))
+        results = cursor.execute(query,(AchID,playerID,newAchievement,achievedDate,progressA,progressB))
     else:
         
         #print("SQLHelper.addPlayerAchievement: found achievement progress, updating it")
@@ -238,11 +244,11 @@ def addPlayerAchievement(image,playerID,newAchievement,achievedDate,progressA,pr
         progressA = ?,
         progressB = ?
 
-        WHERE Image = ? 
+        WHERE AchID = ? 
         AND PlayerID = ?
 
         """
-        results = cursor.execute(query,(newAchievement,achievedDate,progressA,progressB,image,playerID))
+        results = cursor.execute(query,(newAchievement,achievedDate,progressA,progressB,AchID,playerID))
         #print(image)
     conn.commit()
     conn.close()
@@ -436,6 +442,6 @@ def importPlayersFromCSV(path):
         cursor.execute(sql,(row[0],row[1],row[2],row[3],row[4]))
     conn.commit()
     conn.close()
-importPlayersFromCSV('C:\\Users\\ctri.goudie\\Documents\\Hudds.csv')
+
 
 
