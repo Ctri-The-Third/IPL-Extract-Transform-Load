@@ -424,3 +424,18 @@ def dumpParticipantsAndGamesToCSV():
     print("Dumped %i rows to CSV dump - Games.csv" % (count))
 
 
+def importPlayersFromCSV(path):
+    conn=connectToSource()
+    cursor = conn.cursor()
+    file = open (path,"r")
+    readCSV = csv.reader(file, delimiter=',')
+    sql = '''insert into Players (PlayerID,GamerTag,Joined,Missions,Level)
+	    values(?,?,?,?,?)'''
+    for row in readCSV:
+        print(row)
+        cursor.execute(sql,(row[0],row[1],row[2],row[3],row[4]))
+    conn.commit()
+    conn.close()
+importPlayersFromCSV('C:\\Users\\ctri.goudie\\Documents\\Hudds.csv')
+
+
