@@ -81,7 +81,9 @@ def drawMainMenu():
     print_at (9,0,"["+fg.yellow+" 6 "+fg.white+"] Rebuild the JSON blobs")
     print_at (10,0,"["+fg.yellow+"61 "+fg.white+"] Update individual player")
     print_at (11,0,"["+fg.yellow+"66 "+fg.white+"] Run partial DB refresh for active site")
+    print_at (11,0,"["+fg.yellow+"67 "+fg.white+"] Run Achievement refresh for recent players")
     print_at (12,0,"["+fg.yellow+"666"+fg.white+"] Run complete DB refresh for all players")
+    print_at (12,0,"["+fg.yellow+"667"+fg.white+"] Find new players for active site")
 
     print (" ")
     print ("[x] Exit")

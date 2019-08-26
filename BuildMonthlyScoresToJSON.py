@@ -65,7 +65,7 @@ order by averageScore desc;
 
   f = open("JSONBlobs\\MonthlyScoreLatest.json", "w+")
   f.write(json.dumps(JSON,indent=4))
-  f = open("JSONBlobs\\MonthlyScore{0}to{1}.json".format(startDate,endDate), "w+")
+  f = open("JSONBlobs\\%sMonthlyScore.json" % (config["SiteNameReal"]), "w+")
   f.write(json.dumps(JSON,indent=4))
   print ("Monthly average score blobs written!")
 
