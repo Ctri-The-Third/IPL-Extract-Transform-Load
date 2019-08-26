@@ -49,7 +49,7 @@ def fetchAllAchievements (targetIDs):
                 allAchievements["centre"] = holdingVar
                 #print (json.dumps(allAchievements["centre"]))
             for centre in allAchievements["centre"]:
-                if centre["name"] == config["SiteNameReal"]:
+                if centre["name"] == config["SiteNameReal"]: #Since we have to do small updates of every arena anyway, it's only when we have recent crossplaying that we have to worry about pinging IPL multiple times per user.
 
 
                     addPlayerAchievementScore(ID,centre["score"])

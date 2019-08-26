@@ -82,8 +82,11 @@ def drawMainMenu():
     print_at (9,0,"["+fg.yellow+" 6 "+fg.white+"] Rebuild the JSON blobs")
     print_at (10,0,"["+fg.yellow+"61 "+fg.white+"] Update individual player")
     print_at (11,0,"["+fg.yellow+"66 "+fg.white+"] Run DB game search for active players at site")
-    print_at (11,0,"["+fg.yellow+"661"+fg.white+"] Run DB game search for inactivate players")
-    print_at (12,0,"["+fg.yellow+"666"+fg.white+"] Run DB summary refresh for all players")
+    print_at (12,0,"["+fg.yellow+"67 "+fg.white+"] Run Achievement refresh for recent players")
+    print_at (13,0,"["+fg.yellow+"661"+fg.white+"] Run DB game search for inactivate players")
+    print_at (14,0,"["+fg.yellow+"666"+fg.white+"] Run DB summary refresh for all players")
+    print_at (15,0,"["+fg.yellow+"667"+fg.white+"] Find new players for active site")
+
 
     print (" ")
     print ("[x] Exit")
@@ -122,7 +125,7 @@ def drawOutputPane():
     print_at (5,0,"%s/***** Output ******************************************************\%s" % (fg.yellow, fg.white))
     for var in feedback[-15:]:
         var = var + " " * 70 
-        var = var[0:70] 
+        var = var[0:100] 
         counter = counter + 1
         print_at(5+counter,0,("%s%s%s%s%s" % (bg.green,fg.black,var,bg.black, fg.white)))
     if len(feedback) < 15:
