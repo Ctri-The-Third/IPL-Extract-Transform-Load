@@ -69,8 +69,8 @@ def updateExistingPlayers():
     cursor = conn.cursor()
 
     query = """select PlayerID, Missions, Level from Players
-            order by Level desc, Missions desc"""
-            #offset 1500 rows"""
+            order by Level desc, Missions desc
+            offset 6438 rows"""
     results = cursor.execute(query).fetchall()
     totalTargetsToUpdate = len(results)
     counter = 0
