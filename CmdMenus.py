@@ -38,7 +38,7 @@ COORD._fields_ = [("X", c_short), ("Y", c_short)]
 def print_at(r, c, s):
     h = windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
     windll.kernel32.SetConsoleCursorPosition(h, COORD(c, r))
- 
+    s = s + " "*30
     c = s.encode("windows-1252")
     windll.kernel32.WriteConsoleA(h, c_char_p(c), len(c), None, None)
 ### END  https://rosettacode.org/wiki/Terminal_control/Cursor_positioning#Python ###
@@ -81,15 +81,17 @@ def drawMainMenu():
     print_at (8,0,"["+fg.yellow+" 5 "+fg.white+"] Run queries on specific player")
     print_at (9,0,"["+fg.yellow+" 6 "+fg.white+"] Rebuild the JSON blobs")
     print_at (10,0,"["+fg.yellow+"61 "+fg.white+"] Update individual player")
-    print_at (11,0,"["+fg.yellow+"66 "+fg.white+"] Run DB game search for active players at site")
-    print_at (12,0,"["+fg.yellow+"67 "+fg.white+"] Run Achievement refresh for recent players")
-    print_at (13,0,"["+fg.yellow+"661"+fg.white+"] Run DB game search for inactivate players")
-    print_at (14,0,"["+fg.yellow+"666"+fg.white+"] Run DB summary refresh for all players")
-    print_at (15,0,"["+fg.yellow+"667"+fg.white+"] Find new players for active site")
-
-
-    print (" ")
-    print ("[x] Exit")
+    print_at (11,0,"["+fg.yellow+"66 "+fg.white+"] Run DB game search for %sactive%s players at %ssite%s" % (Fore.GREEN,Fore.WHITE,Fore.GREEN, Fore.WHITE))
+    print_at (12,0,"["+fg.yellow+"67 "+fg.white+"] Run Achievement refresh for %sall%s %srecent%s players" % (Fore.RED, Fore.WHITE,Fore.GREEN, Fore.WHITE))
+    print_at (13,0,"["+fg.yellow+"661"+fg.white+"] Run DB game search for %sall inactivate%s players" % (Fore.RED, Fore.WHITE))
+    print_at (14,0,"["+fg.yellow+"666"+fg.white+"] Run DB summary refresh for %sall%s players"% (Fore.RED, Fore.WHITE))
+    print_at (15,0,"["+fg.yellow+"667"+fg.white+"] Find %snew%s players for active %ssite%s"% (Fore.RED, Fore.WHITE, Fore.GREEN,Fore.WHITE))
+    
+    print_at (16,0,"" )
+    print_at (17,0,"[?] Help " )
+    print_at (18,0,"[x] Exit")
+    print_at (19,0, "%s/***** Select Option ************************************************\%s" % (fg.yellow, fg.white))
+    print("")
     
     if feedback.__len__() > 5:
         print ("%s/***** Previous commands *********************************************\%s" % (fg.yellow, fg.white))
@@ -106,8 +108,8 @@ def drawMainMenu():
             var = var[0:70] 
             print("%s%s%s%s%s" % (bg.green,fg.black,var,bg.black, fg.white))
 
-    print ("%s/***** Select Option ************************************************\%s" % (fg.yellow, fg.white))
-    print (preS)
+    
+    #print (preS)
 def drawArenaMenu():
     global config
     counter = 5
