@@ -24,18 +24,21 @@ ordinal = ['0th','%s%s1st%s%s' % (Fore.BLACK,Back.YELLOW,Fore.YELLOW,Back.BLACK)
 
 
 def placesVisited (targetID):
-    sql = '''DECLARE @targetID  as varchar (20) 
-set @targetID = ?;
-select ArenaName, convert(varchar(50),min(gameTimestamp),23) as firstVisited, convert(varchar(50),max(gameTimestamp),23) as mostRecentVisit from Participation p join games g on p.GameUUID = g.GameUUID
-where PlayerID = @targetID
+    sql = '''declare @targetID as varchar(15)
+declare @ArenaName as varchar(50)
+set @targetID = ?
+set @ArenaName = ?;
+
+select top 1 count (*) as gamesPlayed, convert(varchar(50),max(g.GameTimestamp),106) as mostRecentVisit, ArenaName from Participation p join Games g on p.GameUUID = g.GameUUID
+where p.playerID = @targetID and ArenaName != @arenaName 
 group by ArenaName
-order by min(gameTimestamp)'''
+order by max(g.GameTimestamp) desc '''
     global cursor
     global config
-    results = cursor.execute(sql,(targetID))
-    feedbackQueue.q.put( "%s%s**Visited Arenas:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
+    results = cursor.execute(sql,(targetID,config["SiteNameReal"]))
+    feedbackQueue.q.put( "%s%s**Recent travels:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
     for result in results.fetchall():
-        feedbackQueue.q.put( "%s%s(%s%s%s)%s," % (Back.BLACK,Fore.WHITE,Fore.YELLOW,result[0],Fore.WHITE,Fore.WHITE))
+        feedbackQueue.q.put( "%s%s(%svisited %s, on %s. %i observed games played there. %s)%s," % (Back.BLACK,Fore.WHITE,Fore.YELLOW,result[2], result [1], result[0], Fore.WHITE,Fore.WHITE))
     
 def recentAchievement (targetID):
     sql = '''DECLARE @targetID  as varchar (20) 
@@ -128,6 +131,7 @@ select top (3) month,SQrank,avgSQ,games,stdRank,averageScore,gamesPlayed
 from starData2 sq
 join StdData1 sd on sq.PlayerID = sd.PlayerID and sq.month = sd.GameMonth
 where sq.PlayerID = @targetID 
+order by month desc 
 '''
     global cursor
     global config
@@ -178,7 +182,7 @@ order by GameTimestamp desc
     feedbackQueue.q.put("%s%s**Recent Games:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
     for result in results.fetchall():
         #print(result)
-        temptStr = "%s: %s \t rank %s, of %s" % (result[1],result[2],ordinal[int(result[5])],result[6])
+        temptStr = "%s: %s \t rank %s, of %s" % (result[1],result[2][:15],ordinal[int(result[5])],result[6])
         feedbackQueue.q.put( "%s%s(%s%s%s)%s\n" % (Back.BLACK,Fore.WHITE,Fore.YELLOW,temptStr,Fore.WHITE,Fore.WHITE))
 
 

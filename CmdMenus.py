@@ -123,7 +123,7 @@ def drawOutputPane():
     print_at (5,0,"%s/***** Output ******************************************************\%s" % (fg.yellow, fg.white))
     for var in feedback[-15:]:
         var = var + " " * 70 
-        var = var[0:70] 
+        var = var[0:100] 
         counter = counter + 1
         print_at(5+counter,0,("%s%s%s%s%s" % (bg.green,fg.black,var,bg.black, fg.white)))
     if len(feedback) < 15:
