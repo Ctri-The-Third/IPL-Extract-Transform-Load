@@ -51,7 +51,7 @@ def drawHeader():
     outStr = outStr + renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),fg.black,bg.green)
     outStr = outStr + "\nEnd Date:             [ %s%s%s ]          | " % ( fg.green, config["EndDate"],fg.white)
     outStr = outStr + CurrentWorkerStatus["CurrentAction"]
-    outStr = outStr + "\nTarget site:          [ %s%s%s ]| " % (fg.green,config["SiteNameShort"][0:20],fg.white) 
+    outStr = outStr + "\nTarget site:          [ %s%s%s ]| " % (fg.green,(config["SiteNameShort"]+ " "*20)[0:20],fg.white) 
     outStr = outStr + "%s" % (CurrentWorkerStatus["ETA"]) 
     print_at (1,0,outStr)
     print_at (4,0,"")
@@ -81,8 +81,9 @@ def drawMainMenu():
     print_at (8,0,"["+fg.yellow+" 5 "+fg.white+"] Run queries on specific player")
     print_at (9,0,"["+fg.yellow+" 6 "+fg.white+"] Rebuild the JSON blobs")
     print_at (10,0,"["+fg.yellow+"61 "+fg.white+"] Update individual player")
-    print_at (11,0,"["+fg.yellow+"66 "+fg.white+"] Run partial DB refresh for active site")
-    print_at (12,0,"["+fg.yellow+"666"+fg.white+"] Run complete DB refresh for all players")
+    print_at (11,0,"["+fg.yellow+"66 "+fg.white+"] Run DB game search for active players at site")
+    print_at (11,0,"["+fg.yellow+"661"+fg.white+"] Run DB game search for inactivate players")
+    print_at (12,0,"["+fg.yellow+"666"+fg.white+"] Run DB summary refresh for all players")
 
     print (" ")
     print ("[x] Exit")
@@ -223,8 +224,14 @@ while inputS != "exit" and inputS != "x":
             waitingFunction = "61"
             feedback.append("Enter User ID or GamerTag to search")
         elif inputS == "66":
-            feedback.append("Performing partial update in background...")
+            feedback.append("Performing update of active local players in background...")
             t = threading.Thread(target=executeQueryGames, args=("partial",))
+            threads.append(t)
+            t.start()      
+            inputS = ""
+        elif inputS == "661":
+            feedback.append("Performing update of inactivate players in background...")
+            t = threading.Thread(target=executeQueryGames, args=("full",))
             threads.append(t)
             t.start()      
             inputS = ""
