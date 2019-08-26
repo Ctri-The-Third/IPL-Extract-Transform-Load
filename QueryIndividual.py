@@ -1,8 +1,10 @@
+
 import math
 import ConfigHelper
 import SQLHelper
 import colorama
 from colorama import Fore, Back
+import feedbackQueue
 #: last 5 games' stats
 #: Blobs, month to month.
 #: Top achievement in terms of rarity
@@ -31,10 +33,10 @@ order by min(gameTimestamp)'''
     global cursor
     global config
     results = cursor.execute(sql,(targetID))
-    outStr = "%s**Visited Arenas:**%s\n" % (Fore.WHITE,Fore.WHITE)
+    feedbackQueue.q.put( "%s%s**Visited Arenas:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
     for result in results.fetchall():
-        outStr = outStr + "%s(%s%s%s)%s," % (Fore.WHITE,Fore.YELLOW,result[0],Fore.WHITE,Fore.WHITE)
-    return outStr
+        feedbackQueue.q.put( "%s%s(%s%s%s)%s," % (Back.BLACK,Fore.WHITE,Fore.YELLOW,result[0],Fore.WHITE,Fore.WHITE))
+    
 def recentAchievement (targetID):
     sql = '''DECLARE @targetID  as varchar (20) 
 DECLARE @ArenaName as varchar(50)
@@ -131,12 +133,12 @@ where sq.PlayerID = @targetID
     global config
     global ordinal
     results = cursor.execute(sql,(targetID,config["SiteNameReal"]))
-    outStr = "%s**Month to Month Stats:**%s\n" % (Fore.WHITE,Fore.WHITE)
+    feedbackQueue.q.put( "%s%s**Month to Month Stats:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
     for result in results.fetchall():
         #print(result)
         temptStr = "%s: Stars %s (%s)\t Std %s (%s)" % (result[0],ordinal[int(result[1])],result[2],ordinal[int(result[4])],result[5])
-        outStr = outStr + "%s(%s%s%s)%s\n" % (Fore.WHITE,Fore.YELLOW,temptStr,Fore.WHITE,Fore.WHITE)
-    return outStr
+        feedbackQueue.q.put( "%s%s(%s%s%s)%s\n" % (Back.BLACK,Fore.WHITE,Fore.YELLOW,temptStr,Fore.WHITE,Fore.WHITE))
+
 
 def recentGames(targetID):
     sql = '''
@@ -173,12 +175,12 @@ order by GameTimestamp desc
     global cursor
     global config
     results = cursor.execute(sql,(targetID,config["SiteNameReal"]))
-    outStr = "%s**Recent Games:**%s\n" % (Fore.WHITE,Fore.WHITE)
+    feedbackQueue.q.put("%s%s**Recent Games:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
     for result in results.fetchall():
         #print(result)
         temptStr = "%s: %s \t rank %s, of %s" % (result[1],result[2],ordinal[int(result[5])],result[6])
-        outStr = outStr + "%s(%s%s%s)%s\n" % (Fore.WHITE,Fore.YELLOW,temptStr,Fore.WHITE,Fore.WHITE)
-    return outStr[0:-1]
+        feedbackQueue.q.put( "%s%s(%s%s%s)%s\n" % (Back.BLACK,Fore.WHITE,Fore.YELLOW,temptStr,Fore.WHITE,Fore.WHITE))
+
 
 def PlaysWhen(targetID):
     sql = '''
@@ -217,16 +219,20 @@ order by games desc'''
     global cursor
     global config
     results = cursor.execute(sql,(targetID,config["SiteNameReal"]))
-    outStr = "%s**Common Game Times:**%s\n" % (Fore.WHITE,Fore.WHITE)
+    feedbackQueue.q.put( "%s%s**Common Game Times:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
     for result in results.fetchall():
         #print(result)
         temptStr = "on %s at %s:00ish" % (result[1],result[2])
-        outStr = outStr + "%s(%s%s%s)%s," % (Fore.WHITE,Fore.YELLOW,temptStr,Fore.WHITE,Fore.WHITE)
-    return outStr
-targetID = '9-6-106'
-print("",recentGames(targetID))
-print("",blobs(targetID),Fore.WHITE)
-print("",PlaysWhen(targetID))
-print("rarest achieve",rarestAchievement(targetID))
-print("recent achieve",recentAchievement(targetID))
-print(placesVisited(targetID))
+        feedbackQueue.q.put( "%s%s(%s%s%s)%s," % (Back.BLACK,Fore.WHITE,Fore.YELLOW,temptStr,Fore.WHITE,Fore.WHITE))
+    
+
+
+def executeQueryIndividual (targetID):
+
+    recentGames(targetID) 
+    blobs(targetID)
+    PlaysWhen(targetID)
+    rarestAchievement(targetID)
+    recentAchievement(targetID)
+    placesVisited(targetID)
+    

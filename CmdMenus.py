@@ -18,6 +18,7 @@ from FetchPlayerUpdatesAndNewPlayers import updateExistingPlayers
 import FetchPlayerAndGames
 import FetchPlayerUpdatesAndNewPlayers
 import FetchIndividual  
+import QueryIndividual
 import InputReader
 import feedbackQueue # shared module that contains a queue for giving output to the UI
  
@@ -184,13 +185,13 @@ while inputS != "exit" and inputS != "x":
         feedbackQueue.q.put("Enter A to continue...")
         waitingFunction = "outputPane"
         
-    elif waitingFunction == "5" and inputS != '':
-        
-        drawHeader()
-        drawOutputPane()
-        FetchIndividual.fetchIndividualWithID(inputS)
-        feedbackQueue.q.put("Enter A to continue...")
-        waitingFunction = "outputPane"
+    elif waitingFunction == "5":
+        if inputS != '':
+            drawHeader()
+            drawOutputPane()
+            QueryIndividual.executeQueryIndividual(inputS)
+            feedbackQueue.q.put("Enter A to continue...")
+            waitingFunction = "outputPane"
     elif waitingFunction == "outputPane":
         if inputS == 'a':
             waitingFunction = ""
@@ -209,10 +210,9 @@ while inputS != "exit" and inputS != "x":
             print ("%s ***** End Date         ***** %s" % (fg.yellow, fg.white))
             #EndDate = input()
 
-            if startDate != "B" and EndDate != "xB":
+            if startDate != "B" and EndDate != "B":
                 feedback.append(setNewDates(startDate,EndDate))
         elif inputS == "5":
-            feedback.append("not yet implemented")
             waitingFunction = "5"
         elif inputS == "6":
             import runmeWhenever
