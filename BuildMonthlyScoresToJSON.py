@@ -1,15 +1,15 @@
 import json
 
 from SQLconnector import connectToSource
-from ConfigHelper import getConfig
+import ConfigHelper as cfg
 
 
 def executeMonthlyScoresBuild():
   config = getConfig()
-  startDate = config["StartDate"]
-  endDate = config["EndDate"]
-  LastMonthStart = config["LastMonthStart"]
-  arenaName = config["SiteNameReal"]
+  startDate = cfg.getConfigString("StartDate")
+  endDate = cfg.getConfigString("EndDate")
+  LastMonthStart = cfg.getConfigString("LastMonthStart")
+  arenaName = cfg.getConfigString("SiteNameReal")
   SQL = '''
   declare @curMonth as varchar(7)
   declare @lastMonth as varchar(7)
@@ -65,7 +65,7 @@ order by averageScore desc;
 
   f = open("JSONBlobs\\MonthlyScoreLatest.json", "w+")
   f.write(json.dumps(JSON,indent=4))
-  f = open("JSONBlobs\\%sMonthlyScore.json" % (config["SiteNameReal"]), "w+")
+  f = open("JSONBlobs\\%sMonthlyScore.json" % (cfg.getConfigString("SiteNameReal")), "w+")
   f.write(json.dumps(JSON,indent=4))
   print ("Monthly average score blobs written!")
 

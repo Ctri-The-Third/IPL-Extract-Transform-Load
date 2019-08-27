@@ -3,8 +3,8 @@ import uuid
 import csv 
 
 from SQLconnector import connectToSource
-import ConfigHelper
-config = ConfigHelper.getConfig()
+import ConfigHelper as cfg 
+
 
 def getInterestingPlayersRoster(includeChurned,startDate,period):
 
@@ -40,7 +40,7 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
     order by Level desc, Missions desc, mostRecent Asc
         """
         global config
-        cursor.execute(query,(startDate,period,config["SiteNameReal"]))
+        cursor.execute(query,(startDate,period,cfg.getConfigString("SiteNameReal")))
     results = cursor.fetchall()
     playerList = []
     for result in results:

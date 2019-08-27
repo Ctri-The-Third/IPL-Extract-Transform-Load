@@ -8,9 +8,7 @@ from console import fg, bg, fx
 from renderProgressBar import renderBar
 from colorama import Fore
 from colorama import Back
-from ConfigHelper import getConfig 
-from ConfigHelper import setActive
-from ConfigHelper import setNewDates
+import ConfigHelper as cfg 
 from ctypes import *
 
 from FetchPlayerAndGames import executeQueryGames
@@ -28,7 +26,7 @@ import feedbackQueue # shared module that contains a queue for giving output to 
 
 feedback = []
 threads = []
-config = getConfig()
+
 ###  https://rosettacode.org/wiki/Terminal_control/Cursor_positioning#Python ###
 class COORD(Structure):
     pass
@@ -46,14 +44,17 @@ def print_at(r, c, s):
 def drawHeader():
 
     print_at (0,0,"%s/***** LF Profiler **************************************************\ %s" % (fg.yellow, fg.white))
-    config = getConfig()
-    outStr  = "Start Date:           [ %s%s%s ]          | " % ( fg.green,  config["StartDate"], fg.white)
+    
+    outStr  = "Start Date:           [ %s%s%s ]          | " % ( fg.green,  cfg.getConfigString("StartDate"), fg.white)
     outStr = outStr + renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),fg.black,bg.green)
-    outStr = outStr + "\nEnd Date:             [ %s%s%s ]          | " % ( fg.green, config["EndDate"],fg.white)
+    print_at(1,0,outStr)
+    outStr + "End Date:             [ %s%s%s ]          | " % ( fg.green, cfg.getConfigString("EndDate"),fg.white)
     outStr = outStr + CurrentWorkerStatus["CurrentAction"]
-    outStr = outStr + "\nTarget site:          [ %s%s%s ]| " % (fg.green,(config["SiteNameShort"]+ " "*20)[0:20],fg.white) 
+    print_at(2,0,outStr)
+    outStr = "Target site:          [ %s%s%s ]| " % (fg.green,(cfg.getConfigString("SiteNameShort")+ " "*20)[0:20],fg.white) 
+    
     outStr = outStr + "%s" % (CurrentWorkerStatus["ETA"]) 
-    print_at (1,0,outStr)
+    print_at (3,0,outStr)
     print_at (4,0,"")
 
 def drawDateMenu():
@@ -71,7 +72,7 @@ def drawMainMenu():
     emptyString = "                           "
     inputS = ""
     
-    config = getConfig()
+    
 
     drawHeader()
 
@@ -114,7 +115,7 @@ def drawArenaMenu():
     global config
     counter = 5
     print_at (5,0,"%s/***** Pick arena ***************************************************\ %s" % (fg.yellow, fg.white))
-    for arena in config["configs"]:
+    for arena in cfg.getConfigString("configs"):
         counter = counter + 1 
         print_at (counter,0,"[%s%i%s] %s" % (Fore.YELLOW,counter -5 ,Fore.WHITE,arena["SiteNameShort"]))
     counter = counter + 1
@@ -171,7 +172,7 @@ while inputS != "exit" and inputS != "x":
         
         drawHeader()
         drawArenaMenu()
-        print("\nEnter option...")
+        #print("\nEnter option...")
         if inputS != "":
             if inputS == "b":
                 waitingFunction = ""

@@ -11,12 +11,12 @@ from SQLHelper import addPlayer
 from SQLHelper import addGame
 from SQLHelper import addParticipation
 from SQLHelper import getInterestingPlayersRoster
-from ConfigHelper import getConfig
+import ConfigHelper as cfg
 
  
-config = getConfig()
+
  #The query starts at the date in question and looks backwards. We use the "End Date" from the config.
-#targetIDs = getInterestingPlayersRoster(False,config['EndDate'],config['ChurnDuration'])
+#targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("EndDate'],cfg.getConfigString("ChurnDuration'])
 
 
 #targetIDs = {
@@ -24,11 +24,11 @@ config = getConfig()
 #}
 updatedPlayers = []
 def executeQueryGames(scope ): #Scope should be "full" or "partial"
-    config = getConfig()
+    
     if scope == "full": 
-        targetIDs = getInterestingPlayersRoster(True,config['StartDate'],config['ChurnDuration'])
+        targetIDs = getInterestingPlayersRoster(True,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"))
     else: 
-        targetIDs = getInterestingPlayersRoster(False,config['StartDate'],config['ChurnDuration'])
+        targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"))
 
     queryPlayers(targetIDs,scope)
 
