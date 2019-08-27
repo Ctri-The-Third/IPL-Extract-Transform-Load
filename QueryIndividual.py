@@ -137,7 +137,7 @@ order by month desc
     global config
     global ordinal
     results = cursor.execute(sql,(targetID,config["SiteNameReal"]))
-    feedbackQueue.q.put( "%s%s**Month to Month Stats:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
+    feedbackQueue.q.put( "%s%s**Month to Month Stats at %s:**%s\n" % (Back.BLACK,Fore.WHITE,config["SiteNameReal"],Fore.WHITE))
     for result in results.fetchall():
         #print(result)
         temptStr = "%s: Stars %s (%s)\t Std %s (%s)" % (result[0],ordinal[int(result[1])],result[2],ordinal[int(result[4])],result[5])
@@ -179,7 +179,7 @@ order by GameTimestamp desc
     global cursor
     global config
     results = cursor.execute(sql,(targetID,config["SiteNameReal"]))
-    feedbackQueue.q.put("%s%s**Recent Games:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
+    feedbackQueue.q.put("%s%s**Recent Games at %s:**%s\n" % (Back.BLACK,Fore.WHITE,config["SiteNameReal"],Fore.WHITE))
     for result in results.fetchall():
         #print(result)
         temptStr = "%s: %s \t rank %s, of %s" % (result[1],result[2][:15],ordinal[int(result[5])],result[6])
