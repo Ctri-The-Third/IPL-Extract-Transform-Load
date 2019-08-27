@@ -193,7 +193,7 @@ GO
 
 CREATE TABLE [dbo].[PlayerAchievement](
 	[AchID] [varchar](50) NOT NULL,
-	[Image] [varchar](64) NOT NULL,
+	
 	[PlayerID] [varchar](50) NOT NULL,
 	[newAchievement] [int] NULL,
 	[achievedDate] [date] NULL,

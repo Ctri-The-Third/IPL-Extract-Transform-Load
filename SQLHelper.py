@@ -10,7 +10,7 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
 
     conn = connectToSource()
     cursor = conn.cursor()
-    if includeChurned == False:
+    if includeChurned == True:
         query = """
         
         select  * from InterestingPlayers

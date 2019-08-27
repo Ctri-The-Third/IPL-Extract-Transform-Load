@@ -1,6 +1,6 @@
 import json
 import re
-
+from DBG import DBG
 
 config = {}
 def getConfig(): 
@@ -8,7 +8,7 @@ def getConfig():
     global config
     with open("AppConfig.json","r") as f:
         config  = json.load(f)
-
+        
     return config
 
 def getConfigString(string):
@@ -18,7 +18,7 @@ def getConfigString(string):
         getConfig()
     if string in config:
         return config[string]
-    return ''
+    DBG("CONFIG key ['%s'] not found" % string,2 )
 
 
 def setActive(index):

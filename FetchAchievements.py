@@ -1,3 +1,6 @@
+import math 
+import time
+from DBG import DBG 
 import requests
 import json
 import importlib
@@ -10,6 +13,7 @@ from SQLHelper import addPlayerAchievement
 from SQLHelper import addPlayerAchievementScore
 from SQLHelper import getInterestingPlayersRoster
 from SQLHelper import getPlayersWhoMightNeedAchievementUpdates
+import workerProgressQueue as wpq
 import ConfigHelper as cfg
 
 #config = getConfig()
@@ -32,9 +36,44 @@ def fetchAllAchievements (targetIDs):
     totalToUpdate = len(targetIDs)
     startTime = datetime.datetime.now()
     playerCounter = 0
+    totalPlayerCount = len(targetIDs)
     for ID in targetIDs:
+
+        ETA = "Calculating"
+        if playerCounter >= 20:
+            delta = ((datetime.datetime.now() - startTime).total_seconds() / playerCounter) 
+            delta = (totalPlayerCount - playerCounter) * delta #seconds remaining
+            seconds = round(delta,0)
+            minutes = 0
+            hours = 0
+
+            if (seconds > 60 ):
+                minutes = math.floor(seconds / 60)
+                seconds = seconds % 60 
+            if (minutes > 60):
+                hours = math.floor(minutes / 60 )
+                minutes = minutes % 60
+            
+            delta = "%ih, %im, %is" % (hours,minutes,seconds)
+            ETA = delta
+            
+            
+        else:
+            ETA = "Calculating"
+
         playerCounter = playerCounter + 1
         IDpieces = ID.split("-")
+        
+        region = IDpieces[0]
+        site =  IDpieces[1]
+        IDPart = IDpieces[2]
+        
+        DBGstring = "Seeking Achs for %s-%s-%s, [%i / %i] : " % (region,site,IDPart,playerCounter,totalPlayerCount)
+        wpq.updateQ(playerCounter,totalPlayerCount, "Achs for %s-%s-%s" % (region,site,IDPart),ETA)
+
+
+
+
         
         allAchievements = fetchPlayerAcheivement_root('',IDpieces[0],IDpieces[1],IDpieces[2])
         
@@ -42,22 +81,23 @@ def fetchAllAchievements (targetIDs):
         
         if allAchievements.__len__() > 0:
             if '1' in allAchievements["centre"]:
-                print("DBG: FetchAchievements.fetchAllAchivements: ABNORMAL RESPONSE handled for user %s" % (ID) )
-                print("DBG: FetchAchievements.fetchAllAchivements: Manually check they don't have multiple sites' achievements" )
+                DBG("DBG: FetchAchievements.fetchAllAchivements: ABNORMAL RESPONSE handled for user %s" % (ID) ,2)
+                DBG("DBG: FetchAchievements.fetchAllAchivements: Manually check they don't have multiple sites' achievements" ,2)
                 holdingVar = []
                 holdingVar.append( allAchievements["centre"]['1'])
                 allAchievements["centre"] = holdingVar
                 #print (json.dumps(allAchievements["centre"]))
             for centre in allAchievements["centre"]:
-                if centre["name"] == cfg.getConfigString("SiteNameReal"): #Since we have to do small updates of every arena anyway, it's only when we have recent crossplaying that we have to worry about pinging IPL multiple times per user.
+                #we don't filter by arena, becuase we do achievement searches seperately, and because IPL has to do all the hard work each request anyway.
+                #this means less requests against IPL if we do achieves globally.
 
 
-                    addPlayerAchievementScore(ID,centre["score"])
-                    #print (allAchievements)
-                    for achievement in centre["achievements"]:
-                        uuid = addAchievement(achievement["name"],achievement["description"],achievement["image"], cfg.getConfigString("SiteNameReal"))
-                        addPlayerAchievement(uuid,ID,achievement["newAchievement"],achievement["achievedDate"],achievement["progressA"],achievement["progressB"])
-                    totalAchievemnts = len(centre["achievements"])
+                #addPlayerAchievementScore(ID,centre["score"])
+                #print (allAchievements)
+                for achievement in centre["achievements"]:
+                    uuid = addAchievement(achievement["name"],achievement["description"],achievement["image"], cfg.getConfigString("SiteNameReal"))
+                    addPlayerAchievement(uuid,ID,achievement["newAchievement"],achievement["achievedDate"],achievement["progressA"],achievement["progressB"])
+                totalAchievemnts = totalAchievemnts + len(centre["achievements"])
             print ("Updated %i achievements for player %s. [%i/%i]" % (totalAchievemnts,ID,playerCounter,totalToUpdate))
         
     endTime = datetime.datetime.now()

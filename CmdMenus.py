@@ -13,13 +13,21 @@ from ctypes import *
 
 from FetchPlayerAndGames import executeQueryGames
 from FetchPlayerUpdatesAndNewPlayers import updateExistingPlayers
+from FetchAchievements import executeFetchAchievements
 import FetchPlayerAndGames
 import FetchPlayerUpdatesAndNewPlayers
 import FetchIndividual  
 import QueryIndividual
 import InputReader
 import feedbackQueue # shared module that contains a queue for giving output to the UI
- 
+
+import FetchAchievements 
+import BuildMonthlyScoresToJSON 
+import BuildMonthlyStarQualityToJSON
+import BuildAchievementScoresToJSON
+import BuildPlayerBlob
+import BuildHeadToHeadsToJSON 
+import workerProgressQueue 
 # This application class serves as a wrapper for the initialization of curses
 # and also manages the actual forms of the application
 
@@ -48,7 +56,7 @@ def drawHeader():
     outStr  = "Start Date:           [ %s%s%s ]          | " % ( fg.green,  cfg.getConfigString("StartDate"), fg.white)
     outStr = outStr + renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),fg.black,bg.green)
     print_at(1,0,outStr)
-    outStr + "End Date:             [ %s%s%s ]          | " % ( fg.green, cfg.getConfigString("EndDate"),fg.white)
+    outStr = "End Date:             [ %s%s%s ]          | " % ( fg.green, cfg.getConfigString("EndDate"),fg.white)
     outStr = outStr + CurrentWorkerStatus["CurrentAction"]
     print_at(2,0,outStr)
     outStr = "Target site:          [ %s%s%s ]| " % (fg.green,(cfg.getConfigString("SiteNameShort")+ " "*20)[0:20],fg.white) 
@@ -146,6 +154,7 @@ t.start()
 
 os.system('CLS')
 waitingFunction = ""
+workerStatusQ = workerProgressQueue.getQ()
 while inputS != "exit" and inputS != "x": 
     
     inputS = ""
@@ -158,12 +167,10 @@ while inputS != "exit" and inputS != "x":
 
         
     
-    if not FetchPlayerUpdatesAndNewPlayers.StatusOfFetchPlayer.empty():    
-        CurrentWorkerStatus = FetchPlayerUpdatesAndNewPlayers.StatusOfFetchPlayer.get() #fetch the latest update
-        FetchPlayerAndGames.StatusOfFetchPlayer.queue.clear() #purge older updates
-    if not FetchPlayerAndGames.StatusOfFetchPlayer.empty():
-        CurrentWorkerStatus = FetchPlayerAndGames.StatusOfFetchPlayer.get() #fetch the latest update
-        FetchPlayerAndGames.StatusOfFetchPlayer.queue.clear() #purge older updates
+    if not workerStatusQ.empty():    
+        CurrentWorkerStatus = workerStatusQ.get() #fetch the latest update
+        workerStatusQ.queue.clear() #purge older updates
+    
 
     #print(CurrentWorkerStatus)
     #currently prioritise minor update over major update
@@ -178,7 +185,7 @@ while inputS != "exit" and inputS != "x":
                 waitingFunction = ""
                 
             else:
-                setActive(int(inputS)-1)
+                cfg.setActive(int(inputS)-1)
                 waitingFunction = ""
                 
 
@@ -220,7 +227,12 @@ while inputS != "exit" and inputS != "x":
         elif inputS == "5":
             waitingFunction = "5"
         elif inputS == "6":
-            import runmeWhenever
+            
+            BuildMonthlyScoresToJSON.executeMonthlyScoresBuild()
+            BuildMonthlyStarQualityToJSON.executeBuildMonthlyStars()
+            BuildAchievementScoresToJSON.executeAchievementBuild()
+            BuildPlayerBlob.executeBuildPlayerBlobs()
+            BuildHeadToHeadsToJSON.buildHeadToHeads() 
             feedback.append("Blobs written")
             
             
@@ -232,6 +244,13 @@ while inputS != "exit" and inputS != "x":
         elif inputS == "66":
             feedback.append("Performing update of active local players in background...")
             t = threading.Thread(target=executeQueryGames, args=("partial",))
+            threads.append(t)
+            t.start()      
+            inputS = ""
+        elif inputS == "67":
+
+            feedback.append("Performing background update of achievements for recent players...")
+            t = threading.Thread(target=executeFetchAchievements, args =("partial",))
             threads.append(t)
             t.start()      
             inputS = ""

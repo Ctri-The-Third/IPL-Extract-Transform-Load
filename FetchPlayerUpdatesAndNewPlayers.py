@@ -1,3 +1,4 @@
+from DBG import DBG
 import math 
 import datetime
 import string 
@@ -8,6 +9,7 @@ from colorama import Fore, Back
 from SQLconnector import connectToSource
 from SQLHelper import addPlayer
 from FetchHelper import fetchPlayer_root
+import workerProgressQueue as wpq
 import ConfigHelper as cfg 
 
 
@@ -80,8 +82,8 @@ def updateExistingPlayers():
         WorkerStatus = {}
         WorkerStatus["CurEntry"] = counter
         WorkerStatus["TotalEntries"] = totalTargetsToUpdate
-        WorkerStatus["CurrentAction"] = "summary of %s%s" % (result[0]," "*20) 
-        WorkerStatus["CurrentAction"] = "[%s%s%s]" % (Fore.GREEN,WorkerStatus["CurrentAction"][0:20], Fore.WHITE)
+        WorkerStatus["CurrentAction"] = "summary of %s" % (result[0]) 
+        delta = "[    Calculating     ]"
         if counter >= 20:
             delta = ((datetime.datetime.now() - startTime).total_seconds() / counter) 
             delta = (totalTargetsToUpdate - counter) * delta #seconds remaining
@@ -97,13 +99,10 @@ def updateExistingPlayers():
                 minutes = minutes % 60
             
             delta = "%ih, %im, %is" % (hours,minutes,seconds)
-            paddingL = math.floor(10 - (len(delta)/2))
-            paddingR = math.ceil(10 - (len(delta)/2))
-            delta = "[%s%s%s%s%s]" % (Fore.GREEN," " * paddingL,delta," " * paddingR,Fore.WHITE)
-            WorkerStatus["ETA"] = delta 
-        else:
-            WorkerStatus["ETA"] = "[    Calculating     ]"
-        StatusOfFetchPlayer.put((WorkerStatus))
+            
+        wpq.updateQ(counter,totalTargetsToUpdate,"summary of %s" % (result[0]) ,delta)
+            
+        
 
         ID = result[0].split('-')
         player = fetchPlayer_root('',ID[0],ID[1],ID[2])
@@ -130,16 +129,11 @@ def updateExistingPlayers():
 def manualTargetSummary(rootID):
     ID = rootID.split('-')
     player = fetchPlayer_root('',ID[0],ID[1],ID[2])
+    if player == {}:
+        DBG("ManualTargetSummary failed! Aborting",1)
     print("Manual update of player sumary complete")
     addPlayer(rootID,player["centre"][0]["codename"],player["centre"][0]["joined"],player["centre"][0]["missions"],player["centre"][0]["skillLevelNum"])
 
 
 
-
-StatusOfFetchPlayer = queue.Queue()
-WorkerStatus = {}
-WorkerStatus["CurEntry"] = 0
-WorkerStatus["TotalEntries"] = 1
-WorkerStatus["CurrentAction"] = "[%s        idle        %s]" % (Fore.GREEN, Fore.WHITE)
-WorkerStatus["ETA"] = "[%s      ETC: N/A      %s]" % (Fore.GREEN, Fore.WHITE)
-StatusOfFetchPlayer.put(WorkerStatus)
+ 

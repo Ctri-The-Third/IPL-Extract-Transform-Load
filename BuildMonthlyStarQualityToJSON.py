@@ -90,6 +90,6 @@ def executeBuildMonthlyStars():
 
 	f = open("JSONBlobs\\StarQualityLatest.json", "w+")
 	f.write(json.dumps(JSON,indent=4))
-	f = open("JSONBlobs\\StarQuality{0}to{1}.json".format(curMonth,endDate), "w+")
+	f = open("JSONBlobs\\%sStarQuality.json" % cfg.getConfigString("ID Prefix"), "w+")
 	f.write(json.dumps(JSON,indent=4))
 	print ("Star Quality blobs written!")

@@ -166,6 +166,10 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	DBG("BuildPlayerBlob.buildPlayerBlob start[%s], end[%s], target[%s], arena[%s]" % (startDate,endDate,targetID,targetArena),3)
 	result = cursor.execute(infoQuery,(startDate,endDate,targetID,targetArena))
 	row = result.fetchone()
+
+	if row == None:
+		DBG("BuildPlayerBlob info query returned Null. Aborting.",1)
+		return
 	print(row)
 	print ("Players.PlayerID, GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed,  AverageRank")
 	SkillLevelName = ["Recruit","Gunner","Trooper","Captain","Star Lord","Laser Master","Level 7","Level 8","Laser Elite"]
@@ -199,7 +203,11 @@ def buildPlayerBlob (startDate,endDate,targetID):
 
 	result = cursor.execute(goldenAchievementQuery,(targetID))
 	row = result.fetchone()
+	if row == None:
+		DBG("BuildPlayerBlob GoldenAchievementQuery query returned Null. Aborting.",1)
+		return
 	print (row)
+
 	JSONobject["GAName"] = row[1]
 	JSONobject["GADesc"] = row[2]
 
@@ -215,8 +223,6 @@ def buildPlayerBlob (startDate,endDate,targetID):
 def executeBuildPlayerBlobs():
 	targetIDs = getTop5PlayersRoster(startDate,endDate,targetArena)
 	print(targetIDs)
-
-
 
 	print ("Player profile blobs written!")
 	JSONobject = {}
@@ -237,4 +243,3 @@ def executeBuildPlayerBlobs():
 	f = open("JSONBlobs\\%splayerBlob.json" % (cfg.getConfigString("ID Prefix")), "w+")
 	f.write(json.dumps(JSONobject))
 	f.close()
-#executeBuildPlayerBlobs()

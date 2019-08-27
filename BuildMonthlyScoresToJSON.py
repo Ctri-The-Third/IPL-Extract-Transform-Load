@@ -5,7 +5,7 @@ import ConfigHelper as cfg
 
 
 def executeMonthlyScoresBuild():
-  config = getConfig()
+  
   startDate = cfg.getConfigString("StartDate")
   endDate = cfg.getConfigString("EndDate")
   LastMonthStart = cfg.getConfigString("LastMonthStart")
@@ -65,7 +65,7 @@ order by averageScore desc;
 
   f = open("JSONBlobs\\MonthlyScoreLatest.json", "w+")
   f.write(json.dumps(JSON,indent=4))
-  f = open("JSONBlobs\\%sMonthlyScore.json" % (cfg.getConfigString("SiteNameReal")), "w+")
+  f = open("JSONBlobs\\%sMonthlyScore.json" % (cfg.getConfigString("ID Prefix")), "w+")
   f.write(json.dumps(JSON,indent=4))
   print ("Monthly average score blobs written!")
 
