@@ -10,17 +10,17 @@ from SQLHelper import addPlayerAchievement
 from SQLHelper import addPlayerAchievementScore
 from SQLHelper import getInterestingPlayersRoster
 from SQLHelper import getPlayersWhoMightNeedAchievementUpdates
-from ConfigHelper import getConfig
+import ConfigHelper as cfg
 
 #config = getConfig()
-#targetIDs = getInterestingPlayersRoster(False,config['EndDate'],config['ChurnDuration'])
+#targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("EndDate'],cfg.getConfigString("ChurnDuration'])
 #targetIDs = {
 #    '7-9-5940'
 #}
 def executeFetchAchievements (scope):
-    config = getConfig()
+    
     if scope == "full":
-        targetIDs = getInterestingPlayersRoster(True,config['StartDate'],config['ChurnDuration'])
+        targetIDs = getInterestingPlayersRoster(True,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"))
     else:
         targetIDs = getPlayersWhoMightNeedAchievementUpdates(scope)
     
@@ -28,7 +28,7 @@ def executeFetchAchievements (scope):
     fetchAllAchievements(targetIDs)
 
 def fetchAllAchievements (targetIDs):
-    config = getConfig()
+    
     totalToUpdate = len(targetIDs)
     startTime = datetime.datetime.now()
     playerCounter = 0
@@ -49,13 +49,13 @@ def fetchAllAchievements (targetIDs):
                 allAchievements["centre"] = holdingVar
                 #print (json.dumps(allAchievements["centre"]))
             for centre in allAchievements["centre"]:
-                if centre["name"] == config["SiteNameReal"]: #Since we have to do small updates of every arena anyway, it's only when we have recent crossplaying that we have to worry about pinging IPL multiple times per user.
+                if centre["name"] == cfg.getConfigString("SiteNameReal"): #Since we have to do small updates of every arena anyway, it's only when we have recent crossplaying that we have to worry about pinging IPL multiple times per user.
 
 
                     addPlayerAchievementScore(ID,centre["score"])
                     #print (allAchievements)
                     for achievement in centre["achievements"]:
-                        uuid = addAchievement(achievement["name"],achievement["description"],achievement["image"], config["SiteNameReal"])
+                        uuid = addAchievement(achievement["name"],achievement["description"],achievement["image"], cfg.getConfigString("SiteNameReal"))
                         addPlayerAchievement(uuid,ID,achievement["newAchievement"],achievement["achievedDate"],achievement["progressA"],achievement["progressB"])
                     totalAchievemnts = len(centre["achievements"])
             print ("Updated %i achievements for player %s. [%i/%i]" % (totalAchievemnts,ID,playerCounter,totalToUpdate))

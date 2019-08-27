@@ -8,7 +8,7 @@ from colorama import Fore, Back
 from SQLconnector import connectToSource
 from SQLHelper import addPlayer
 from FetchHelper import fetchPlayer_root
-from ConfigHelper import getConfig
+import ConfigHelper as cfg 
 
 
 def findNewPlayers():
@@ -18,8 +18,7 @@ def findNewPlayers():
 
     conn = connectToSource()
     cursor = conn.cursor()
-    config = getConfig()
-    sitePrefix = config["ID Prefix"]
+    sitePrefix = cfg.getConfigString("ID Prefix")
 
 #
     query = """

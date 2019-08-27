@@ -1,6 +1,6 @@
 
 import math
-import ConfigHelper
+import ConfigHelper as cfg
 import SQLHelper
 import colorama
 from colorama import Fore, Back
@@ -12,7 +12,7 @@ import feedbackQueue
 #: Places visited 
 conn = SQLHelper.connectToSource()
 cursor = conn.cursor()
-config = ConfigHelper.getConfig()
+
 colorama.init()
 
 #https://codegolf.stackexchange.com/questions/4707/outputting-ordinal-numbers-1st-2nd-3rd#answer-4712
@@ -34,8 +34,8 @@ where p.playerID = @targetID and ArenaName != @arenaName
 group by ArenaName
 order by max(g.GameTimestamp) desc '''
     global cursor
-    global config
-    results = cursor.execute(sql,(targetID,config["SiteNameReal"]))
+    
+    results = cursor.execute(sql,(targetID,cfg.getConfigString("SiteNameReal")))
     feedbackQueue.q.put( "%s%s**Recent travels:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
     for result in results.fetchall():
         feedbackQueue.q.put( "%s%s(%svisited %s, on %s. %i observed games played there. %s)%s," % (Back.BLACK,Fore.WHITE,Fore.YELLOW,result[2], result [1], result[0], Fore.WHITE,Fore.WHITE))
@@ -136,7 +136,7 @@ order by month desc
     global cursor
     global config
     global ordinal
-    results = cursor.execute(sql,(targetID,config["SiteNameReal"]))
+    results = cursor.execute(sql,(targetID,cfg.getConfigString("SiteNameReal")))
     feedbackQueue.q.put( "%s%s**Month to Month Stats:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
     for result in results.fetchall():
         #print(result)
@@ -178,7 +178,7 @@ order by GameTimestamp desc
     global ordinal
     global cursor
     global config
-    results = cursor.execute(sql,(targetID,config["SiteNameReal"]))
+    results = cursor.execute(sql,(targetID,cfg.getConfigString("SiteNameReal")))
     feedbackQueue.q.put("%s%s**Recent Games:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
     for result in results.fetchall():
         #print(result)
@@ -222,7 +222,7 @@ order by games desc'''
     global ordinal
     global cursor
     global config
-    results = cursor.execute(sql,(targetID,config["SiteNameReal"]))
+    results = cursor.execute(sql,(targetID,cfg.getConfigString("SiteNameReal")))
     feedbackQueue.q.put( "%s%s**Common Game Times:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
     for result in results.fetchall():
         #print(result)

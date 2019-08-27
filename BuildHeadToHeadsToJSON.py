@@ -4,9 +4,9 @@ import importlib
 
 from SQLconnector import connectToSource
 from SQLHelper import getTop5PlayersRoster
-from ConfigHelper import getConfig
+import ConfigHelper as cfg
 
-config = getConfig()
+
 
 
 
@@ -33,7 +33,7 @@ with data as (
 	conn = connectToSource()
 	cursor = conn.cursor()
 
-	results = cursor.execute(query,(config["SiteNameReal"]))
+	results = cursor.execute(query,(cfg.getConfigString("SiteNameReal")))
 	
 		
 	JSONobject = {"ScoreTitle":"Recent Head to Head games!",

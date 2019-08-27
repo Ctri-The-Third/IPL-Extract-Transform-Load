@@ -1,16 +1,16 @@
 import json
 
 from SQLconnector import connectToSource
-from ConfigHelper import getConfig
+import ConfigHelper as cfg
 
 
 def executeBuildMonthlyStars():
-	config = getConfig()
+	
 
-	curMonth = config["StartDate"]
-	lastMonth  = config["LastMonthStart"]
-	endDate = config["EndDate"]
-	arenaName = config["SiteNameReal"]
+	curMonth = cfg.getConfigString("StartDate")
+	lastMonth  = cfg.getConfigString("LastMonthStart")
+	endDate = cfg.getConfigString("EndDate")
+	arenaName = cfg.getConfigString("SiteNameReal")
 	SQL = '''declare @lastMonth as varChar(7)
 	declare @curMonth as varChar(7)
 	declare @arenaName as varChar(50)

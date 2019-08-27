@@ -4,14 +4,14 @@ import importlib
 
 from SQLconnector import connectToSource
 from SQLHelper import getTop5PlayersRoster
-from ConfigHelper import getConfig
+import ConfigHelper as cfg
 from DBG import DBG
 
-config = getConfig()
 
-startDate = config["StartDate"]
-endDate = config["EndDate"]
-targetArena = config["SiteNameReal"]
+
+startDate = cfg.getConfigString("StartDate")
+endDate = cfg.getConfigString("EndDate")
+targetArena = cfg.getConfigString("SiteNameReal")
 def buildPlayerBlob (startDate,endDate,targetID):
 	infoQuery = """declare @startDate as date;
 	declare @endDate as date;
@@ -172,7 +172,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 
 	JSONobject = {}
 	JSONobject["PlayerName"] = row[1]
-	JSONobject["HomeArenaTrunc"] = config["SiteNameShort"]
+	JSONobject["HomeArenaTrunc"] = cfg.getConfigString("SiteNameShort")
 	JSONobject["SkillLevelName"] = SkillLevelName[row[2]]
 	JSONobject["MonthlyGamesPlayed"] = row[5]
 	JSONobject["AllGamesPlayed"] = row[3]
@@ -234,7 +234,7 @@ def executeBuildPlayerBlobs():
 	f = open("JSONBlobs\\playerBlob.json", "w+")
 	f.write(json.dumps(JSONobject))
 	f.close()
-	f = open("JSONBlobs\\%splayerBlob.json" % (config["ID Prefix"]), "w+")
+	f = open("JSONBlobs\\%splayerBlob.json" % (cfg.getConfigString("ID Prefix")), "w+")
 	f.write(json.dumps(JSONobject))
 	f.close()
 #executeBuildPlayerBlobs()

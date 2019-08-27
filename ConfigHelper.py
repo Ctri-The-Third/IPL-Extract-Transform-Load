@@ -1,13 +1,24 @@
 import json
 import re
 
+
+config = {}
 def getConfig(): 
 
-    
+    global config
     with open("AppConfig.json","r") as f:
         config  = json.load(f)
 
     return config
+
+def getConfigString(string):
+    global config 
+
+    if config == {}:
+        getConfig()
+    if string in config:
+        return config[string]
+    return ''
 
 
 def setActive(index):
@@ -28,7 +39,7 @@ def setActive(index):
         f = open("AppConfig.json", "w+")
         f.write(json.dumps(config,indent=2))
         f.close()
-
+        getConfig()
         return "Successfully set primary arena to [%s]" % (config["SiteNameReal"])
 
 def setNewDates(startDate,endDate):
