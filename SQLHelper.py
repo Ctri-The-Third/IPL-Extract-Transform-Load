@@ -10,13 +10,12 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
 
     conn = connectToSource()
     cursor = conn.cursor()
-    if includeChurned == True:
+    if includeChurned == False:
         query = """
-        with data as (
+        
         select  * from InterestingPlayers
-        order by Level desc, Missions desc, SeenIn60Days Asc
-        )
-        select * from InterestingPlayers where PlayerID not in (select playerID from data)
+        order by Missions desc, SeenIn60Days Asc
+        
         """
         cursor.execute(query)
     else:
