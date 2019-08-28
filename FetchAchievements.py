@@ -70,11 +70,7 @@ def fetchAllAchievements (targetIDs):
         
         DBGstring = "Seeking Achs for %s-%s-%s, [%i / %i] : " % (region,site,IDPart,playerCounter,totalPlayerCount)
         wpq.updateQ(playerCounter,totalPlayerCount, "Achs for %s-%s-%s" % (region,site,IDPart),ETA)
-
-
-
-
-        
+    
         allAchievements = fetchPlayerAcheivement_root('',IDpieces[0],IDpieces[1],IDpieces[2])
         
         totalAchievemnts = 0
@@ -95,7 +91,7 @@ def fetchAllAchievements (targetIDs):
                 #addPlayerAchievementScore(ID,centre["score"])
                 #print (allAchievements)
                 for achievement in centre["achievements"]:
-                    uuid = addAchievement(achievement["name"],achievement["description"],achievement["image"], cfg.getConfigString("SiteNameReal"))
+                    uuid = addAchievement(achievement["name"],achievement["description"],achievement["image"], centre['name'])
                     addPlayerAchievement(uuid,ID,achievement["newAchievement"],achievement["achievedDate"],achievement["progressA"],achievement["progressB"])
                 totalAchievemnts = totalAchievemnts + len(centre["achievements"])
             print ("Updated %i achievements for player %s. [%i/%i]" % (totalAchievemnts,ID,playerCounter,totalToUpdate))

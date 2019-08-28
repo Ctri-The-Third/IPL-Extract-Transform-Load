@@ -1,8 +1,10 @@
 DECLARE @startDate as date
 DECLARE @endDate as date;
-SET @startDate = '2019-07-01';
-SET @endDate = '2019-08-01';
-
+DECLARE @targetArena as varchar(50);
+SET @startDate = '2019-08-01';
+SET @endDate = '2019-09-01';
+set @targetArena = 'Funstation Ltd, Edinburgh, Scotland';
+	
 with PlayersInGame as (
 	SELECT 
 	Count (Players.GamerTag) as playersInGame, 
@@ -12,6 +14,7 @@ with PlayersInGame as (
 	join Players on Participation.PlayerID = Players.PlayerID
 	where GameTimestamp >= @startDate
 	and GameTimeStamp < @endDate
+	and games.ArenaName = @targetArena
 	group by Games.GameUUID ),
 averageOpponents as 
 (
@@ -19,6 +22,7 @@ averageOpponents as
 	join PlayersInGame on Participation.GameUUID = PlayersInGame.gameID
 	join Games on Games.GameUUID = PlayersInGame.gameID
 	join Players on Participation.PlayerID = players.PlayerID
+	where games.ArenaName = @targetArena
 	group by  players.PlayerID
 		
 ),
@@ -29,6 +33,7 @@ totalGamesPlayed as
 	join Games on Games.GameUUID = Participation.GameUUID
 	where GameTimestamp >= @startDate
 	and GameTimeStamp < @endDate
+	and games.ArenaName = @targetArena
 	group by Participation.PlayerID
 ),
 Ranks as 
@@ -41,6 +46,7 @@ Ranks as
 	join Players on Participation.PlayerID = Players.PlayerID
 	where GameTimestamp >= @startDate
 	and GameTimeStamp < @endDate
+	and games.ArenaName = @targetArena
 ),
 AverageRanks as 
 ( select PlayerID, AVG(CONVERT(float,gamePosition)) as AverageRank from Ranks
@@ -58,7 +64,8 @@ AverageScores as (
 	join AverageRanks on AverageRanks.PlayerID = Players.PlayerID
 	where Games.GameTimestamp >= @startDate
 	AND Games.GameTimestamp < @endDate
-	and Games.GameName in ('2 Teams','3 Teams','4 Teams', 'Colour Ranked','Individual')
+	and Games.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual')
+	and games.ArenaName = @targetArena
 	group by Players.PlayerID
  ),
 StarQuality as
@@ -77,6 +84,7 @@ StarQuality as
 GoldenTop3 as 
 (
 	select top (3) PlayerID, ROW_NUMBER() over (order by avgQualityPerGame desc) as playerRank from StarQuality
+	where StarQuality.gamesPlayed >= 3
 	order by AvgQualityPerGame desc
 ),
 BestScorer as (
@@ -100,9 +108,6 @@ BestAchiever as(
 	where players.PlayerID not in (select PlayerID from GoldenTop3) and Players.PlayerID not in (select PlayerID from BestScorer)
 	order by Players.AchievementScore desc
 )
-
-
-
 
 select p.PlayerID , GamerTag, playerRank, 'Top3' as source from GoldenTop3 p
 join Players pl on pl.PlayerID = p.PlayerID
