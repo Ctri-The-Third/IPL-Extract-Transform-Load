@@ -1,3 +1,4 @@
+
 # LF-Profiler
 An application for retrieving data from http://iplaylaserforce.com
 
@@ -29,5 +30,14 @@ Python 3
 1. download the source
 2. install the requests library '''pip install requests'''
 3. install the pyodbc library '''pip install pyodbc'''
-4. The program currently expects a local SQLExpress - Run the <pre>DatabaseSetup.sql</pre> query
-5. Set the connection string in SQLconnector.py
+5. The program currently expects a local SQLExpress - Run the <pre>DatabaseSetup.sql</pre> query
+6. Set the connection string in SQLconnector.py
+
+
+### Onboarding a new arena
+1. Open the AppConfig.json file. 
+2. to the "Configs" array, add a new dictionary with the following keys
+ - SiteNameReal - the name of the site that is returned from IPL
+ - SiteNameShort - a shortened alias for display
+ - ID Prefix - A string in the form "#-#-" with the numbers representing the local membership numbering scheme. E.g. "7-9-" for members 7-9-###
+3. Adjust the "big 5" query with the names of the "standard" games.

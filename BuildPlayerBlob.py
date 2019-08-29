@@ -9,18 +9,15 @@ from DBG import DBG
 
 
 
-startDate = cfg.getConfigString("StartDate")
-endDate = cfg.getConfigString("EndDate")
-targetArena = cfg.getConfigString("SiteNameReal")
-def buildPlayerBlob (startDate,endDate,targetID):
-	infoQuery = """declare @startDate as date;
-	declare @endDate as date;
+def buildPlayerBlob (cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetID):
+	infoQuery = """declare @cfg.getConfigString("StartDate") as date;
+	declare @cfg.getConfigString("EndDate") as date;
 	declare @targetID as varchar(20);
-	declare @targetArena as varchar(50);
-	set @startDate = ?;
-	set @endDate = ?;
+	declare @cfg.getConfigString("SiteNameReal") as varchar(50);
+	set @cfg.getConfigString("StartDate") = ?;
+	set @cfg.getConfigString("EndDate") = ?;
 	set @targetID = ?;
-	set @targetArena = ?;
+	set @cfg.getConfigString("SiteNameReal") = ?;
 
 
 		with PlayersInGame as (
@@ -30,9 +27,9 @@ def buildPlayerBlob (startDate,endDate,targetID):
 		FROM [LaserScraper].[dbo].[Games] as Games
 		join Participation on participation.GameUUID = Games.GameUUID
 		join Players on Participation.PlayerID = Players.PlayerID
-		where GameTimestamp >= @startDate
-		and GameTimeStamp < @endDate
-		and Games.ArenaName = @targetArena
+		where GameTimestamp >= @cfg.getConfigString("StartDate")
+		and GameTimeStamp < @cfg.getConfigString("EndDate")
+		and Games.ArenaName = @cfg.getConfigString("SiteNameReal")
 		group by Games.GameUUID ),
 	averageOpponents as 
 	(
@@ -48,9 +45,9 @@ def buildPlayerBlob (startDate,endDate,targetID):
 		select count(*) as gamesPlayed,  Participation.PlayerID
 		from Participation 
 		join Games on Games.GameUUID = Participation.GameUUID
-		where GameTimestamp >= @startDate
-		and GameTimeStamp < @endDate
-		and ArenaName = @targetArena
+		where GameTimestamp >= @cfg.getConfigString("StartDate")
+		and GameTimeStamp < @cfg.getConfigString("EndDate")
+		and ArenaName = @cfg.getConfigString("SiteNameReal")
 		group by Participation.PlayerID
 	),
 	Ranks as 
@@ -60,9 +57,9 @@ def buildPlayerBlob (startDate,endDate,targetID):
 		from Games 
 		join Participation on Games.GameUUID = Participation.GameUUID
 		join Players on Participation.PlayerID = Players.PlayerID
-		where GameTimestamp >= @startDate
-		and GameTimeStamp < @endDate
-		and ArenaName = @targetArena
+		where GameTimestamp >= @cfg.getConfigString("StartDate")
+		and GameTimeStamp < @cfg.getConfigString("EndDate")
+		and ArenaName = @cfg.getConfigString("SiteNameReal")
 	),
 	AverageRanks as 
 	( select PlayerID, AVG(CONVERT(float,gamePosition)) as AverageRank from Ranks
@@ -89,14 +86,14 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	"""
 
 
-	goldenGameQuery = """declare @startDate as date;
-	declare @endDate as date;
+	goldenGameQuery = """declare @cfg.getConfigString("StartDate") as date;
+	declare @cfg.getConfigString("EndDate") as date;
 	declare @targetID as varchar(20);
-	declare @targetArena as varchar(50);
-	set @startDate = ?;
-	set @endDate = ?;
+	declare @cfg.getConfigString("SiteNameReal") as varchar(50);
+	set @cfg.getConfigString("StartDate") = ?;
+	set @cfg.getConfigString("EndDate") = ?;
 	set @targetID = ?;
-	set @targetArena = ?;
+	set @cfg.getConfigString("SiteNameReal") = ?;
 
 	with PlayersInGame as (
 		SELECT 
@@ -105,7 +102,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 		FROM [LaserScraper].[dbo].[Games] as Games
 		join Participation on participation.GameUUID = Games.GameUUID
 		join Players on Participation.PlayerID = Players.PlayerID
-		where games.ArenaName = @targetArena
+		where games.ArenaName = @cfg.getConfigString("SiteNameReal")
 		group by Games.GameUUID ),
 
 	Ranks as 
@@ -115,7 +112,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 		from Games 
 		join Participation on Games.GameUUID = Participation.GameUUID
 		join Players on Participation.PlayerID = Players.PlayerID
-		where games.ArenaName = @targetArena
+		where games.ArenaName = @cfg.getConfigString("SiteNameReal")
 	),
 	GoldenGame as (
 
@@ -124,8 +121,8 @@ def buildPlayerBlob (startDate,endDate,targetID):
 		,round((playersInGame *  (playersInGame/gamePosition)),2) as StarQuality
 		from Ranks r join PlayersInGame pig on r.GameUUID = pig.gameID
 		where PlayerID = @targetID
-		and GameTimestamp >= @startDate
-		and GameTimeStamp < @endDate
+		and GameTimestamp >= @cfg.getConfigString("StartDate")
+		and GameTimeStamp < @cfg.getConfigString("EndDate")
 		order by StarQuality desc, score desc 
 		
 		),
@@ -163,8 +160,8 @@ def buildPlayerBlob (startDate,endDate,targetID):
 
 	conn = connectToSource()
 	cursor = conn.cursor()
-	DBG("BuildPlayerBlob.buildPlayerBlob start[%s], end[%s], target[%s], arena[%s]" % (startDate,endDate,targetID,targetArena),3)
-	result = cursor.execute(infoQuery,(startDate,endDate,targetID,targetArena))
+	DBG("BuildPlayerBlob.buildPlayerBlob start[%s], end[%s], target[%s], arena[%s]" % (cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetID,cfg.getConfigString("SiteNameReal")),3)
+	result = cursor.execute(infoQuery,(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetID,cfg.getConfigString("SiteNameReal")))
 	row = result.fetchone()
 
 	if row == None:
@@ -183,7 +180,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	JSONobject["StarQuality"] = row[7]
 	JSONobject["Achievements"] = row[9]
 
-	result = cursor.execute(goldenGameQuery,(startDate,endDate,targetID,targetArena))
+	result = cursor.execute(goldenGameQuery,(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetID,cfg.getConfigString("SiteNameReal")))
 	rows = result.fetchall()
 	if len(rows) > 0:
 		row = rows[0]
@@ -221,21 +218,21 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	
 
 def executeBuildPlayerBlobs():
-	targetIDs = getTop5PlayersRoster(startDate,endDate,targetArena)
+	targetIDs = getTop5PlayersRoster(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),cfg.getConfigString("SiteNameReal"))
 	print(targetIDs)
 
 	print ("Player profile blobs written!")
 	JSONobject = {}
 	if len(targetIDs) >= 1:
-		JSONobject["GoldenPlayer"] = buildPlayerBlob(startDate,endDate,targetIDs[0][0])
+		JSONobject["GoldenPlayer"] = buildPlayerBlob(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetIDs[0][0])
 	if len(targetIDs) >= 2:
-		JSONobject["SilverPlayer"] = buildPlayerBlob(startDate,endDate,targetIDs[1][0])
+		JSONobject["SilverPlayer"] = buildPlayerBlob(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetIDs[1][0])
 	if len(targetIDs) >= 3:
-		JSONobject["BronzePlayer"] = buildPlayerBlob(startDate,endDate,targetIDs[2][0])
+		JSONobject["BronzePlayer"] = buildPlayerBlob(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetIDs[2][0])
 	if len(targetIDs) >= 4:
-		JSONobject["OtherPlayer1"] = buildPlayerBlob(startDate,endDate,targetIDs[3][0])
+		JSONobject["OtherPlayer1"] = buildPlayerBlob(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetIDs[3][0])
 	if len(targetIDs) >= 5:
-		JSONobject["OtherPlayer2"] = buildPlayerBlob(startDate,endDate,targetIDs[4][0])
+		JSONobject["OtherPlayer2"] = buildPlayerBlob(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetIDs[4][0])
 
 	f = open("JSONBlobs\\playerBlob.json", "w+")
 	f.write(json.dumps(JSONobject))
