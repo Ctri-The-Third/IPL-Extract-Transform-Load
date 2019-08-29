@@ -137,9 +137,10 @@ def buildPlayerBlob (cfg.getConfigString("StartDate"),cfg.getConfigString("EndDa
 
 		select * from Vanquished"""
 
-	goldenAchievementQuery = """DECLARE @TargetID as Varchar(10)
+	goldenAchievementQuery = """	DECLARE @TargetID as Varchar(10)
+	DECLARE @targetArena as varchar(50);
+	set @targetArena = ?;
 	SET @TargetID = ? ;
-
 	with firstEarned as (
 	select distinct min (achievedDate) over (partition by AchID) as firstAchieved, AchID
 	from PlayerAchievement
@@ -155,6 +156,7 @@ def buildPlayerBlob (cfg.getConfigString("StartDate"),cfg.getConfigString("EndDa
 	join firstEarned fe on fe.AchID = data.AchID
 	join AllAchievements aa on pa.AchID = aa.AchID
 	where PlayerID = @TargetID
+	and ArenaName = @targetArena
 	order by playersEarned asc, firstAchieved asc
 	"""
 
@@ -198,7 +200,7 @@ def buildPlayerBlob (cfg.getConfigString("StartDate"),cfg.getConfigString("EndDa
 		if len(rows) >= 4:
 			JSONobject["GGVanq4"] = '%i others' % (len(rows) - 3)
 
-	result = cursor.execute(goldenAchievementQuery,(targetID))
+	result = cursor.execute(goldenAchievementQuery,(cfg.getConfigString("SiteNameReal"),targetID))
 	row = result.fetchone()
 	if row == None:
 		DBG("BuildPlayerBlob GoldenAchievementQuery query returned Null. Aborting.",1)
@@ -240,3 +242,4 @@ def executeBuildPlayerBlobs():
 	f = open("JSONBlobs\\%splayerBlob.json" % (cfg.getConfigString("ID Prefix")), "w+")
 	f.write(json.dumps(JSONobject))
 	f.close()
+
