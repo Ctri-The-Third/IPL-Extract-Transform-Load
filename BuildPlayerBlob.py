@@ -157,7 +157,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	join data on data.AchID = pa.AchID
 	join firstEarned fe on fe.AchID = data.AchID
 	join AllAchievements aa on pa.AchID = aa.AchID
-	where PlayerID = @TargetID
+	where PlayerID = @TargetID  and pa.achievedDate is not null
 	and ArenaName = @targetArena
 	order by playersEarned asc, firstAchieved asc
 	"""
