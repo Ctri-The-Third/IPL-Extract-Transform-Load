@@ -9,15 +9,15 @@ from DBG import DBG
 
 
 
-def buildPlayerBlob (startDate,endDate):
+def buildPlayerBlob (startDate,endDate,targetID):
 	infoQuery = """declare @startDate as date;
 	declare @endDate as date;
 	declare @targetID as varchar(20);
-	declare @cfg.getConfigString("SiteNameReal") as varchar(50);
+	declare @targetArena as varchar(50);
 	set @startDate = ?;
 	set @endDate = ?;
 	set @targetID = ?;
-	set @cfg.getConfigString("SiteNameReal") = ?;
+	set @targetArena = ?;
 
 
 		with PlayersInGame as (
@@ -29,7 +29,7 @@ def buildPlayerBlob (startDate,endDate):
 		join Players on Participation.PlayerID = Players.PlayerID
 		where GameTimestamp >= @startDate
 		and GameTimeStamp < @endDate
-		and Games.ArenaName = @cfg.getConfigString("SiteNameReal")
+		and Games.ArenaName = @targetArena
 		group by Games.GameUUID ),
 	averageOpponents as 
 	(
@@ -47,7 +47,7 @@ def buildPlayerBlob (startDate,endDate):
 		join Games on Games.GameUUID = Participation.GameUUID
 		where GameTimestamp >= @startDate
 		and GameTimeStamp < @endDate
-		and ArenaName = @cfg.getConfigString("SiteNameReal")
+		and ArenaName = @targetArena
 		group by Participation.PlayerID
 	),
 	Ranks as 
@@ -59,7 +59,7 @@ def buildPlayerBlob (startDate,endDate):
 		join Players on Participation.PlayerID = Players.PlayerID
 		where GameTimestamp >= @startDate
 		and GameTimeStamp < @endDate
-		and ArenaName = @cfg.getConfigString("SiteNameReal")
+		and ArenaName = @targetArena
 	),
 	AverageRanks as 
 	( select PlayerID, AVG(CONVERT(float,gamePosition)) as AverageRank from Ranks
@@ -89,11 +89,11 @@ def buildPlayerBlob (startDate,endDate):
 	goldenGameQuery = """declare @startDate as date;
 	declare @endDate as date;
 	declare @targetID as varchar(20);
-	declare @cfg.getConfigString("SiteNameReal") as varchar(50);
+	declare @targetArena as varchar(50);
 	set @startDate = ?;
 	set @endDate = ?;
 	set @targetID = ?;
-	set @cfg.getConfigString("SiteNameReal") = ?;
+	set @targetArena = ?;
 
 	with PlayersInGame as (
 		SELECT 
@@ -102,7 +102,7 @@ def buildPlayerBlob (startDate,endDate):
 		FROM [LaserScraper].[dbo].[Games] as Games
 		join Participation on participation.GameUUID = Games.GameUUID
 		join Players on Participation.PlayerID = Players.PlayerID
-		where games.ArenaName = @cfg.getConfigString("SiteNameReal")
+		where games.ArenaName = @targetArena
 		group by Games.GameUUID ),
 
 	Ranks as 
@@ -112,7 +112,7 @@ def buildPlayerBlob (startDate,endDate):
 		from Games 
 		join Participation on Games.GameUUID = Participation.GameUUID
 		join Players on Participation.PlayerID = Players.PlayerID
-		where games.ArenaName = @cfg.getConfigString("SiteNameReal")
+		where games.ArenaName = @targetArena
 	),
 	GoldenGame as (
 

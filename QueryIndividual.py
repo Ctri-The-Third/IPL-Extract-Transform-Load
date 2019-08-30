@@ -1,4 +1,4 @@
-
+from DBG import DBG
 import math
 import ConfigHelper as cfg
 import SQLHelper
@@ -19,7 +19,7 @@ colorama.init()
 ordinal = ['0th','%s%s1st%s%s' % (Fore.BLACK,Back.YELLOW,Fore.YELLOW,Back.BLACK), '%s%s2nd%s%s' % (Fore.BLACK,Back.WHITE,Fore.YELLOW,Back.BLACK), '%s%s3rd%s%s' % (Fore.BLACK,Back.RED,Fore.YELLOW,Back.BLACK), '4th', '5th', '6th', '7th', '8th', '9th', '10th',
  '11th', '12th', '13th', '14th', '15th', '16th', '17th', '18th', '19th',
  '20th', '21st', '22nd', '23rd', '24th', '25th', '26th', '27th', '28th',
- '29th', '30th', '31st']
+ '29th', '30th', '31st','32nd','33rd','34th','35th','36th','37th','38th','39th','40th','41st','42nd','43rd','44th','45th','46th','47th','48th','49th','50th']
 
 
 
@@ -140,7 +140,12 @@ order by month desc
     feedbackQueue.q.put( "%s%s**Month to Month Stats:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
     for result in results.fetchall():
         #print(result)
-        temptStr = "%s: Stars %s (%s)\t Std %s (%s)" % (result[0],ordinal[int(result[1])],result[2],ordinal[int(result[4])],result[5])
+        if int(result[4]) > 50 or int(result[4]) < 0:
+            ordinalString = result[4]
+        else : 
+            ordinalString = ordinal[int(result[4])]
+
+        temptStr = "%s: Stars %s (%s)\t Std %s (%s)" % (result[0],ordinal[int(result[1])],result[2],ordinalString,result[5])
         feedbackQueue.q.put( "%s%s(%s%s%s)%s\n" % (Back.BLACK,Fore.WHITE,Fore.YELLOW,temptStr,Fore.WHITE,Fore.WHITE))
 
 
@@ -179,10 +184,10 @@ order by GameTimestamp desc
     global cursor
     global config
     results = cursor.execute(sql,(targetID,cfg.getConfigString("SiteNameReal")))
-    feedbackQueue.q.put("%s%s**Recent Games:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
+    feedbackQueue.q.put("%s%s**Recent Games: for %s at %s **%s\n" % (Back.BLACK,Fore.WHITE,targetID,cfg.getConfigString("SiteNameShort"),Fore.WHITE))
     for result in results.fetchall():
         #print(result)
-        temptStr = "%s: %s \t rank %s, of %s" % (result[1],result[2][:15],ordinal[int(result[5])],result[6])
+        temptStr = "%s: %s       rank %s, of %s" % (result[1],(result[2]+" "*15)[:15],ordinal[int(result[5])],result[6])
         feedbackQueue.q.put( "%s%s(%s%s%s)%s\n" % (Back.BLACK,Fore.WHITE,Fore.YELLOW,temptStr,Fore.WHITE,Fore.WHITE))
 
 
@@ -230,9 +235,37 @@ order by games desc'''
         feedbackQueue.q.put( "%s%s(%s%s%s)%s," % (Back.BLACK,Fore.WHITE,Fore.YELLOW,temptStr,Fore.WHITE,Fore.WHITE))
     
 
+def findPlayer(targetID):
+    global cursor
+    exactMatch = """select top 1 PlayerID from Players where playerID = ?"""
+    result = cursor.execute(exactMatch,(targetID,)).fetchall()
+    if result == None or len(result) == 0:
+        localID = cfg.getConfigString("ID Prefix") + targetID 
+        result = cursor.execute(exactMatch,(localID,)).fetchall()
+        if result != None and len(result) == 1:
+            return result[0][0]
 
-def executeQueryIndividual (targetID):
+    else: 
+        return targetID
+        
+    nameMatch = """select top 1 PlayerID, Missions
+        from players 
+        where GamerTag like ?
+        order by missions desc 
+        """
+    name = '%%%s%%' % targetID
+    result = cursor.execute(nameMatch,(name,)).fetchall()
+    if result != None and len(result) == 1:
+        return result[0][0]
+    return "0-0-0"
+    #Check prefix+suffix
+    #check for 'like', and retrieve player with most missions in current arena
 
+def executeQueryIndividual (initTargetID):
+    targetID = findPlayer(initTargetID)
+    if targetID == "0-0-0":
+        DBG("Unable to find a player with ID or name [%s]" % initTargetID, 2)
+        return
     recentGames(targetID) 
     blobs(targetID)
     PlaysWhen(targetID)

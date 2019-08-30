@@ -254,6 +254,7 @@ while inputS != "exit" and inputS != "x":
             threads.append(t)
             t.start()      
             inputS = ""
+            
         elif inputS == "661":
             feedback.append("Performing update of inactivate players in background...")
             t = threading.Thread(target=executeQueryGames, args=("full",))
