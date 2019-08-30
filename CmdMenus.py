@@ -1,3 +1,4 @@
+from DBG import DBG
 import os
 import time
 import colorama
@@ -151,7 +152,7 @@ t = threading.Thread(target=InputReader.executeKeyboardLoop)
 threads.append(t)
 t.start()    
     
-
+DBG("Startup - menu",3)
 os.system('CLS')
 waitingFunction = ""
 workerStatusQ = workerProgressQueue.getQ()
@@ -254,7 +255,7 @@ while inputS != "exit" and inputS != "x":
             threads.append(t)
             t.start()      
             inputS = ""
-            
+
         elif inputS == "661":
             feedback.append("Performing update of inactivate players in background...")
             t = threading.Thread(target=executeQueryGames, args=("full",))

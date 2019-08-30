@@ -66,7 +66,9 @@ def buildPlayerBlob (startDate,endDate,targetID):
 		group by PlayerID),
 
 	totalAchievements as  (
-	select  sum ( case when achievedDate is null then 0 when achievedDate is not null then 1 end) as AchievementsCompleted, PlayerID from PlayerAchievement
+	select  sum ( case when achievedDate is null then 0 when achievedDate is not null then 1 end) as AchievementsCompleted, PlayerID 
+	from PlayerAchievement pa join AllAchievements aa on pa.AchID = aa.AchID
+	where aa.ArenaName = @targetArena or aa.ArenaName = 'Global Achievements'
 	group by PlayerID
 	)
 
@@ -167,7 +169,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	row = result.fetchone()
 
 	if row == None:
-		DBG("BuildPlayerBlob info query returned Null. Aborting.",1)
+		DBG("BuildPlayerBlob info query returned Null. Aborting. [%s]" % (targetID),1)
 		return
 	print(row)
 	print ("Players.PlayerID, GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed,  AverageRank")
@@ -203,7 +205,7 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	result = cursor.execute(goldenAchievementQuery,(cfg.getConfigString("SiteNameReal"),targetID))
 	row = result.fetchone()
 	if row == None:
-		DBG("BuildPlayerBlob GoldenAchievementQuery query returned Null. Aborting.",1)
+		DBG("BuildPlayerBlob GoldenAchievementQuery query returned Null. Aborting. [%s]" % (targetID),1)
 		return
 	print (row)
 
@@ -235,6 +237,12 @@ def executeBuildPlayerBlobs():
 		JSONobject["OtherPlayer1"] = buildPlayerBlob(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetIDs[3][0])
 	if len(targetIDs) >= 5:
 		JSONobject["OtherPlayer2"] = buildPlayerBlob(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetIDs[4][0])
+	if len(targetIDs) < 5:
+		DBGstring = "Big 5 returned %i: " % (len(targetIDs))
+		for target in targetIDs:
+			DBGstring = DBGstring + "[%i %s]," % (target[2],target[3])
+		DBG(DBGstring,2)
+
 
 	f = open("JSONBlobs\\playerBlob.json", "w+")
 	f.write(json.dumps(JSONobject))

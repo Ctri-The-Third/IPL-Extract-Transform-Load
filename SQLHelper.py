@@ -57,7 +57,7 @@ def getPlayersWhoMightNeedAchievementUpdates(scope):
     cursor = conn.cursor()
     query = """
     select distinct PlayerID from Participation
-    where insertedTimestamp > dateadd(d,-6,getdate()) 
+    where insertedTimestamp > dateadd(d,-7,getdate()) 
     """
     cursor.execute(query)
     results = cursor.fetchall()
@@ -325,7 +325,7 @@ AverageRanks as
 ( select PlayerID, AVG(CONVERT(float,gamePosition)) as AverageRank from Ranks
 	group by PlayerID), 
 AverageScores as (
-	SELECT 
+SELECT 
 	Players.PlayerID, 	
 	avg(Score) as averageScore
 	
@@ -337,7 +337,11 @@ AverageScores as (
 	join AverageRanks on AverageRanks.PlayerID = Players.PlayerID
 	where Games.GameTimestamp >= @startDate
 	AND Games.GameTimestamp < @endDate
-	and Games.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual')
+	and (
+	Games.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual')
+    or Games.GameName in ('Standard - Solo', 'Standard - Team','Standard [3 Team] (10)','Standard [3 Team] (15)','Standard 2 Team',
+    'Standard 3 Team','Standard 4 Team','Standard Individual','Standard Multi team','- Standard [2 Team] (15))')
+	)
 	and games.ArenaName = @targetArena
 	group by Players.PlayerID
  ),
