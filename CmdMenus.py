@@ -14,6 +14,7 @@ from ctypes import *
 
 from FetchPlayerAndGames import executeQueryGames
 from FetchPlayerUpdatesAndNewPlayers import updateExistingPlayers
+from FetchPlayerUpdatesAndNewPlayers import findNewPlayers
 from FetchAchievements import executeFetchAchievements
 import FetchPlayerAndGames
 import FetchPlayerUpdatesAndNewPlayers
@@ -100,7 +101,7 @@ def drawMainMenu():
     print_at (16,0,"" )
     print_at (17,0,"[?] Help " )
     print_at (18,0,"[x] Exit")
-    print_at (19,0, "%s/***** Select Option ************************************************\%s" % (fg.yellow, fg.white))
+    
     print("")
     
     if feedback.__len__() > 5:
@@ -265,6 +266,12 @@ while inputS != "exit" and inputS != "x":
         elif inputS == "666":
             feedback.append("Performing complete update in background...")
             t = threading.Thread(target=updateExistingPlayers)
+            threads.append(t)
+            t.start()
+            inputS = ""
+        elif inputS == "667":
+            feedback.append("Seeking new players in background...")
+            t = threading.Thread(target=findNewPlayers)
             threads.append(t)
             t.start()
             inputS = ""

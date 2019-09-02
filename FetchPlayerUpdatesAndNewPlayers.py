@@ -21,7 +21,7 @@ def findNewPlayers():
     conn = connectToSource()
     cursor = conn.cursor()
     sitePrefix = cfg.getConfigString("ID Prefix")
-
+    TickerIcon = ["|","/","-",'\\']
 #
     query = """
     select max(CONVERT(int,SUBSTRING(PlayerID,5,20))) as MaxPlayerID
@@ -41,9 +41,11 @@ def findNewPlayers():
 
     
     #MaxPlayer = 243 #OVERRIDE, remove before committing
+    ticker = 0
     consecutiveMisses = 0
     currentTarget = MaxPlayer - 100 #we've had situations where the system adds user IDs behind the maximum. This is a stopgap dragnet to catch trailing players.
-    while consecutiveMisses <= 500:
+    AllowedMisses = 100
+    while consecutiveMisses <= AllowedMisses:
         player =  fetchPlayer_root('',region,siteNumber,currentTarget)
         if 'centre' in player:
             
@@ -56,11 +58,15 @@ def findNewPlayers():
         else: 
             print("DBG: FetchPlayerUpdatesAndNewPlayers.findNewPlayers - Missed a player 7-X-%s" % (currentTarget))
             consecutiveMisses = consecutiveMisses + 1
+        wpq.updateQ(consecutiveMisses,AllowedMisses,"Seeking new... %s" % TickerIcon[ticker % 4],"ETA ?")    
         currentTarget = currentTarget + 1 
+        ticker = ticker + 1
+        
     endTime = datetime.datetime.now()
     f = open("Stats.txt","a+")
     
     f.write("searched for {0} players, operation completed after {1}. \t\n".format(currentTarget-MaxPlayer,endTime - startTime ))
+    wpq.updateQ(1,1,"Seeking new... %s","Complete")
     f.close()
     conn.commit()
     conn.close()
