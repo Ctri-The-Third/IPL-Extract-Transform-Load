@@ -24,10 +24,12 @@ def findNewPlayers():
     TickerIcon = ["|","/","-",'\\']
 #
     query = """
-    select max(CONVERT(int,SUBSTRING(PlayerID,5,20))) as MaxPlayerID
-    from players
-    where SUBSTRING(PlayerID,1,4) = ?                       --only locals
-    and CONVERT(int,SUBSTRING(PlayerID,5,20)) < 100000      --not players with messed up cards
+        with PlayerSegments as (
+        select convert(int,SUBSTRING(substring(PlayerID,CHARINDEX ('-',PlayerID)+1 ,20),charINDEX('-',substring(PlayerID,CHARINDEX ('-',PlayerID)+1 ,20))+1,20)) as IDSuffix
+            from players 
+        )
+        select max (IDSuffix) from PlayerSegments where  IDSuffix < 100000
+        --not players with messed up cards
     """
     results = cursor.execute(query,(sitePrefix))
     result = results.fetchone()
