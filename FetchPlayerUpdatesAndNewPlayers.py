@@ -25,8 +25,10 @@ def findNewPlayers():
 #
     query = """
         with PlayerSegments as (
-        select convert(int,SUBSTRING(substring(PlayerID,CHARINDEX ('-',PlayerID)+1 ,20),charINDEX('-',substring(PlayerID,CHARINDEX ('-',PlayerID)+1 ,20))+1,20)) as IDSuffix
-            from players 
+        select distinct convert(int,SUBSTRING(substring(pl.PlayerID,CHARINDEX ('-',pl.PlayerID)+1 ,20),charINDEX('-',substring(pl.PlayerID,CHARINDEX ('-',pl.PlayerID)+1 ,20))+1,20)) as IDSuffix
+            from players pl join Participation p on pl.PlayerID = p.PlayerID
+            join games g on p.GameUUID = g.GameUUID
+            where g.ArenaName = ?
         )
         select max (IDSuffix) from PlayerSegments where  IDSuffix < 100000
         --not players with messed up cards
