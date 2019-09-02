@@ -21,6 +21,7 @@ def findNewPlayers():
     conn = connectToSource()
     cursor = conn.cursor()
     sitePrefix = cfg.getConfigString("ID Prefix")
+    siteName = cfg.getConfigString("SiteNameReal")
     TickerIcon = ["|","/","-",'\\']
 #
     query = """
@@ -33,7 +34,7 @@ def findNewPlayers():
         select max (IDSuffix) from PlayerSegments where  IDSuffix < 100000
         --not players with messed up cards
     """
-    results = cursor.execute(query,(sitePrefix))
+    results = cursor.execute(query,(siteName))
     result = results.fetchone()
     if result[0] == None:
         MaxPlayer = 199 #LaserForce seems to start numbering players at 100
