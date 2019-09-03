@@ -92,14 +92,25 @@ totalPlayersPerGame as
 	group by g.GameUUID
 )
 , starData0 as  (
-select concat(concat(DATEPART(yyyy,GameTimestamp),'-'),CONCAT (CASE WHEN DATEPART(MM,Gametimestamp) < 10 THEN '0' END ,DATEPART(MM,Gametimestamp))) as month, ranks.GameUUID,GameTimestamp,GameName,PlayerID,GamerTag,gamePosition,playerCount, playerCount  * ( playerCount  / gamePosition ) as SQ
+select concat(concat(DATEPART(yyyy,GameTimestamp),'-')
+,CONCAT (CASE WHEN DATEPART(MM,Gametimestamp) < 10 THEN '0' END ,DATEPART(MM,Gametimestamp))) as month
+, ranks.GameUUID,GameTimestamp
+, GameName
+, PlayerID,GamerTag
+, gamePosition
+, playerCount
+
 from ranks join totalPlayersPerGame tppg 
 on ranks.GameUUID = tppg.GameUUID
 --where PlayerID = @targetID
 
 )
 ,starData1 as (
-select month, PlayerID,count(*) games,round(avg(cast(gamePosition as float)),2) avgRank, round(avg(cast(playercount as float)),2) avgOpponents, round(avg(cast(SQ as float)),2) avgSQ
+select month
+, PlayerID,count(*) games
+, round(avg(cast(gamePosition as float)),2) avgRank
+, round(avg(cast(playercount as float)),2) avgOpponents
+, round(avg(cast(playercount as float))  * (avg(cast(playercount as float)) / avg(cast(gamePosition as float))),2) as avgSQ
 from starData0 
 group by  month, PlayerID
 )
@@ -126,7 +137,8 @@ select ROW_NUMBER() over (partition by month order by month desc, avgSQ desc) SQ
  , stdData1 as (
  select *, ROW_NUMBER() over (partition by GameMonth order by averageScore desc) as stdRank from StdData0
  )
- 
+
+ -- players * (players/rank)
 select top (3) month,SQrank,avgSQ,games,stdRank,averageScore,gamesPlayed
 from starData2 sq
 join StdData1 sd on sq.PlayerID = sd.PlayerID and sq.month = sd.GameMonth
