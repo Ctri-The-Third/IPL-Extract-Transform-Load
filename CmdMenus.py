@@ -20,6 +20,7 @@ import FetchPlayerAndGames
 import FetchPlayerUpdatesAndNewPlayers
 import FetchIndividual  
 import QueryIndividual
+import QueryArena
 import InputReader
 import feedbackQueue # shared module that contains a queue for giving output to the UI
 
@@ -32,6 +33,7 @@ import BuildHeadToHeadsToJSON
 import workerProgressQueue 
 # This application class serves as a wrapper for the initialization of curses
 # and also manages the actual forms of the application
+
 
 
 feedback = []
@@ -52,7 +54,8 @@ def print_at(r, c, s):
 ### END  https://rosettacode.org/wiki/Terminal_control/Cursor_positioning#Python ###
 
 def drawHeader():
-
+    arenaHealth = QueryArena.healthCheck(cfg.getConfigString("SiteNameReal"))
+    healthNotice = ["%s%s" % (bg.black,fg.green),"%s%s"% (bg.black,fg.yellow),"%s%s"% (bg.red,fg.black)]
     print_at (0,0,"%s/***** LF Profiler **************************************************\ %s" % (fg.yellow, fg.white))
     
     outStr  = "Start Date:           [ %s%s%s ]          | " % ( fg.green,  cfg.getConfigString("StartDate"), fg.white)
@@ -61,7 +64,8 @@ def drawHeader():
     outStr = "End Date:             [ %s%s%s ]          | " % ( fg.green, cfg.getConfigString("EndDate"),fg.white)
     outStr = outStr + CurrentWorkerStatus["CurrentAction"]
     print_at(2,0,outStr)
-    outStr = "Target site:          [ %s%s%s ]| " % (fg.green,(cfg.getConfigString("SiteNameShort")+ " "*20)[0:20],fg.white) 
+
+    outStr = "Target site:          [ %s%s%s%s ]| " % (healthNotice[arenaHealth],(cfg.getConfigString("SiteNameShort")+ " "*20)[0:20],bg.black,fg.white) 
     
     outStr = outStr + "%s" % (CurrentWorkerStatus["ETA"]) 
     print_at (3,0,outStr)
@@ -89,18 +93,19 @@ def drawMainMenu():
     print_at (5,0,"%s/***** Menu *********************************************************\ %s" % (fg.yellow, fg.white))
     print_at (6,0,"["+fg.yellow+"11 "+fg.white+"] Select different site")
     print_at (7,0,"["+fg.yellow+"12 "+fg.white+"] Select different dates")
-    print_at (8,0,"["+fg.yellow+" 5 "+fg.white+"] Run queries on specific player")
-    print_at (9,0,"["+fg.yellow+" 6 "+fg.white+"] Rebuild the JSON blobs")
-    print_at (10,0,"["+fg.yellow+"61 "+fg.white+"] Update individual player")
-    print_at (11,0,"["+fg.yellow+"66 "+fg.white+"] Run DB game search for %sactive%s players at %ssite%s" % (Fore.GREEN,Fore.WHITE,Fore.GREEN, Fore.WHITE))
-    print_at (12,0,"["+fg.yellow+"67 "+fg.white+"] Run Achievement refresh for %sall%s %srecent%s players" % (Fore.RED, Fore.WHITE,Fore.GREEN, Fore.WHITE))
-    print_at (13,0,"["+fg.yellow+"661"+fg.white+"] Run DB game search for %sall inactivate%s players" % (Fore.RED, Fore.WHITE))
-    print_at (14,0,"["+fg.yellow+"666"+fg.white+"] Run DB summary refresh for %sall%s players"% (Fore.RED, Fore.WHITE))
-    print_at (15,0,"["+fg.yellow+"667"+fg.white+"] Find %snew%s players for active %ssite%s"% (Fore.RED, Fore.WHITE, Fore.GREEN,Fore.WHITE))
+    print_at (8,0,"["+fg.yellow+" 4 "+fg.white+"] Run status queries on current site")
+    print_at (9,0,"["+fg.yellow+" 5 "+fg.white+"] Run queries on specific player")
+    print_at (10,0,"["+fg.yellow+" 6 "+fg.white+"] Rebuild the JSON blobs")
+    print_at (11,0,"["+fg.yellow+"61 "+fg.white+"] Update individual player")
+    print_at (12,0,"["+fg.yellow+"66 "+fg.white+"] Run DB game search for %sactive%s players at %ssite%s" % (Fore.GREEN,Fore.WHITE,Fore.GREEN, Fore.WHITE))
+    print_at (13,0,"["+fg.yellow+"67 "+fg.white+"] Run Achievement refresh for %sall%s %srecent%s players" % (Fore.RED, Fore.WHITE,Fore.GREEN, Fore.WHITE))
+    print_at (14,0,"["+fg.yellow+"661"+fg.white+"] Run DB game search for %sall inactivate%s players" % (Fore.RED, Fore.WHITE))
+    print_at (15,0,"["+fg.yellow+"666"+fg.white+"] Run DB summary refresh for %sall%s players"% (Fore.RED, Fore.WHITE))
+    print_at (16,0,"["+fg.yellow+"667"+fg.white+"] Find %snew%s players for active %ssite%s"% (Fore.RED, Fore.WHITE, Fore.GREEN,Fore.WHITE))
     
-    print_at (16,0,"" )
-    print_at (17,0,"[?] Help " )
-    print_at (18,0,"[x] Exit")
+    print_at (17,0,"" )
+    print_at (18,0,"[?] Help " )
+    print_at (19,0,"[x] Exit")
     
     print("")
     
@@ -152,6 +157,8 @@ inputS = ""
 t = threading.Thread(target=InputReader.executeKeyboardLoop)
 threads.append(t)
 t.start()    
+
+
     
 DBG("Startup - menu",3)
 os.system('CLS')
@@ -226,6 +233,8 @@ while inputS != "exit" and inputS != "x":
 
             if startDate != "B" and EndDate != "B":
                 feedback.append(setNewDates(startDate,EndDate))
+        if inputS == "4": 
+            waitingFunction = "outputPane"
         elif inputS == "5":
             waitingFunction = "5"
         elif inputS == "6":
