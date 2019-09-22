@@ -5,7 +5,7 @@ import SQLHelper
 import colorama
 from colorama import Fore, Back
 import feedbackQueue
-import lru_cache 
+#import lru_cache 
 #: last 5 games' stats
 #: Blobs, month to month.
 #: Top achievement in terms of rarity
@@ -95,7 +95,7 @@ def executeQueryArena (initTargetID):
     #NewMembersDetected - SQLnewAndLostPlayers
     #ChurnedMembers (60 days)
 
-@lru_cache (maxsize=1)
+#@lru_cache (maxsize=1)
 def healthCheck (arenaName):
     SQLdataRecency = """declare @targetArena as varchar(50)
 set @targetArena = ?;

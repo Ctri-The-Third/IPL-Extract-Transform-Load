@@ -8,7 +8,7 @@ def executeAchievementBuild():
 
     SQL = '''
 declare @arenaName as varchar(50)
-set @arenaName = ?;
+set @arenaName = %s;
 with PA as (
 select  pl.PlayerID, GamerTag,  
 	sum ( case when achievedDate is null then 0 when achievedDate is not null then 1 end) as AchievementsCompleted 
