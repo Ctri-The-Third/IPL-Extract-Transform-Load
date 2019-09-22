@@ -1,9 +1,12 @@
+#queue
+#colorama
+
 from DBG import DBG
 import os
 import time
 import colorama
 import threading
-import queue 
+import Queue as queue #python3 handling? 
 from console import fg, bg, fx 
 
 from renderProgressBar import renderBar
