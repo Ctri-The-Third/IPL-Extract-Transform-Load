@@ -10,21 +10,4 @@ def execute():
     result = {}
     return result 
 
-def setupPostgres():
-    databaseSetup = open("SQL Queries/DatabaseSetup - postgresql.sql")
     SQL = databaseSetup.read()
-
-    conn = connectToSource()
-    print (conn)
-    cursor = conn.cursor()
-
-    result = cursor.execute(SQL)
-    conn.commit()
-    conn.close()
-#setupPostgres()
-conn = connectToSource()
-cursor = conn.cursor()
-cursor.execute ("select * from players")
-print ("Credentials correct, database exist, tables exist")
-print(cursor.fetchone())
-
