@@ -71,11 +71,6 @@ order by achievingPlayers asc, achievedDate asc'''
 
 def blobs (targetID):
     sql = '''
-DECLARE @targetID  as varchar (20) 
-DECLARE @ArenaName as varchar(50)
-set @targetID = ?
-set @ArenaName = ?;
-
 with Ranks as 
 (
 	select GameTimestamp,games.GameUUID, GameName, Players.PlayerID, GamerTag, Score, 
@@ -83,7 +78,7 @@ with Ranks as
 	from Games 
 	join Participation on Games.GameUUID = Participation.GameUUID
 	join Players on Participation.PlayerID = Players.PlayerID
-	where Games.ArenaName = @ArenaName
+	where Games.ArenaName = %s
 ),
 totalPlayersPerGame as 
 (
@@ -92,38 +87,33 @@ totalPlayersPerGame as
 	group by g.GameUUID
 )
 , starData0 as  (
-select concat(concat(DATEPART(yyyy,GameTimestamp),'-')
-,CONCAT (CASE WHEN DATEPART(MM,Gametimestamp) < 10 THEN '0' END ,DATEPART(MM,Gametimestamp))) as month
+select to_char(gametimestamp, 'YYYY-MM') as month
 , ranks.GameUUID,GameTimestamp
 , GameName
 , PlayerID,GamerTag
 , gamePosition
 , playerCount
-
 from ranks join totalPlayersPerGame tppg 
 on ranks.GameUUID = tppg.GameUUID
---where PlayerID = @targetID
-
 )
 ,starData1 as (
-select month
-, PlayerID,count(*) games
-, round(avg(cast(gamePosition as float)),2) avgRank
-, round(avg(cast(playercount as float)),2) avgOpponents
-, round(avg(cast(playercount as float))  * (avg(cast(playercount as float)) / avg(cast(gamePosition as float))),2) as avgSQ
-from starData0 
-group by  month, PlayerID
+	select month
+	, PlayerID,count(*) games
+	, round(avg(cast(gamePosition as numeric)),2) avgRank
+	, round(avg(cast(playercount as numeric)),2) avgOpponents
+	, round(avg(cast(playercount as numeric))  * (avg(cast(playercount as numeric)) / avg(cast(gamePosition as numeric))),2) as avgSQ
+	from starData0 
+	group by  month, PlayerID
 )
 , starData2 as (
-select ROW_NUMBER() over (partition by month order by month desc, avgSQ desc) SQrank, * from starData1)
-
+	select ROW_NUMBER() over (partition by month order by month desc, avgSQ desc) SQrank, * from starData1
+)
 , StdData0 as( select 
 	p.PlayerID, 
 	GamerTag, 
 	avg(Score) as averageScore,
 	count(GamerTag) as gamesPlayed,
-	convert(varchar(7),GameTimestamp,126) as GameMonth
-	
+	to_char(GameTimestamp, 'YYYY-MM') as GameMonth	
   FROM Participation p
   inner join Players pl on p.PlayerID = pl.PlayerID
   inner join Games g on p.GameUUID = g.GameUUID
@@ -131,26 +121,27 @@ select ROW_NUMBER() over (partition by month order by month desc, avgSQ desc) SQ
   and (g.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual') or
    g.GameName in ('Continous Ind','Standard 2 Team','Standard 3 Team','Standard 4 Team','Standard Individual','Standard Multi team' )
   )
-  and g.ArenaName = @ArenaName
-  GROUP BY p.PlayerID, pl.GamerTag, convert(varchar(7),GameTimestamp,126)
+  and g.ArenaName = %s
+  GROUP BY p.PlayerID, pl.GamerTag, to_char(GameTimestamp, 'YYYY-MM')
 )
- , stdData1 as (
- select *, ROW_NUMBER() over (partition by GameMonth order by averageScore desc) as stdRank from StdData0
- )
-
+, stdData1 as (
+  select *, ROW_NUMBER() over (partition by GameMonth order by averageScore desc) as stdRank from StdData0
+)
  -- players * (players/rank)
-select top (3) month,SQrank,avgSQ,games,stdRank,averageScore,gamesPlayed
+select month,SQrank,avgSQ,games,stdRank,averageScore,gamesPlayed
 from starData2 sq
 join StdData1 sd on sq.PlayerID = sd.PlayerID and sq.month = sd.GameMonth
-where sq.PlayerID = @targetID 
+where sq.PlayerID = %s 
 order by month desc 
+limit 3
 '''
     global cursor
     global config
     global ordinal
-    results = cursor.execute(sql,(targetID,cfg.getConfigString("SiteNameReal")))
+    data = (targetID,cfg.getConfigString("SiteNameReal"),targetID)
+    cursor.execute(sql,data)
     feedbackQueue.q.put( "%s%s**Month to Month Stats:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
-    for result in results.fetchall():
+    for result in cursor.fetchall():
         #print(result)
         if int(result[4]) > 50 or int(result[4]) < 0:
             ordinalString = result[4]
@@ -163,11 +154,6 @@ order by month desc
 
 def recentGames(targetID):
     sql = '''
-DECLARE @targetID  as varchar (20) 
-DECLARE @ArenaName as varchar(50)
-set @targetID = ?;
-set @ArenaName = ?;
-
 with Ranks as 
 (
 	select GameTimestamp,games.GameUUID, GameName, Players.PlayerID, GamerTag, Score, 
@@ -175,7 +161,7 @@ with Ranks as
 	from Games 
 	join Participation on Games.GameUUID = Participation.GameUUID
 	join Players on Participation.PlayerID = Players.PlayerID
-	where Games.ArenaName = @ArenaName
+	where Games.ArenaName = %s
 ),
 totalPlayersPerGame as 
 (
@@ -183,21 +169,27 @@ totalPlayersPerGame as
 	from Participation p join Games g on p.GameUUID = g.GameUUID
 	group by g.GameUUID
 )
-
-select top(3) ranks.GameUUID,convert(varchar(17),GameTimestamp,113),GameName,PlayerID,GamerTag,gamePosition,playerCount, playerCount  * ( playerCount  / gamePosition ) as SQ
+select ranks.GameUUID
+	,to_char(GameTimestamp,'DD Mon YYYY')
+	,GameName
+	,PlayerID
+	,GamerTag
+	,gamePosition
+	,playerCount
+	,playerCount  * ( playerCount  / gamePosition ) as SQ
 from ranks join totalPlayersPerGame tppg 
 on ranks.GameUUID = tppg.GameUUID
-where PlayerID = @targetID
+where PlayerID = %s
 order by GameTimestamp desc
-
-
+limit 3 
     '''
     global ordinal
     global cursor
     global config
-    results = cursor.execute(sql,(targetID,cfg.getConfigString("SiteNameReal")))
+    cursor.execute(sql,(targetID,cfg.getConfigString("SiteNameReal")))
+    results = cursor.fetchall()
     feedbackQueue.q.put("%s%s**Recent Games: for %s at %s **%s\n" % (Back.BLACK,Fore.WHITE,targetID,cfg.getConfigString("SiteNameShort"),Fore.WHITE))
-    for result in results.fetchall():
+    for result in results:
         #print(result)
         temptStr = "%s: %s       rank %s, of %s" % (result[1],(result[2]+" "*15)[:15],ordinal[int(result[5])],result[6])
         feedbackQueue.q.put( "%s%s(%s%s%s)%s\n" % (Back.BLACK,Fore.WHITE,Fore.YELLOW,temptStr,Fore.WHITE,Fore.WHITE))
@@ -205,43 +197,38 @@ order by GameTimestamp desc
 
 def PlaysWhen(targetID):
     sql = '''
-    declare @targetID as varchar(50)
-declare @arenaName as varchar(50)
-set @targetID = ?;
-set @arenaName = ?;
-
-
-
 with dateData as (
 select distinct case 
-	when DATEPART( dw, GameTimestamp) = 1 then 'Sunday'
-	when DATEPART( dw, GameTimestamp) = 2 then 'Monday'
-	when DATEPART( dw, GameTimestamp) = 3 then 'Tuesday'
-	when DATEPART( dw, GameTimestamp) = 4 then 'Wednesday'
-	when DATEPART( dw, GameTimestamp) = 5 then 'Thursday'
-	when DATEPART( dw, GameTimestamp) = 6 then 'Friday'
-	when DATEPART( dw, GameTimestamp) = 7 then 'Saturday'
+	when EXTRACT(DOW FROM GameTimestamp) = 1 then 'Sunday'
+	when EXTRACT(DOW FROM GameTimestamp) = 2 then 'Monday'
+	when EXTRACT(DOW FROM GameTimestamp) = 3 then 'Tuesday'
+	when EXTRACT(DOW FROM GameTimestamp) = 4 then 'Wednesday'
+	when EXTRACT(DOW FROM GameTimestamp) = 5 then 'Thursday'
+	when EXTRACT(DOW FROM GameTimestamp) = 6 then 'Friday'
+	when EXTRACT(DOW FROM GameTimestamp) = 7 then 'Saturday'
 end as dayName, 
-	DATEPART (dw,GameTimestamp) as day
+	EXTRACT(DOW FROM GameTimestamp) as day
 from Games
 ),
 data as (
-	select count (*) as games, DATEPART( dw, GameTimestamp) as day, datePart(HH,GameTimestamp) as hour
+	select count (*) as games, EXTRACT(DOW FROM GameTimestamp) as day, EXTRACT(hour FROM GameTimestamp) as hour
 	from players pl join Participation p on pl.PlayerID = p.PlayerID 
 	join games g on p.GameUUID = g.GameUUID
-	where p.playerID = @targetID
-	and g.ArenaName = @arenaName
-	group by DATEPART( dw, GameTimestamp), datePart(HH,GameTimestamp)
+	where p.playerID = %s
+	and g.ArenaName = %s
+	group by day, hour
 )
-
-select top (2) games,dayName,hour from data d join   dateData dd on d.day =dd.day
-order by games desc'''
+select games,dayName,hour from data d join   dateData dd on d.day =dd.day
+order by games desc
+limit 2
+'''
     global ordinal
     global cursor
     global config
-    results = cursor.execute(sql,(targetID,cfg.getConfigString("SiteNameReal")))
+    data =(targetID,cfg.getConfigString("SiteNameReal"))
+    cursor.execute(sql,data)
     feedbackQueue.q.put( "%s%s**Common Game Times:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
-    for result in results.fetchall():
+    for result in cursor.fetchall():
         #print(result)
         temptStr = "on %s at %s:00ish" % (result[1],result[2])
         feedbackQueue.q.put( "%s%s(%s%s%s)%s," % (Back.BLACK,Fore.WHITE,Fore.YELLOW,temptStr,Fore.WHITE,Fore.WHITE))
@@ -249,24 +236,31 @@ order by games desc'''
 
 def findPlayer(targetID):
     global cursor
-    exactMatch = """select top 1 PlayerID from Players where playerID = ?"""
-    result = cursor.execute(exactMatch,(targetID,)).fetchall()
+    if cursor == None:
+        cursor = SQLHelper.connectToSource().cursor()
+    exactMatch = """select PlayerID from Players where playerID = %s limit 1"""
+    cursor.execute(exactMatch,(targetID,))
+    result = cursor.fetchall()
+
     if result == None or len(result) == 0:
         localID = cfg.getConfigString("ID Prefix") + targetID 
-        result = cursor.execute(exactMatch,(localID,)).fetchall()
+        cursor.execute(exactMatch,(localID,))
+        cursor.fetchall()
         if result != None and len(result) == 1:
             return result[0][0]
 
     else: 
         return targetID
         
-    nameMatch = """select top 1 PlayerID, Missions
+    nameMatch = """select top PlayerID, Missions
         from players 
-        where GamerTag like ?
-        order by missions desc 
+        where GamerTag like %s
+        order by missions desc
+        limit 1 
         """
     name = '%%%s%%' % targetID
-    result = cursor.execute(nameMatch,(name,)).fetchall()
+    cursor.execute(nameMatch,(name,))
+    results = cursor.fetchone()
     if result != None and len(result) == 1:
         return result[0][0]
     return "0-0-0"

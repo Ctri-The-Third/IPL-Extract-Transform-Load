@@ -1,4 +1,5 @@
-import pyodbc
+from psycopg2 import sql
+from DBG import DBG
 import uuid
 import csv 
 
@@ -19,7 +20,7 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
         """
         cursor.execute(query)
     else:
-        query = """
+        query = sql.SQL("""
     declare @startDate as date
     declare @period as int
 	declare @targetArena as varchar(50)
@@ -32,15 +33,15 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
 	(select max(g.GameTimestamp) as mostRecent, p.playerID, missions, level
 	from Games g join Participation p on g.GameUUID = p.GameUUID 
 	join players pl on p.PlayerID = pl.playerID 
-	where ArenaName = @targetArena
+	where ArenaName = '%%'
 	group by p.PlayerID,Missions,level)
 
     select  Missions, Level, PlayerID, MostRecent from MostRecentPerArena
-    where mostRecent > DATEADD(day, -@period, @startDate)
+    where mostRecent > DATEADD(day, -%%, %%)
     order by Level desc, Missions desc, mostRecent Asc
-        """
+        """.format(startDate,period,cfg.getConfigString("SiteNameReal")))
         global config
-        cursor.execute(query,(startDate,period,cfg.getConfigString("SiteNameReal")))
+        cursor.execute(query)
     results = cursor.fetchall()
     playerList = []
     for result in results:
@@ -77,30 +78,38 @@ def addPlayer(playerID,GamerTag,Joined,missions,level):
     conn = connectToSource()
     cursor = conn.cursor()
 
-    query = """select * from LaserScraper.dbo.Players 
-    where playerID = ? """
-    cursor.execute (query,(playerID))
+    query = sql.SQL("""select * from Players 
+    where playerID = '%s' """).format(playerID)
+    #query = f"select * from Players where playerID = '{playerID}'"
+
+    cursor.execute (query)
     
     result = cursor.fetchone()
     
     
     if result == None:
-        query =  """insert into LaserScraper.dbo.Players 
+        query =  sql.SQL("""insert into Players 
         (PlayerID,GamerTag,Joined,Missions,Level)
         VALUES
-        (?,?,?,?,?);""" 
-        cursor.execute(query,[playerID,GamerTag,Joined,missions,level])
+        (%s,%s,%s,%s,%s);""")
         
-        print("  DBG: SQLHelper.AddPlayer - Added new player %s" % playerID)
+        data = (playerID,GamerTag,Joined,missions,level)
+        try:
+            cursor.execute(query,data)
+        except:
+            DBG("Failed to INSERT player %s" % playerID,1)
+        
+        
+        DBG("  DBG: SQLHelper.AddPlayer - Added new player %s" % playerID,3)
         conn.commit()
         conn.close()
         return 1 
     elif  result[3] != missions:
-        query = """update LaserScraper.dbo.Players
-        SET Missions = ?,
-        Level = ?
-        WHERE PlayerID = ?"""
-        cursor.execute(query,(missions,level,playerID))
+        query = sql.SQL("""update Players
+        SET Missions = %s,
+        Level = %s
+        WHERE PlayerID = '%s'""").format(missions,level,playerID)
+        cursor.execute(query)
         
         print("  DBG: SQLHelper.AddPlayer - Updated player's missions [%s] to [%s]" % (result[3],missions))
         conn.commit()
@@ -121,18 +130,18 @@ def addGame(timestamp, arena, gametype):
     
     conn = connectToSource()
     cursor = conn.cursor()
-    query = """select GameTimestamp, GameUUID from LaserScraper.dbo.Games 
-    where GameTimestamp = convert(datetime,?,20) AND 
-    GameName = ? AND
-    ArenaName = ?"""
+    query = """select GameTimestamp, GameUUID from Games 
+    where GameTimestamp = cast(%s as timestamp) AND 
+    GameName = %s AND
+    ArenaName = %s"""
     cursor.execute(query,(timestamp,gametype,arena))
     result = cursor.fetchone()
 
     if result == None :
-        query = """INSERT INTO LaserScraper.dbo.Games
+        query = """INSERT INTO Games
         (GameTimestamp, ArenaName, GameName, GameUUID) 
         VALUES
-        (CONVERT(datetime,?,20),?,?,?)
+        (cast(%s as timestamp),%s,%s,%s)
         """
         gameUUID = str(uuid.uuid4())
         cursor.execute(query,(timestamp,arena,gametype,gameUUID))
@@ -142,24 +151,24 @@ def addGame(timestamp, arena, gametype):
         return gameUUID
     else: 
         # print ("SQLconnector: Insert game check found an exiting game! : %s" % result)
-         return result.GameUUID
+         return result[1]
 
     return ''
 
 def addParticipation(gameUUID, playerID, score):
     conn = connectToSource()
     cursor = conn.cursor()
-    query = """select count (*) from LaserScraper.dbo.Participation
-    where GameUUID = ? AND 
-    PlayerID = ?"""
+    query = """select count (*) from Participation
+    where GameUUID = %s AND 
+    PlayerID = %s"""
     cursor.execute(query,(gameUUID,playerID))
     result = cursor.fetchone()
 
     if result[0] == 0 :
-        query = """INSERT INTO LaserScraper.dbo.Participation
+        query = """INSERT INTO Participation
         (GameUUID, PlayerID, Score, insertedTimestamp) 
         VALUES
-        (?,?,?, CURRENT_TIMESTAMP)
+        (%s,%s,%s, CURRENT_TIMESTAMP)
         """
         result = cursor.execute(query,(gameUUID,playerID,score))
         #print ("SQLconnector.addParticipation: Added player to game! : %s" % gameUUID)
@@ -178,11 +187,11 @@ def addAchievement(achName, Description, image, arenaName):
     query = """
     SELECT *
     FROM AllAchievements
-    where arenaName = ? 
-    and achName = ?
+    where arenaName = %s 
+    and achName = %s
     """
     results = cursor.execute(query,(arenaName,achName))
-    result = results.fetchone()
+    result = cursor.fetchone()
 
     if result == None:
         #print("SQLHelper.addAchievement: Didn't find [{0}], adding it".format(achName))
@@ -190,10 +199,10 @@ def addAchievement(achName, Description, image, arenaName):
         query = """
         INSERT into AllAchievements
          (AchID, AchName, image, Description, ArenaName)
-        VALUES (?,?,?,?,?)
+        VALUES (%s,%s,%s,%s,%s)
         
         """
-        cursor.execute(query,(AchID,achName,image,Description,arenaName))
+        cursor.execute(query,(str(AchID),achName,image,Description,arenaName))
         #print ("SQLHelper.addAchievement: Added it!")
         conn.commit()
         conn.close()
@@ -210,16 +219,17 @@ def addAchievement(achName, Description, image, arenaName):
 
 def addPlayerAchievement(AchID,playerID,newAchievement,achievedDate,progressA,progressB):
 #do something
+    AchID = str(AchID)
     conn =  connectToSource()
     cursor = conn.cursor()
     query = """
     SELECT *
     FROM PlayerAchievement
-    where AchID = ? 
-    and playerID = ?
+    where AchID = %s 
+    and playerID = %s
     """
     results = cursor.execute(query,(AchID,playerID))
-    result = results.fetchone()
+    result = cursor.fetchone()
     if achievedDate == "0000-00-00" :
         achievedDate = None
     if result == None:
@@ -228,7 +238,7 @@ def addPlayerAchievement(AchID,playerID,newAchievement,achievedDate,progressA,pr
         query = """
         insert into PlayerAchievement
         (AchID,PlayerID,newAchievement,achievedDate,progressA,progressB)
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s)
         
 
         """
@@ -238,13 +248,13 @@ def addPlayerAchievement(AchID,playerID,newAchievement,achievedDate,progressA,pr
         #print("SQLHelper.addPlayerAchievement: found achievement progress, updating it")
         query = """
         UPDATE PlayerAchievement
-        SET newAchievement = ?, 
-        achievedDate = ?,
-        progressA = ?,
-        progressB = ?
+        SET newAchievement = %s, 
+        achievedDate = %s,
+        progressA = %s,
+        progressB = %s
 
-        WHERE AchID = ? 
-        AND PlayerID = ?
+        WHERE AchID = %s 
+        AND PlayerID = %s
 
         """
         results = cursor.execute(query,(newAchievement,achievedDate,progressA,progressB,AchID,playerID))
@@ -255,8 +265,9 @@ def addPlayerAchievement(AchID,playerID,newAchievement,achievedDate,progressA,pr
 def addPlayerAchievementScore (playerID, score):
     conn = connectToSource()
     cursor = conn.cursor()
-    query = "select playerID from players where playerID = ? "
-    cursor.execute(query,(playerID))
+    query = "select playerID from players where playerID = %s "
+    data = (playerID,)
+    cursor.execute(query,data)
 
     if cursor.fetchone() == None:
         print("[Warning] SQLHelper.addPlayerAchievementScore didn't find the player, could not update score")
@@ -271,23 +282,16 @@ def addPlayerAchievementScore (playerID, score):
 def getTop5PlayersRoster(startDate,endDate,ArenaName):
     conn = connectToSource()
     cursor = conn.cursor()
-    query = """DECLARE @startDate as date
-DECLARE @endDate as date;
-DECLARE @targetArena as varchar(50);
-SET @startDate = ?;
-SET @endDate = ?;
-SET @targetArena = ?;
-	
-with PlayersInGame as (
+    query = """with PlayersInGame as (
 	SELECT 
 	Count (Players.GamerTag) as playersInGame, 
 	Games.GameUUID as gameID
-	FROM [LaserScraper].[dbo].[Games] as Games
+	FROM Games 
 	join Participation on participation.GameUUID = Games.GameUUID
 	join Players on Participation.PlayerID = Players.PlayerID
-	where GameTimestamp >= @startDate
-	and GameTimeStamp < @endDate
-	and games.ArenaName = @targetArena
+	where GameTimestamp >= %s
+	and GameTimeStamp < %s
+	and games.ArenaName = %s
 	group by Games.GameUUID ),
 averageOpponents as 
 (
@@ -295,18 +299,17 @@ averageOpponents as
 	join PlayersInGame on Participation.GameUUID = PlayersInGame.gameID
 	join Games on Games.GameUUID = PlayersInGame.gameID
 	join Players on Participation.PlayerID = players.PlayerID
-	where games.ArenaName = @targetArena
-	group by  players.PlayerID
-		
+	where games.ArenaName = %s
+	group by  players.PlayerID		
 ),
 totalGamesPlayed as 
 (
 	select count(*) as gamesPlayed,  Participation.PlayerID
 	from Participation 
 	join Games on Games.GameUUID = Participation.GameUUID
-	where GameTimestamp >= @startDate
-	and GameTimeStamp < @endDate
-	and games.ArenaName = @targetArena
+	where GameTimestamp >= %s
+	and GameTimeStamp < %s
+	and games.ArenaName = %s
 	group by Participation.PlayerID
 ),
 Ranks as 
@@ -314,78 +317,75 @@ Ranks as
 	select GameTimestamp, GameName, Players.PlayerID, GamerTag, Score, 
 		ROW_NUMBER() over (partition by GameTimestamp order by score desc) as gamePosition
 	from Games 
-
 	join Participation on Games.GameUUID = Participation.GameUUID
 	join Players on Participation.PlayerID = Players.PlayerID
-	where GameTimestamp >= @startDate
-	and GameTimeStamp < @endDate
-	and games.ArenaName = @targetArena
+	where GameTimestamp >= %s
+	and GameTimeStamp < %s
+	and games.ArenaName = %s
 ),
 AverageRanks as 
-( select PlayerID, AVG(CONVERT(float,gamePosition)) as AverageRank from Ranks
+( select PlayerID, AVG(cast(gamePosition as float)) as AverageRank from Ranks
 	group by PlayerID), 
 AverageScores as (
 SELECT 
 	Players.PlayerID, 	
-	avg(Score) as averageScore
-	
+	avg(Score) as averageScore	
 	FROM Participation
 	inner join Players on Participation.PlayerID = Players.PlayerID
 	inner join Games on Participation.GameUUID = Games.GameUUID
 	join totalGamesPlayed on totalGamesPlayed.PlayerID = Players.PlayerID
 	join averageOpponents on averageOpponents.PlayerID = Players.PlayerID
 	join AverageRanks on AverageRanks.PlayerID = Players.PlayerID
-	where Games.GameTimestamp >= @startDate
-	AND Games.GameTimestamp < @endDate
+	where GameTimestamp >= %s
+	and GameTimeStamp < %s
+	and games.ArenaName = %s
 	and (
 	Games.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual')
     or Games.GameName in ('Standard - Solo', 'Standard - Team','Standard [3 Team] (10)','Standard [3 Team] (15)','Standard 2 Team',
     'Standard 3 Team','Standard 4 Team','Standard Individual','Standard Multi team','- Standard [2 Team] (15))')
 	)
-	and games.ArenaName = @targetArena
 	group by Players.PlayerID
  ),
 StarQuality as
 (
-	SELECT  Players.PlayerID, GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed, round(AverageRank,2) as AverageRank, 
-	round((AverageOpponents *  1/(AverageRank/AverageOpponents)),2) as AvgQualityPerGame,
-	round((AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents)),2) as TotalQualityScore, averageScore, AchievementScore
+	SELECT  Players.PlayerID, GamerTag
+	, round(cast(AverageOpponents as numeric),2) as AverageOpponents, gamesPlayed
+	, round(cast(AverageRank as numeric),2) as AverageRank
+	, round(cast(AverageOpponents *  1/(AverageRank/AverageOpponents) as numeric),2) as AvgQualityPerGame
+	, round(cast(AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents) as numeric),2) as TotalQualityScore, averageScore, AchievementScore
 	from Players
 	join totalGamesPlayed on totalGamesPlayed.PlayerID = Players.PlayerID
 	join averageOpponents on averageOpponents.PlayerID = Players.PlayerID
 	join AverageRanks on AverageRanks.PlayerID = Players.PlayerID
 	left join AverageScores on AverageScores.PlayerID = Players.PlayerID
-	
-
 ),
 GoldenTop3 as 
 (
-	select top (3) PlayerID, ROW_NUMBER() over (order by avgQualityPerGame desc) as playerRank from StarQuality
+	select PlayerID, ROW_NUMBER() over (order by avgQualityPerGame desc) as playerRank from StarQuality
 	where StarQuality.gamesPlayed >= 3
 	order by AvgQualityPerGame desc
+	limit 3 
 ),
 BestScorer as (
-	SELECT top (1) PlayerID --, GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed, round(AverageRank,2) as AverageRank, 
+	SELECT PlayerID --, GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed, round(AverageRank,2) as AverageRank, 
 	--round((AverageOpponents *  1/(AverageRank/AverageOpponents)),2) as AvgQualityPerGame,
 	--round((AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents)),2) as TotalQualityScore, averageScore, AchievementScore
-	
 	from AverageScores 
 	where PlayerID not in (select PlayerID from GoldenTop3) 
 	order by averageScore desc
+	limit 1
 ),
 BestAchiever as(
-	SELECT top(1) Players.PlayerID
+	SELECT Players.PlayerID
 	--GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed, round(AverageRank,2) as AverageRank, 
 	--round((AverageOpponents *  1/(AverageRank/AverageOpponents)),2) as AvgQualityPerGame,
 	--round((AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents)),2) as TotalQualityScore, averageScore, AchievementScore
-	
 	from Players
 	join totalGamesPlayed on totalGamesPlayed.PlayerID = Players.PlayerID
-	
 	where players.PlayerID not in (select PlayerID from GoldenTop3) and Players.PlayerID not in (select PlayerID from BestScorer)
 	order by Players.AchievementScore desc
+	limit 1
 )
-
 select p.PlayerID , GamerTag, playerRank, 'Top3' as source from GoldenTop3 p
 join Players pl on pl.PlayerID = p.PlayerID
 union 
@@ -395,9 +395,13 @@ union
 select  p.PlayerID , GamerTag, 5 as playerRank, 'BestAchiever' as source from BestAchiever p
 join Players pl on pl.PlayerID = p.PlayerID
 order by playerRank asc
-
 """
-    cursor.execute(query,(startDate,endDate,ArenaName))
+    data = (startDate,endDate,ArenaName
+        ,ArenaName
+        ,startDate,endDate,ArenaName
+        ,startDate,endDate,ArenaName
+        ,startDate,endDate,ArenaName)
+    cursor.execute(query,data)
     rows = cursor.fetchall()
     if rows == None:
         print("[Warning] SQLHelper.getTop5Players didn't find any players. Is there data in all tables?/")

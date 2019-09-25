@@ -10,4 +10,4 @@ def execute():
     result = {}
     return result 
 
-    SQL = databaseSetup.read()
+    #SQL = databaseSetup.read()

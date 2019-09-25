@@ -5,6 +5,7 @@ import SQLHelper
 import colorama
 from colorama import Fore, Back
 import feedbackQueue
+from psycopg2 import sql
 #import lru_cache 
 #: last 5 games' stats
 #: Blobs, month to month.
@@ -49,7 +50,9 @@ from uniquePlayerData d1 left join uniquePlayerData d2 on d1.row = d2.row-1
 join participationData pd on d1.month = pd.month 
 left join participationData pd2 on pd.row = pd2.row - 1 
 """
-SQLdataRecency = """declare @targetArena as varchar(50)
+SQLdataRecency = """
+DO $$
+declare @targetArena as varchar(50)
 set @targetArena = 'Funstation Ltd, Edinburgh, Scotland';
 
 with data as (
@@ -85,6 +88,8 @@ select * from churnedPlayers cp full outer join newPlayers np on 1=1
 
 def executeQueryArena (initTargetID):
     global config 
+
+    
     config = cfg.getConfig() #cache the config
     # Note, a "Member" is someone who is level 4 or higher, or has played more than 15 games.
     #Number of distinct players this month, last month, & change - SQLplayerKPIs
@@ -95,22 +100,37 @@ def executeQueryArena (initTargetID):
     #NewMembersDetected - SQLnewAndLostPlayers
     #ChurnedMembers (60 days)
 
-#@lru_cache (maxsize=1)
-def healthCheck (arenaName):
-    SQLdataRecency = """declare @targetArena as varchar(50)
-set @targetArena = ?;
 
+executeQueryArenaName = ""
+executeQueryArenaValue = ""
+
+def healthCheck (arenaName):
+    global executeQueryArenaName 
+    global executeQueryArenaValue
+    if executeQueryArenaName == arenaName:
+        return executeQueryArenaValue
+        
+    
+    SQLdataRecency = sql.SQL("""
 with data as (
 select max(g.GameTimestamp) latestGame, CURRENT_TIMESTAMP now
 from games g
-where ArenaName = @targetArena)
-select convert(varchar(16),latestGame,120) mostRecentGame, Datediff (hour,latestGame,CURRENT_TIMESTAMP) as lag from data """
+where ArenaName = '%s')
+select to_char(latestGame,'YYYY-MM-DD HH24:MI') mostRecentGame, DATE_PART('day', NOW() - latestGame)
+ * 24 + DATE_PART('hour', NOW() - latestGame ) as lag
+ from data 
+ """).format(arenaName)
     global conn
     cursor = conn.cursor()
-    cursor.execute(SQLdataRecency, (arenaName))
+    cursor.execute(SQLdataRecency)
     rows = cursor.fetchall()
+    executeQueryArenaName = arenaName
+    
     for row in rows:
-
         print(row)
-    return row[3]
+    if row[1] == None:
+        executeQueryArenaValue = 2 
+        return 2 
+    executeQueryArenaValue = row[1]
+    return row[1]
 

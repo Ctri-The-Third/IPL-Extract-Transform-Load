@@ -11,7 +11,7 @@ from SQLHelper import addPlayer
 from FetchHelper import fetchPlayer_root
 import workerProgressQueue as wpq
 import ConfigHelper as cfg 
-
+from psycopg2 import sql 
 
 def findNewPlayers():
     startTime = datetime.datetime.now()
@@ -24,18 +24,18 @@ def findNewPlayers():
     siteName = cfg.getConfigString("SiteNameReal")
     TickerIcon = ["|","/","-",'\\']
 #
-    query = """
-        with PlayerSegments as (
-        select distinct convert(int,SUBSTRING(substring(pl.PlayerID,CHARINDEX ('-',pl.PlayerID)+1 ,20),charINDEX('-',substring(pl.PlayerID,CHARINDEX ('-',pl.PlayerID)+1 ,20))+1,20)) as IDSuffix
-            from players pl join Participation p on pl.PlayerID = p.PlayerID
-            join games g on p.GameUUID = g.GameUUID
-            where g.ArenaName = ?
-        )
-        select max (IDSuffix) from PlayerSegments where  IDSuffix < 100000
-        --not players with messed up cards
-    """
-    results = cursor.execute(query,(siteName))
-    result = results.fetchone()
+    query = sql.SQL("""
+ with PlayerSegments as (
+ 	select distinct cast( split_part(pl.PlayerID,'-',3) as INTEGER) as IDSuffix
+	from players pl join Participation p on pl.PlayerID = p.PlayerID
+    join games g on p.GameUUID = g.GameUUID
+    where g.ArenaName = '%s'  )
+
+ select max (IDSuffix) from PlayerSegments where  IDSuffix < 100000
+    
+    """).format(siteName)
+    cursor.execute(query)
+    result = cursor.fetchone()
     if result[0] == None:
         MaxPlayer = 199 #LaserForce seems to start numbering players at 100
     else: 
@@ -61,7 +61,7 @@ def findNewPlayers():
             addPlayer("%s%i" % (sitePrefix,currentTarget),codeName,dateJoined,missionsPlayed,skillLevelNum)
             consecutiveMisses = 0
         else: 
-            print("DBG: FetchPlayerUpdatesAndNewPlayers.findNewPlayers - Missed a player 7-X-%s" % (currentTarget))
+            DBG("DBG: FetchPlayerUpdatesAndNewPlayers.findNewPlayers - Missed a player 7-X-%s" % (currentTarget),3)
             consecutiveMisses = consecutiveMisses + 1
         wpq.updateQ(consecutiveMisses,AllowedMisses,"Seeking new... %s" % TickerIcon[ticker % 4],"ETA ?")    
         currentTarget = currentTarget + 1 
@@ -142,6 +142,7 @@ def manualTargetSummary(rootID):
     player = fetchPlayer_root('',ID[0],ID[1],ID[2])
     if player == {}:
         DBG("ManualTargetSummary failed! Aborting",1)
+        return
     print("Manual update of player sumary complete")
     addPlayer(rootID,player["centre"][0]["codename"],player["centre"][0]["joined"],player["centre"][0]["missions"],player["centre"][0]["skillLevelNum"])
 
