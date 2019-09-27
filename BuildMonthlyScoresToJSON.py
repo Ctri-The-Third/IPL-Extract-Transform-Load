@@ -33,7 +33,7 @@ with data as  (
   GROUP BY p.PlayerID, pl.GamerTag, to_char(GameTimestamp,'YYYY-MM')
 )
   
-select d1.PlayerID, d1.GamerTag, d1.averageScore,d1.gamesPlayed, d1.averageScore -d2.averageScore as changeInScore 
+select d1.PlayerID, d1.GamerTag, cast(d1.averageScore as int),d1.gamesPlayed, d1.averageScore -d2.averageScore as changeInScore 
 from data d1 left join data d2 on d1.PlayerID = d2.PlayerID and d1.GameMonth != d2.GameMonth
 where d1.GameMonth = %s
 order by averageScore desc;

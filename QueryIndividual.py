@@ -24,20 +24,18 @@ ordinal = ['0th','%s%s1st%s%s' % (Fore.BLACK,Back.YELLOW,Fore.YELLOW,Back.BLACK)
 
 
 def placesVisited (targetID):
-    sql = '''declare @targetID as varchar(15)
-declare @ArenaName as varchar(50)
-set @targetID = ?
-set @ArenaName = ?;
+    sql = '''
 
-select top 1 count (*) as gamesPlayed, convert(varchar(50),max(g.GameTimestamp),106) as mostRecentVisit, ArenaName from Participation p join Games g on p.GameUUID = g.GameUUID
-where p.playerID = @targetID and ArenaName != @arenaName 
+select  count (*) as gamesPlayed, TO_CHAR (max(g.GameTimestamp),'DD Mon YYYY') as mostRecentVisit, ArenaName from Participation p join Games g on p.GameUUID = g.GameUUID
+where p.playerID = %s and ArenaName != %s 
 group by ArenaName
-order by max(g.GameTimestamp) desc '''
+order by max(g.GameTimestamp) desc 
+limit 1'''
     global cursor
     
     results = cursor.execute(sql,(targetID,cfg.getConfigString("SiteNameReal")))
     feedbackQueue.q.put( "%s%s**Recent travels:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
-    for result in results.fetchall():
+    for result in cursor.fetchall():
         feedbackQueue.q.put( "%s%s(%svisited %s, on %s. %i observed games played there. %s)%s," % (Back.BLACK,Fore.WHITE,Fore.YELLOW,result[2], result [1], result[0], Fore.WHITE,Fore.WHITE))
     
 def recentAchievement (targetID):
