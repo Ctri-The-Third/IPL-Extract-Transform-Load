@@ -88,3 +88,9 @@ Queried 1 players' recent games, operation completed after 0:00:06.005695.
 Queried 1 players' recent games, operation completed after 0:00:05.589500. 	
 Queried 1 players' recent games, operation completed after 0:00:05.783237. 	
 Queried 1 players' achievements, operation completed after 0:00:50.505227. 	
+Queried 1 players' recent games, operation completed after 0:00:05.468924. 	
+Queried 1 players' achievements, operation completed after 0:00:50.229806. 	
+Queried 1 players' recent games, operation completed after 0:00:05.536480. 	
+Queried 1 players' recent games, operation completed after 0:00:06.710666. 	
+Queried 1 players' achievements, operation completed after 0:00:51.105352. 	
+Queried 57 players' recent games, operation completed after 0:04:54.243482. 	

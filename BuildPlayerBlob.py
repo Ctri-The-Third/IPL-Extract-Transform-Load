@@ -10,26 +10,18 @@ from DBG import DBG
 
 
 def buildPlayerBlob (startDate,endDate,targetID):
-	infoQuery = """declare @startDate as date;
-	declare @endDate as date;
-	declare @targetID as varchar(20);
-	declare @targetArena as varchar(50);
-	set @startDate = ?;
-	set @endDate = ?;
-	set @targetID = ?;
-	set @targetArena = ?;
-
+	infoQuery = """
 
 		with PlayersInGame as (
 		SELECT 
 		Count (Players.GamerTag) as playersInGame, 
 		Games.GameUUID as gameID
-		FROM [LaserScraper].[dbo].[Games] as Games
+		FROM Games
 		join Participation on participation.GameUUID = Games.GameUUID
 		join Players on Participation.PlayerID = Players.PlayerID
-		where GameTimestamp >= @startDate
-		and GameTimeStamp < @endDate
-		and Games.ArenaName = @targetArena
+		where GameTimestamp >= %s
+		and GameTimeStamp < %s 
+		and Games.ArenaName = %s
 		group by Games.GameUUID ),
 	averageOpponents as 
 	(
@@ -45,9 +37,9 @@ def buildPlayerBlob (startDate,endDate,targetID):
 		select count(*) as gamesPlayed,  Participation.PlayerID
 		from Participation 
 		join Games on Games.GameUUID = Participation.GameUUID
-		where GameTimestamp >= @startDate
-		and GameTimeStamp < @endDate
-		and ArenaName = @targetArena
+		where GameTimestamp >= %s
+		and GameTimeStamp < %s 
+		and ArenaName = %s
 		group by Participation.PlayerID
 	),
 	Ranks as 
@@ -57,26 +49,26 @@ def buildPlayerBlob (startDate,endDate,targetID):
 		from Games 
 		join Participation on Games.GameUUID = Participation.GameUUID
 		join Players on Participation.PlayerID = Players.PlayerID
-		where GameTimestamp >= @startDate
-		and GameTimeStamp < @endDate
-		and ArenaName = @targetArena
+		where GameTimestamp >= %s
+		and GameTimeStamp < %s
+		and ArenaName = %s
 	),
 	AverageRanks as 
-	( select PlayerID, AVG(CONVERT(float,gamePosition)) as AverageRank from Ranks
+	( select PlayerID, AVG(cast(gamePosition AS FLOAT)) as AverageRank from Ranks
 		group by PlayerID),
 
 	totalAchievements as  (
 	select  sum ( case when achievedDate is null then 0 when achievedDate is not null then 1 end) as AchievementsCompleted, PlayerID 
 	from PlayerAchievement pa join AllAchievements aa on pa.AchID = aa.AchID
-	where aa.ArenaName = @targetArena or aa.ArenaName = 'Global Achievements'
-	group by PlayerID
+	where aa.ArenaName = %s or aa.ArenaName = 'Global Achievements'
+	group by PlayerID 
 	)
 
 
 
-	select Players.PlayerID, GamerTag,players.Level, Missions, round(AverageOpponents,2) as AverageOpponents, gamesPlayed, round(AverageRank,2) as AverageRank, 
-	round((AverageOpponents *  1/(AverageRank/AverageOpponents)),2) as AvgQualityPerGame,
-	round((AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents)),2) as TotalQualityScore,
+	select Players.PlayerID, GamerTag,players.Level, Missions, round(cast(AverageOpponents as numeric),2) as AverageOpponents, gamesPlayed, round(cast(AverageRank as numeric),2) as AverageRank, 
+	round(cast((AverageOpponents *  1/(AverageRank/AverageOpponents)) as numeric),2) as AvgQualityPerGame,
+	round(cast((AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents)) as numeric),2) as TotalQualityScore,
 	totalAchievements.AchievementsCompleted, totalAchievements.PlayerID as TaPID
 	from Players 
 	join totalGamesPlayed on totalGamesPlayed.PlayerID = Players.PlayerID
@@ -84,9 +76,9 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	join AverageRanks on AverageRanks.PlayerID = Players.PlayerID
 	join totalAchievements on totalAchievements.PlayerID = Players.PlayerID
 
-	where Players.playerID = @targetID
+	where Players.playerID = %s
 	"""
-
+	  
 
 	goldenGameQuery = """declare @startDate as date;
 	declare @endDate as date;
@@ -165,8 +157,16 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	conn = connectToSource()
 	cursor = conn.cursor()
 	DBG("BuildPlayerBlob.buildPlayerBlob start[%s], end[%s], target[%s], arena[%s]" % (cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetID,cfg.getConfigString("SiteNameReal")),3)
-	result = cursor.execute(infoQuery,(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetID,cfg.getConfigString("SiteNameReal")))
-	row = result.fetchone()
+
+	#startDate, endDate, arenaName, startDate, endDate, arenaName,  startDate, endDate, arenaName, arenaName, PlayerID
+	
+	endDate = cfg.getConfigString("EndDate")
+	startDate = cfg.getConfigString("StartDate")
+	targetArena = cfg.getConfigString("SiteNameReal")
+	
+	
+	result = cursor.execute(infoQuery,(startDate, endDate, targetArena, startDate, endDate, targetArena,  startDate, endDate, targetArena, targetArena, targetID))
+	row = cursor.fetchone()
 
 	if row == None:
 		DBG("BuildPlayerBlob info query returned Null. Aborting. [%s]" % (targetID),1)

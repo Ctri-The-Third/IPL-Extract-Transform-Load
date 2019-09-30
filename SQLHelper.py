@@ -21,27 +21,18 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
         cursor.execute(query)
     else:
         query = sql.SQL("""
-    declare @startDate as date
-    declare @period as int
-	declare @targetArena as varchar(50)
-    set @startDate = ?
-    set @period = ?
-	set @targetArena = ?;
-
-	with MostRecentPerArena as 
-	
+    	with MostRecentPerArena as 
 	(select max(g.GameTimestamp) as mostRecent, p.playerID, missions, level
 	from Games g join Participation p on g.GameUUID = p.GameUUID 
 	join players pl on p.PlayerID = pl.playerID 
-	where ArenaName = '%%'
+	where ArenaName = %s
 	group by p.PlayerID,Missions,level)
 
     select  Missions, Level, PlayerID, MostRecent from MostRecentPerArena
-    where mostRecent > DATEADD(day, -%%, %%)
-    order by Level desc, Missions desc, mostRecent Asc
-        """.format(startDate,period,cfg.getConfigString("SiteNameReal")))
-        global config
-        cursor.execute(query)
+    where mostRecent >  to_date(%s,'YYYY-MM-DD') - INTERVAL '1 day' * %s
+    order by Level desc, Missions desc, mostRecent Asc;
+    """)
+        cursor.execute(query,(cfg.getConfigString("SiteNameReal"),startDate,period))
     results = cursor.fetchall()
     playerList = []
     for result in results:
@@ -58,7 +49,7 @@ def getPlayersWhoMightNeedAchievementUpdates(scope):
     cursor = conn.cursor()
     query = """
     select distinct PlayerID from Participation
-    where insertedTimestamp > dateadd(d,-7,getdate()) 
+    where insertedTimestamp > current_date - INTERVAL '7 days'
     """
     cursor.execute(query)
     results = cursor.fetchall()
@@ -79,10 +70,10 @@ def addPlayer(playerID,GamerTag,Joined,missions,level):
     cursor = conn.cursor()
 
     query = sql.SQL("""select * from Players 
-    where playerID = '%s' """).format(playerID)
+    where playerID = %s """)
     #query = f"select * from Players where playerID = '{playerID}'"
 
-    cursor.execute (query)
+    cursor.execute (query,(playerID,))
     
     result = cursor.fetchone()
     
@@ -108,8 +99,8 @@ def addPlayer(playerID,GamerTag,Joined,missions,level):
         query = sql.SQL("""update Players
         SET Missions = %s,
         Level = %s
-        WHERE PlayerID = '%s'""").format(missions,level,playerID)
-        cursor.execute(query)
+        WHERE PlayerID = %s""")
+        cursor.execute(query,(missions,level,playerID))
         
         print("  DBG: SQLHelper.AddPlayer - Updated player's missions [%s] to [%s]" % (result[3],missions))
         conn.commit()

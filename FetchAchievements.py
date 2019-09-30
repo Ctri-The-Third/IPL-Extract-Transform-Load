@@ -40,7 +40,7 @@ def fetchAllAchievements (targetIDs):
     for ID in targetIDs:
 
         ETA = "Calculating"
-        if playerCounter >= 20:
+        if playerCounter >= 5:
             delta = ((datetime.datetime.now() - startTime).total_seconds() / playerCounter) 
             delta = (totalPlayerCount - playerCounter) * delta #seconds remaining
             seconds = round(delta,0)
