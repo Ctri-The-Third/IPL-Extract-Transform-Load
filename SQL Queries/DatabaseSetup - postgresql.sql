@@ -1,6 +1,23 @@
+CREATE ROLE "LaserScraper" WITH
+	LOGIN
+	SUPERUSER
+	CREATEDB
+	CREATEROLE
+	INHERIT
+	NOREPLICATION
+	CONNECTION LIMIT -1
+	PASSWORD 'LaserScraper';
+
+
+
+CREATE DATABASE "LaserScraper"
+    WITH 
+    OWNER = "LaserScraper"
+    ENCODING = 'UTF8'
+    CONNECTION LIMIT = -1;
+
 
 /****** Object:  Table AllAchievements    Script Date: 27-Aug-19 12:19:17 ******/
-
 CREATE TABLE AllAchievements(
     AchName varchar(50) NOT NULL,
         Description text NOT NULL,

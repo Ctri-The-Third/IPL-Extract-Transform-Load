@@ -250,7 +250,7 @@ def findPlayer(targetID):
     else: 
         return targetID
         
-    nameMatch = """select top PlayerID, Missions
+    nameMatch = """select PlayerID, Missions
         from players 
         where GamerTag like %s
         order by missions desc
