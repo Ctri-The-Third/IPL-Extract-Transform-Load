@@ -373,18 +373,19 @@ BestScorer as (
 	where PlayerID not in (select PlayerID from GoldenTop3) 
 	order by averageScore desc
 ),
+Achievers as (
+    select playerID, count(*) achievements
+    from PlayerAchievement pa join AllAchievements aa on aa.AchID = pa.AchID
+    where achievedDate is not null and aa.ArenaName = @targetArena
+    group by playerID 
+),
 BestAchiever as(
-	SELECT top(1) Players.PlayerID
-	--GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed, round(AverageRank,2) as AverageRank, 
-	--round((AverageOpponents *  1/(AverageRank/AverageOpponents)),2) as AvgQualityPerGame,
-	--round((AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents)),2) as TotalQualityScore, averageScore, AchievementScore
-	
-	from Players
-	join totalGamesPlayed on totalGamesPlayed.PlayerID = Players.PlayerID
-	
+	SELECT top(1) Players.PlayerID	
+	from Achievers players
 	where players.PlayerID not in (select PlayerID from GoldenTop3) and Players.PlayerID not in (select PlayerID from BestScorer)
-	order by Players.AchievementScore desc
+	order by achievements desc
 )
+
 
 select p.PlayerID , GamerTag, playerRank, 'Top3' as source from GoldenTop3 p
 join Players pl on pl.PlayerID = p.PlayerID
