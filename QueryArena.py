@@ -114,11 +114,11 @@ select convert(varchar(16),latestGame,120) mostRecentGame, Datediff (hour,latest
     cursor = conn.cursor()
     cursor.execute(SQLdataRecency, (arenaName))
     row = cursor.fetchone()
-    if row[1] > 5:
+    if row[1] > 120:
         cacheTarget = arenaName
         cacheResponse = 2
         return 2
-    elif row[1] > 2:
+    elif row[1] > 48:
         cacheTarget = arenaName
         cacheResponse = 1
         return 1
