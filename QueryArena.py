@@ -5,7 +5,7 @@ import SQLHelper
 import colorama
 from colorama import Fore, Back
 import feedbackQueue
-import lru_cache 
+
 #: last 5 games' stats
 #: Blobs, month to month.
 #: Top achievement in terms of rarity
@@ -95,8 +95,13 @@ def executeQueryArena (initTargetID):
     #NewMembersDetected - SQLnewAndLostPlayers
     #ChurnedMembers (60 days)
 
-@lru_cache (maxsize=1)
+cacheTarget = ""
+cacheResponse = ""
 def healthCheck (arenaName):
+    global cacheTarget
+    global cacheResponse
+    if cacheTarget == arenaName:
+        return cacheResponse
     SQLdataRecency = """declare @targetArena as varchar(50)
 set @targetArena = ?;
 
@@ -108,9 +113,18 @@ select convert(varchar(16),latestGame,120) mostRecentGame, Datediff (hour,latest
     global conn
     cursor = conn.cursor()
     cursor.execute(SQLdataRecency, (arenaName))
-    rows = cursor.fetchall()
-    for row in rows:
-
-        print(row)
-    return row[3]
+    row = cursor.fetchone()
+    if row[1] > 5:
+        cacheTarget = arenaName
+        cacheResponse = 2
+        return 2
+    elif row[1] > 2:
+        cacheTarget = arenaName
+        cacheResponse = 1
+        return 1
+    else:
+        cacheTarget = arenaName
+        cacheResponse = 0
+        return 0
+    
 
