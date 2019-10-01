@@ -81,9 +81,11 @@ def updateExistingPlayers():
     cursor = conn.cursor()
 
     query = """select PlayerID, Missions, Level from Players
-            order by Level desc, Missions desc
+            order by Missions desc
             """
-    results = cursor.execute(query).fetchall()
+    cursor.execute(query)
+    results = cursor.fetchall()
+
     totalTargetsToUpdate = len(results)
     counter = 0
     global WorkerStatus

@@ -1,4 +1,4 @@
-import requests
+
 import json
 import importlib
 
@@ -80,78 +80,66 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	"""
 	  
 
-	goldenGameQuery = """declare @startDate as date;
-	declare @endDate as date;
-	declare @targetID as varchar(20);
-	declare @targetArena as varchar(50);
-	set @startDate = ?;
-	set @endDate = ?;
-	set @targetID = ?;
-	set @targetArena = ?;
+	goldenGameQuery = """
 
-	with PlayersInGame as (
-		SELECT 
-		Count (Players.GamerTag) as playersInGame, 
-		Games.GameUUID as gameID
-		FROM [LaserScraper].[dbo].[Games] as Games
-		join Participation on participation.GameUUID = Games.GameUUID
-		join Players on Participation.PlayerID = Players.PlayerID
-		where games.ArenaName = @targetArena
-		group by Games.GameUUID ),
-
-	Ranks as 
-	(
-		select GameTimestamp, GameName, Players.PlayerID, GamerTag, Score, Games.GameUUID, 
-			ROW_NUMBER() over (partition by GameTimestamp order by score desc) as gamePosition
-		from Games 
-		join Participation on Games.GameUUID = Participation.GameUUID
-		join Players on Participation.PlayerID = Players.PlayerID
-		where games.ArenaName = @targetArena
-	),
-	GoldenGame as (
+with PlayersInGame as (
+	SELECT 
+	Count (Players.GamerTag) as playersInGame, 
+	Games.GameUUID as gameID
+	FROM Games
+	join Participation on participation.GameUUID = Games.GameUUID
+	join Players on Participation.PlayerID = Players.PlayerID
+	where games.ArenaName = %s
+	group by Games.GameUUID 
+),
+Ranks as 
+(
+	select GameTimestamp, GameName, Players.PlayerID, GamerTag, Score, Games.GameUUID, 
+		ROW_NUMBER() over (partition by GameTimestamp order by score desc) as gamePosition
+	from Games 
+	join Participation on Games.GameUUID = Participation.GameUUID
+	join Players on Participation.PlayerID = Players.PlayerID
+	where games.ArenaName = %s 
+),
+GoldenGame as (
 
 
-		select  top (1) r.Score, r.GamerTag,r.GameUUID, GameName, r.PlayerID, gamePosition, playersInGame, GameTimestamp
-		,round((playersInGame *  (playersInGame/gamePosition)),2) as StarQuality
-		from Ranks r join PlayersInGame pig on r.GameUUID = pig.gameID
-		where PlayerID = @targetID
-		and GameTimestamp >= @startDate
-		and GameTimeStamp < @endDate
-		order by StarQuality desc, score desc 
-		
-		),
-	Vanquished as (
-		select g.PlayerID, g.GameTimestamp, g.gamePosition victoryPos,  g.GamerTag victorName, g.Score victorScore, g.GameName, g.StarQuality victorStarQuality, r.PlayerID vanquishedID, r.GamerTag vanquishedName ,r.gamePosition as vanquishedPos  from 
-		Ranks r inner join GoldenGame g on r.gameUUID = g.GameUUID
-		where g.PlayerID != r.PlayerID
-		and g.gamePosition < r.gamePosition
+	select  r.Score, r.GamerTag,r.GameUUID, GameName, r.PlayerID, gamePosition, playersInGame, GameTimestamp
+	,round((playersInGame *  (playersInGame/gamePosition)),2) as StarQuality
+	from Ranks r join PlayersInGame pig on r.GameUUID = pig.gameID
+	where PlayerID = %s
+	and GameTimestamp >= %s 
+	and GameTimeStamp < %s
+	order by StarQuality desc, score desc 
+	limit 1
+),
+Vanquished as (
+	select g.PlayerID, g.GameTimestamp, g.gamePosition victoryPos,  g.GamerTag victorName, g.Score victorScore, g.GameName, g.StarQuality victorStarQuality, r.PlayerID vanquishedID, r.GamerTag vanquishedName ,r.gamePosition as vanquishedPos  from 
+	Ranks r inner join GoldenGame g on r.gameUUID = g.GameUUID
+	where g.PlayerID != r.PlayerID
+	and g.gamePosition < r.gamePosition
+)
+select * from Vanquished"""
 
-
-	)
-
-		select * from Vanquished"""
-
-	goldenAchievementQuery = """	DECLARE @TargetID as Varchar(10)
-	DECLARE @targetArena as varchar(50);
-	set @targetArena = ?;
-	SET @TargetID = ? ;
-	with firstEarned as (
+	goldenAchievementQuery = """	with firstEarned as (
 	select distinct min (achievedDate) over (partition by AchID) as firstAchieved, AchID
 	from PlayerAchievement
 	where achievedDate is not null
 
-	),
-	data as ( select count(*) playersEarned,  pa.AchID, achName from PlayerAchievement pa join AllAchievements aa on pa.AchID = aa.AchID
+),
+data as (
+	select count(*) playersEarned,  pa.AchID, achName from PlayerAchievement pa join AllAchievements aa on pa.AchID = aa.AchID
 	where achievedDate is not null
-	group by AchName, pa.AchID) 
-
-	select top(10) PlayerID, data.AchName, Description, fe.firstAchieved, playersEarned from PlayerAchievement pa 
-	join data on data.AchID = pa.AchID
-	join firstEarned fe on fe.AchID = data.AchID
-	join AllAchievements aa on pa.AchID = aa.AchID
-	where PlayerID = @TargetID  and pa.achievedDate is not null
-	and ArenaName = @targetArena
-	order by playersEarned asc, firstAchieved asc
+	group by AchName, pa.AchID
+)
+select PlayerID, data.AchName, Description, fe.firstAchieved, playersEarned from PlayerAchievement pa 
+join data on data.AchID = pa.AchID
+join firstEarned fe on fe.AchID = data.AchID
+join AllAchievements aa on pa.AchID = aa.AchID
+where PlayerID = %s and pa.achievedDate is not null
+and ArenaName = %s
+order by playersEarned asc, firstAchieved asc
+limit 10
 	"""
  
 	conn = connectToSource()
@@ -184,8 +172,10 @@ def buildPlayerBlob (startDate,endDate,targetID):
 	JSONobject["StarQuality"] = row[7]
 	JSONobject["Achievements"] = row[9]
 
-	result = cursor.execute(goldenGameQuery,(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetID,cfg.getConfigString("SiteNameReal")))
-	rows = result.fetchall()
+
+
+	result = cursor.execute(goldenGameQuery,(targetArena,targetArena,targetID,startDate,endDate))
+	rows = cursor.fetchall()
 	if len(rows) > 0:
 		row = rows[0]
 		print(row)
@@ -202,8 +192,8 @@ def buildPlayerBlob (startDate,endDate,targetID):
 		if len(rows) >= 4:
 			JSONobject["GGVanq4"] = '%i others' % (len(rows) - 3)
 
-	result = cursor.execute(goldenAchievementQuery,(cfg.getConfigString("SiteNameReal"),targetID))
-	row = result.fetchone()
+	result = cursor.execute(goldenAchievementQuery,(targetArena,targetID))
+	row = cursor.fetchone()
 	if row == None:
 		DBG("BuildPlayerBlob GoldenAchievementQuery query returned Null. Aborting. [%s]" % (targetID),1)
 		return
