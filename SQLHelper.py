@@ -443,3 +443,48 @@ def importPlayersFromCSV(path):
 
 
 
+def jobStart(description,resumeIndex,methodName, methodParams):
+
+    ID = str(uuid.uuid4())
+    SQL  = """INSERT into jobsList (Desc,ID,started,methodName,methodParams) values 
+    (%s,%s,now(),%s,%s)"""
+    conn=connectToSource()
+    cursor = conn.cursor()
+
+    cursor.execute(SQL,(description,ID,methodName,methodParams))
+
+    conn.commit()
+    conn.close()
+
+
+    return ID
+
+def jobEnd(ID):
+    SQL = """UPDATE jobsList 
+    SET finished = now(),
+    SET resumeIndex = NULL
+    where ID = %s """
+    
+    conn=connectToSource()
+    cursor = conn.cursor()
+
+    cursor.execute(SQL,(ID))
+
+    conn.commit()
+    conn.close()
+
+
+def jobHeartbeat(ID,progressIndex):
+    SQL = """UPDATE jobsList 
+    SET lastHeartbeat = now(),
+    SET resumeIndex = %s
+    where ID = %s """
+    
+    conn=connectToSource()
+    cursor = conn.cursor()
+
+    cursor.execute(SQL,(progressIndex,ID))
+
+    conn.commit()
+    conn.close()
+    

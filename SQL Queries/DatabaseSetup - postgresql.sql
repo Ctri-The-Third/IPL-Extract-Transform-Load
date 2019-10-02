@@ -52,6 +52,21 @@ CREATE TABLE Participation(
     PlayerID,GameUUID
 ));
 
+
+
+CREATE TABLE "jobsList"
+(
+    Desc text COLLATE pg_catalog."default" NOT NULL,
+    ID text COLLATE pg_catalog."default" NOT NULL,
+    finished timestamp with time zone,
+    lastHeartbeat timestamp with time zone,
+    resumeIndex text COLLATE pg_catalog."default",
+    started timestamp with time zone,
+    Dependencies text COLLATE pg_catalog."default",
+    methodName text COLLATE pg_catalog."default",
+    methodParams text COLLATE pg_catalog."default",
+    CONSTRAINT "jobsList_pkey" PRIMARY KEY ("ID")
+)
 /****** Object:  Table PlayerAchievement    Script Date: 27-Aug-19 12:19:45 ******/
 
 CREATE TABLE PlayerAchievement(
