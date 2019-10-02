@@ -1,9 +1,14 @@
+#queue
+#colorama
+
 from DBG import DBG
 import os
 import time
 import colorama
 import threading
-import queue 
+
+import queue
+#import Queue as queue #python2.7 handling? 
 from console import fg, bg, fx 
 
 from renderProgressBar import renderBar
@@ -18,7 +23,7 @@ from FetchPlayerUpdatesAndNewPlayers import findNewPlayers
 from FetchAchievements import executeFetchAchievements
 import FetchPlayerAndGames
 import FetchPlayerUpdatesAndNewPlayers
-import FetchIndividual  
+import FetchIndividual 
 import QueryIndividual
 import QueryArena
 import InputReader
@@ -57,7 +62,7 @@ def drawHeader():
     arenaHealth = QueryArena.healthCheck(cfg.getConfigString("SiteNameReal"))
     healthNotice = ["%s%s" % (bg.black,fg.green),"%s%s"% (bg.black,fg.yellow),"%s%s"% (bg.red,fg.black)]
     print_at (0,0,"%s/***** LF Profiler **************************************************\ %s" % (fg.yellow, fg.white))
-    
+
     outStr  = "Start Date:           [ %s%s%s ]          | " % ( fg.green,  cfg.getConfigString("StartDate"), fg.white)
     outStr = outStr + renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),fg.black,bg.green)
     print_at(1,0,outStr)

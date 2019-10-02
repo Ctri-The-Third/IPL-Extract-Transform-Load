@@ -7,56 +7,50 @@ import ConfigHelper as cfg
 def executeBuildMonthlyStars():
 	
 
-	curMonth = cfg.getConfigString("StartDate")
-	lastMonth  = cfg.getConfigString("LastMonthStart")
+	curMonth = cfg.getConfigString("StartDate")[0:7]
+	lastMonth  = cfg.getConfigString("LastMonthStart")[0:7]
 	endDate = cfg.getConfigString("EndDate")
 	arenaName = cfg.getConfigString("SiteNameReal")
-	SQL = '''declare @lastMonth as varChar(7)
-	declare @curMonth as varChar(7)
-	declare @arenaName as varChar(50)
-	set @curMonth = ?
-	set @lastMonth = ?
-	set @arenaName = ?
-
-	;
-
+	SQL = '''
 	with data as (
 		select pl.PlayerID, pl.GamerTag, GameName, GameTimestamp, p.score, 
 		ROW_NUMBER() over (partition by GameTimestamp order by GameTimestamp desc, score desc)  as rank, 
 		count(p.PlayerID) over (partition by GameTimestamp order by GameTimestamp desc) as playerCount,
-		convert(varchar(7),GameTimestamp,126) as GameMonth
+		TO_CHAR(GameTimestamp,'YYYY-MM') as GameMonth
 		from Participation p join Games g on p.GameUUID = g.GameUUID 
 		join Players pl on p.PlayerID = pl.PlayerID
-		where g.ArenaName = @arenaName
+		where g.ArenaName = %s
 	), 
 	ranksAndCountsAndStars as (
-		select PlayerID, GamerTag, count(*) as gamesPlayed, avg (convert(float,rank)) as AverageRank, avg(convert(float,playerCount)) as AveragePlayerCount, GameMonth  --average(rank) over (partition by GameTimestamp
-		,avg(convert(float,playerCount)) *  (avg(convert(float,playerCount))/avg (convert(float,rank))) as AverageStarQuality
+		select PlayerID, GamerTag, count(*) as gamesPlayed
+		, avg(cast(rank as float)) as AverageRank
+		, avg(cast(playerCount as float)) as AveragePlayerCount
+		, GameMonth  --average(rank) over (partition by GameTimestamp
+		,avg(cast(playerCount as float)) *  (avg(cast(playerCount as float8))/avg (cast(rank as float))) as AverageStarQuality
 		from data
-		where GameMonth in (@curMonth,@lastMonth)
+		where GameMonth in (%s,%s)
 		group by PlayerID, GamerTag, GameMonth
 	)
 
 	select r1.PlayerID, r1.GamerTag,
-	round (r1.AverageStarQuality,2) as AverageStarQuality, 
-	round (r1.AverageStarQuality * r1.gamesPlayed,2) as TotalStarQuality,
-	round (r1.AveragePlayerCount,2) as AveragePlayerCount, 
-	round (r1.AverageRank,2) as AverageRank, 
+	round (cast(r1.AverageStarQuality as numeric),2) as AverageStarQuality, 
+	round (cast(r1.AverageStarQuality * r1.gamesPlayed as numeric),2) as TotalStarQuality,
+	round (cast(r1.AveragePlayerCount as numeric),2) as AveragePlayerCount, 
+	round (cast(r1.AverageRank as numeric),2) as AverageRank, 
 	r1.gamesPlayed as GamesPlayed,
-	round (r2.AverageRank - r1.AverageRank,2) as changeInRank, 
-	round (r1.AveragePlayerCount-r2.AveragePlayerCount,2) as changeInPlayers,
-	round (r1.AverageStarQuality - r2.AverageStarQuality,2) as changeInStars
+	round (cast(r2.AverageRank - r1.AverageRank as numeric),2) as changeInRank, 
+	round (cast(r1.AveragePlayerCount-r2.AveragePlayerCount as numeric),2) as changeInPlayers,
+	round (cast(r1.AverageStarQuality - r2.AverageStarQuality as numeric),2) as changeInStars
 	from ranksAndCountsAndStars r1 left join ranksAndCountsAndStars r2 
 	on r1.PlayerID = r2.PlayerID and r1.GameMonth != r2.GameMonth
-	where r1.GameMonth = @curMonth
+	where r1.GameMonth = %s
 	order by AverageStarQuality desc
-
 
 	'''
 	conn = connectToSource()
 	cursor = conn.cursor()
 
-	cursor.execute(SQL,(curMonth,lastMonth,arenaName))
+	cursor.execute(SQL,(curMonth,lastMonth,arenaName,curMonth))
 	JSON = {
 		'ScoreTitle' : "Star Quality for all known players, between {1} and {0}" .format(curMonth,lastMonth),
 		'ScoreGreaterOrEqualDate' : curMonth,

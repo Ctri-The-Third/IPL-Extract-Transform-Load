@@ -12,8 +12,9 @@ def fetchIndividualWithID(id):
     conn = connectToSource()
     cursor = conn.cursor()
     if re.match("([0-9]+)-([0-9]+)-([0-9]+)",id):
-        SQL = """select * from Players where PlayerID = ?"""
-        cursor.execute(SQL,(id))
+        SQL = """select * from Players where PlayerID = %s"""
+        data = (id,)
+        cursor.execute(SQL,data)
         results = cursor.fetchall()
 
         if len(results) >= 1:
@@ -40,8 +41,9 @@ def fetchIndividualWithID(id):
     else: 
         id = "%" + id + "%"
         feedbackQueue.q.put("Didn't find player ID, searching for gamertag")
-        SQL = """select PlayerID, Gamertag, Missions from Players where GamerTag like ? order by Missions desc"""
-        cursor.execute(SQL,(id))
+        SQL = """select PlayerID, Gamertag, Missions from Players where GamerTag like (%s) order by Missions desc"""
+        data = (id,)
+        cursor.execute(SQL,data)
         
         results = cursor.fetchall()
         recurseID = ""

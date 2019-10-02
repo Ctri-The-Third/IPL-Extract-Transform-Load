@@ -11,43 +11,37 @@ def executeMonthlyScoresBuild():
   LastMonthStart = cfg.getConfigString("LastMonthStart")
   arenaName = cfg.getConfigString("SiteNameReal")
   SQL = '''
-  declare @curMonth as varchar(7)
-  declare @lastMonth as varchar(7)
-  declare @arenaName as varchar(50)
-  set @curMonth = ?
-  set @lastMonth = ?
-  set @arenaName = ?;
-
-	
-  with data as  ( select 
+with data as  ( 
+  SELECT
 	p.PlayerID, 
 	GamerTag, 
 	avg(Score) as averageScore,
 	count(GamerTag) as gamesPlayed,
-	convert(varchar(7),GameTimestamp,126) as GameMonth
+	to_char(GameTimestamp,'YYYY-MM') as GameMonth
 	
   FROM Participation p
   inner join Players pl on p.PlayerID = pl.PlayerID
   inner join Games g on p.GameUUID = g.GameUUID
-  where convert(varchar(7),GameTimestamp,126) in (@curMonth,@lastMonth)
+  where to_char(GameTimestamp,'YYYY-MM') in  (%s,%s)
+
   and (
 	g.GameName in ('Team','3 Teams','4 Teams', 'Colour Ranked','Individual')
     or g.GameName in ('Standard - Solo', 'Standard - Team','Standard [3 Team] (10)','Standard [3 Team] (15)','Standard 2 Team',
     'Standard 3 Team','Standard 4 Team','Standard Individual','Standard Multi team','- Standard [2 Team] (15))')
 	)
-  and g.ArenaName = @arenaName
-  GROUP BY p.PlayerID, pl.GamerTag, convert(varchar(7),GameTimestamp,126)
+  and g.ArenaName = %s
+  GROUP BY p.PlayerID, pl.GamerTag, to_char(GameTimestamp,'YYYY-MM')
 )
   
-select d1.PlayerID, d1.GamerTag, d1.averageScore,d1.gamesPlayed, d1.averageScore -d2.averageScore as changeInScore 
+select d1.PlayerID, d1.GamerTag, cast(d1.averageScore as int),d1.gamesPlayed, d1.averageScore -d2.averageScore as changeInScore 
 from data d1 left join data d2 on d1.PlayerID = d2.PlayerID and d1.GameMonth != d2.GameMonth
-where d1.GameMonth = @curMonth	
+where d1.GameMonth = %s
 order by averageScore desc;
   '''
   conn = connectToSource()
   cursor = conn.cursor()
 
-  cursor.execute(SQL,(startDate,LastMonthStart,arenaName))
+  cursor.execute(SQL,(startDate[0:7],LastMonthStart[0:7],arenaName,startDate[0:7]))
   JSON = {
       'ScoreTitle' : "Average Scores for known players, in Standard Games, between {1} and {0}" .format(startDate,endDate),
       'ScoreGreaterOrEqualDate' : startDate,

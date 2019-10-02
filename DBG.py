@@ -6,6 +6,9 @@ import datetime
 
 
 
+#3 = Info
+#2 = Warning
+#1 = Error
 def DBG(STR,Level):
     if Level < 0 or Level > 3:
         Level = 1
