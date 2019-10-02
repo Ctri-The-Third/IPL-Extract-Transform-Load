@@ -80,8 +80,11 @@ def updateExistingPlayers():
     conn = connectToSource()
     cursor = conn.cursor()
 
-    query = """select PlayerID, Missions, Level from Players
-            order by Missions desc
+
+    query = """with data as ( select row_number() over (order by Level desc, Missions desc) as ID, PlayerID, Missions, Level from Players)
+	select PlayerID from data
+            where (ID >= 0)
+			order by ID asc 
             """
     cursor.execute(query)
     results = cursor.fetchall()

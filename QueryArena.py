@@ -6,7 +6,7 @@ import colorama
 from colorama import Fore, Back
 import feedbackQueue
 from psycopg2 import sql
-#import lru_cache 
+
 #: last 5 games' stats
 #: Blobs, month to month.
 #: Top achievement in terms of rarity
@@ -101,6 +101,8 @@ def executeQueryArena (initTargetID):
     #ChurnedMembers (60 days)
 
 
+
+
 executeQueryArenaName = ""
 executeQueryArenaValue = ""
 
@@ -115,22 +117,26 @@ def healthCheck (arenaName):
 with data as (
 select max(g.GameTimestamp) latestGame, CURRENT_TIMESTAMP now
 from games g
-where ArenaName = '%s')
+where ArenaName = %s)
 select to_char(latestGame,'YYYY-MM-DD HH24:MI') mostRecentGame, DATE_PART('day', NOW() - latestGame)
  * 24 + DATE_PART('hour', NOW() - latestGame ) as lag
  from data 
- """).format(arenaName)
+ """)
     global conn
     cursor = conn.cursor()
-    cursor.execute(SQLdataRecency)
-    rows = cursor.fetchall()
-    executeQueryArenaName = arenaName
-    
-    for row in rows:
-        print(row)
-    if row[1] == None:
-        executeQueryArenaValue = 2 
-        return 2 
-    executeQueryArenaValue = row[1]
-    return row[1]
+    cursor.execute(SQLdataRecency, (arenaName))
+    row = cursor.fetchone()
+    if row[1] > 120:
+        cacheTarget = arenaName
+        cacheResponse = 2
+        return 2
+    elif row[1] > 48:
+        cacheTarget = arenaName
+        cacheResponse = 1
+        return 1
+    else:
+        cacheTarget = arenaName
+        cacheResponse = 0
+        return 0
+
 
