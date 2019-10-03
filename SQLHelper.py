@@ -377,6 +377,7 @@ Achievers as (
     group by playerID 
 ),
 BestAchiever as(
+
 	SELECT Players.PlayerID
 	--GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed, round(AverageRank,2) as AverageRank, 
 	--round((AverageOpponents *  1/(AverageRank/AverageOpponents)),2) as AvgQualityPerGame,
@@ -387,6 +388,7 @@ BestAchiever as(
 	order by Players.AchievementScore desc
 	limit 1
 )
+
 select p.PlayerID , GamerTag, playerRank, 'Top3' as source from GoldenTop3 p
 join Players pl on pl.PlayerID = p.PlayerID
 union 
