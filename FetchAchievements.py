@@ -13,6 +13,7 @@ from SQLHelper import addPlayerAchievement
 from SQLHelper import addPlayerAchievementScore
 from SQLHelper import getInterestingPlayersRoster
 from SQLHelper import getPlayersWhoMightNeedAchievementUpdates
+from SQLHelper import jobStart, jobHeartbeat, jobEnd
 import workerProgressQueue as wpq
 import ConfigHelper as cfg
 
@@ -22,23 +23,32 @@ import ConfigHelper as cfg
 #    '7-9-5940'
 #}
 def executeFetchAchievements (scope):
-    
+    params = {}
+    params["scope"] = scope
     if scope == "full":
         targetIDs = getInterestingPlayersRoster(True,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"))
+        jobID=jobStart("Fetch achievements, local active players",0,"FetchAchievements.executeFetchAchievements",json.dumps(params))
     else:
         targetIDs = getPlayersWhoMightNeedAchievementUpdates(scope)
+        jobID= jobStart("Fetch achievements, players from the last 7 days",0,"FetchAchievements.executeFetchAchievements",json.dumps(params))
     
     print("Scope : %s" % (scope))
-    fetchAllAchievements(targetIDs)
+    fetchAllAchievements(targetIDs, jobID=jobID)
 
-def fetchAllAchievements (targetIDs):
+def fetchAllAchievements (targetIDs, jobID = None):
     
     totalToUpdate = len(targetIDs)
     startTime = datetime.datetime.now()
     playerCounter = 0
     totalPlayerCount = len(targetIDs)
+    lastHeartbeat = startTime
     for ID in targetIDs:
-
+        if jobID != None:
+            heartbeatDelta = (datetime.datetime.now() - lastHeartbeat).total_seconds()
+            if heartbeatDelta > 30:
+                jobHeartbeat(jobID,playerCounter)
+                lastHeartbeat = datetime.datetime.now()
+            
         ETA = "Calculating"
         if playerCounter >= 5:
             delta = ((datetime.datetime.now() - startTime).total_seconds() / playerCounter) 
@@ -95,6 +105,7 @@ def fetchAllAchievements (targetIDs):
                     addPlayerAchievement(uuid,ID,achievement["newAchievement"],achievement["achievedDate"],achievement["progressA"],achievement["progressB"])
                 totalAchievemnts = totalAchievemnts + len(centre["achievements"])
             print ("Updated %i achievements for player %s. [%i/%i]" % (totalAchievemnts,ID,playerCounter,totalToUpdate))
+    jobEnd(jobID)
         
     endTime = datetime.datetime.now()
     f = open("Stats.txt","a+")

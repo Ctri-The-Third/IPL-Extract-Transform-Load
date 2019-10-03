@@ -11,10 +11,15 @@ from SQLHelper import addPlayer
 from FetchHelper import fetchPlayer_root
 import workerProgressQueue as wpq
 import ConfigHelper as cfg 
+import json
+from SQLHelper import jobStart,jobHeartbeat,jobEnd
 from psycopg2 import sql 
 
 def findNewPlayers():
+
+    
     startTime = datetime.datetime.now()
+    lastHeartbeat = startTime
     conn = connectToSource()
     cursor = conn.cursor()
 
@@ -22,6 +27,11 @@ def findNewPlayers():
     cursor = conn.cursor()
     sitePrefix = cfg.getConfigString("ID Prefix")
     siteName = cfg.getConfigString("SiteNameReal")
+    params = {}
+    params["siteName"] = siteName
+    jobID = jobStart("Searching for new players at [%s]" % siteName,0,"FetchPlayerUpdatesAndNewPlayers.findNewPlayers",json.dumps(params))
+    
+    
     TickerIcon = ["|","/","-",'\\']
 #
     query = sql.SQL("""
@@ -50,7 +60,12 @@ def findNewPlayers():
     consecutiveMisses = 0
     currentTarget = MaxPlayer - 100 #we've had situations where the system adds user IDs behind the maximum. This is a stopgap dragnet to catch trailing players.
     AllowedMisses = 100
+
+    
     while consecutiveMisses <= AllowedMisses:
+        heartbeatDelta = (datetime.datetime.now() - lastHeartbeat).total_seconds()
+        if heartbeatDelta > 30:
+            jobHeartbeat(jobID,0)
         player =  fetchPlayer_root('',region,siteNumber,currentTarget)
         if 'centre' in player:
             
@@ -68,6 +83,7 @@ def findNewPlayers():
         ticker = ticker + 1
         
     endTime = datetime.datetime.now()
+    jobEnd(jobID)
     f = open("Stats.txt","a+")
     
     f.write("searched for {0} players, operation completed after {1}. \t\n".format(currentTarget-MaxPlayer,endTime - startTime ))

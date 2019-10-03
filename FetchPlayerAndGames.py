@@ -8,7 +8,7 @@ from colorama import Fore
 from FetchHelper import fetchPlayer_root
 from FetchHelper import fetchPlayerRecents_root
 from SQLHelper import addPlayer
-from SQLHelper import addGame
+from SQLHelper import addGame 
 from SQLHelper import addParticipation
 from SQLHelper import getInterestingPlayersRoster
 from SQLHelper import jobStart, jobHeartbeat, jobEnd
@@ -26,30 +26,31 @@ import workerProgressQueue as wpq
 updatedPlayers = []
 def executeQueryGames(scope ): #Scope should be "full" or "partial"
     params = {}
-    params[scope] = scope
+    params["scope"] = scope
+    params["arenaName"] = cfg.getConfigString("SiteNameReal")
     if scope == "full": 
         targetIDs = getInterestingPlayersRoster(True,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"))
-        ID = jobStart("Fetch games, local active",0,"FetchPlayerAndGames.executeQueryGames",params)
-    else: 
-        targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"))
         ID = jobStart("Fetch games, all players",0,"FetchPlayerAndGames.executeQueryGames",params)
+    else: 
+        targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),siteName = params["arenaName"])
+        ID = jobStart("Fetch games, [%s] active players " % (cfg.getConfigString("SiteNameShort")),0,"FetchPlayerAndGames.executeQueryGames",params) 
 
-    queryPlayers(targetIDs,scope, jobID=ID)
+    queryPlayers(targetIDs,scope, siteName = params["arenaName"], jobID=ID)
 
-def queryPlayers (targetIDs,scope, jobID = None):
+def queryPlayers (targetIDs,scope, siteName = None, jobID = None):
     updatedPlayers = []
     totalPlayerCount = len(targetIDs)
     counter = 0
     startTime = datetime.datetime.now()
-    jobHeartbeat = startTime
+    lastHeartbeat = startTime
     global WorkerStatus
     for ID in targetIDs:
         ETA = "Calculating"
         if  jobID != None:
-            heartDelta = ((datetime.datetime.now() - jobHeartbeat).total_seconds()) 
-            if heartDelta > 30:
+            heartbeatDelta = ((datetime.datetime.now() - lastHeartbeat).total_seconds()) 
+            if heartbeatDelta > 30:
                 jobHeartbeat(jobID,counter)
-                jobHeartbeat = datetime.datetime.now()
+                lastHeartbeat = datetime.datetime.now()
         if counter >= 20:
             delta = ((datetime.datetime.now() - startTime).total_seconds() / counter) 
             delta = (totalPlayerCount - counter) * delta #seconds remaining
@@ -109,7 +110,7 @@ def queryPlayers (targetIDs,scope, jobID = None):
             DBGstring += "WARNING no data received for user."
             #print(DBGstring)
             
-            
+    jobEnd(jobID)        
 
 
     endTime = datetime.datetime.now()

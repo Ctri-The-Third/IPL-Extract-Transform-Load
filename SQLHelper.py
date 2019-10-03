@@ -2,13 +2,13 @@ from psycopg2 import sql
 from DBG import DBG
 import uuid
 import csv 
-
+import json
 from SQLconnector import connectToSource
 import ConfigHelper as cfg 
 
 
-def getInterestingPlayersRoster(includeChurned,startDate,period):
-
+def getInterestingPlayersRoster(includeChurned,startDate,period,siteName = None):
+ 
     conn = connectToSource()
     cursor = conn.cursor()
     if includeChurned == True:
@@ -19,6 +19,7 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
         
         """
         cursor.execute(query)
+
     else:
         query = sql.SQL("""
     	with MostRecentPerArena as 
@@ -32,7 +33,10 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
     where mostRecent >  to_date(%s,'YYYY-MM-DD') - INTERVAL '1 day' * %s
     order by Level desc, Missions desc, mostRecent Asc;
     """)
-        cursor.execute(query,(cfg.getConfigString("SiteNameReal"),startDate,period))
+        
+        if siteName == None: #If not set, use default
+            siteName = cursor.execute(query,(cfg.getConfigString("SiteNameReal"),startDate,period))
+        cursor.execute(query,(siteName,startDate,period))
     results = cursor.fetchall()
     playerList = []
     for result in results:
@@ -366,6 +370,12 @@ BestScorer as (
 	order by averageScore desc
 	limit 1
 ),
+Achievers as (
+    select playerID, count(*) achievements
+    from PlayerAchievement pa join AllAchievements aa on aa.AchID = pa.AchID
+    where achievedDate is not null and aa.ArenaName = %s
+    group by playerID 
+),
 BestAchiever as(
 	SELECT Players.PlayerID
 	--GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed, round(AverageRank,2) as AverageRank, 
@@ -391,7 +401,7 @@ order by playerRank asc
         ,ArenaName
         ,startDate,endDate,ArenaName
         ,startDate,endDate,ArenaName
-        ,startDate,endDate,ArenaName)
+        ,startDate,endDate,ArenaName,ArenaName)
     cursor.execute(query,data)
     rows = cursor.fetchall()
     if rows == None:
@@ -446,12 +456,12 @@ def importPlayersFromCSV(path):
 def jobStart(description,resumeIndex,methodName, methodParams):
 
     ID = str(uuid.uuid4())
-    SQL  = """INSERT into jobsList (Desc,ID,started,methodName,methodParams) values 
+    SQL  = """INSERT into jobsList ("desc","id","started","methodname","methodparams") values 
     (%s,%s,now(),%s,%s)"""
     conn=connectToSource()
     cursor = conn.cursor()
 
-    cursor.execute(SQL,(description,ID,methodName,methodParams))
+    cursor.execute(SQL,(description,ID,methodName,json.dumps(methodParams)))
 
     conn.commit()
     conn.close()
@@ -462,13 +472,13 @@ def jobStart(description,resumeIndex,methodName, methodParams):
 def jobEnd(ID):
     SQL = """UPDATE jobsList 
     SET finished = now(),
-    SET resumeIndex = NULL
-    where ID = %s """
+    resumeindex = NULL
+    where id = %s """
     
     conn=connectToSource()
     cursor = conn.cursor()
 
-    cursor.execute(SQL,(ID))
+    cursor.execute(SQL,(ID,))
 
     conn.commit()
     conn.close()
@@ -477,7 +487,7 @@ def jobEnd(ID):
 def jobHeartbeat(ID,progressIndex):
     SQL = """UPDATE jobsList 
     SET lastHeartbeat = now(),
-    SET resumeIndex = %s
+    resumeIndex = %s
     where ID = %s """
     
     conn=connectToSource()

@@ -16,7 +16,7 @@ from colorama import Fore
 from colorama import Back
 import ConfigHelper as cfg 
 from ctypes import *
-
+ 
 from FetchPlayerAndGames import executeQueryGames
 from FetchPlayerUpdatesAndNewPlayers import updateExistingPlayers
 from FetchPlayerUpdatesAndNewPlayers import findNewPlayers
