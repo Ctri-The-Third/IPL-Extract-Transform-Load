@@ -1,4 +1,4 @@
-import pyodbc  
+
 import re
 from SQLconnector import connectToSource
 from FetchPlayerUpdatesAndNewPlayers import manualTargetSummary
