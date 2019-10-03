@@ -239,10 +239,10 @@ def findPlayer(targetID):
     global cursor
     if cursor == None:
         cursor = SQLHelper.connectToSource().cursor()
-    SQL = """select PlayerID from Players where PlayerID = %s or PlayerID =%s%s or GamerTag like %s order by missions desc limit 1"""
+    query = """select PlayerID from Players where PlayerID = %s or PlayerID =%s%s or GamerTag like %s order by missions desc limit 1"""
     prefix = cfg.getConfigString("ID Prefix")
-    data = (id,prefix,id,'%%%s%%' % (id))
-    cursor.execute(SQL,data)
+    data = (targetID,prefix,targetID,'%%%s%%' % (targetID))
+    cursor.execute(query,data)
     result = cursor.fetchone()
 
     if result != None and len(result) == 1:
@@ -255,7 +255,7 @@ def executeQueryIndividual (initTargetID):
     if targetID == "0-0-0":
         DBG("Unable to find a player with ID or name [%s]" % initTargetID, 2)
         return
-    recentGames(targetID) 
+    recentGames(targetID)  
     blobs(targetID)
     PlaysWhen(targetID)
     rarestAchievement(targetID)

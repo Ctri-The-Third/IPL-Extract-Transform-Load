@@ -9,12 +9,12 @@ import ConfigHelper as cfg
  
 
 def fetchIndividualWithID(id):
-    prefix = cfg.getConfigString("ID Prefix")
+    
     conn = connectToSource()
     cursor = conn.cursor()
 
     SQL = """select PlayerID from Players where PlayerID = %s or PlayerID =%s%s or GamerTag like %s order by missions desc limit 1"""
-    
+    prefix = cfg.getConfigString("ID Prefix")
     data = (id,prefix,id,'%%%s%%' % (id))
     print (SQL % data)
     cursor.execute(SQL,data)
