@@ -51,6 +51,7 @@ STD_OUTPUT_HANDLE = -11
 COORD._fields_ = [("X", c_short), ("Y", c_short)]
  
 def print_at(r, c, s):
+    print (os.name)
     h = windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
     windll.kernel32.SetConsoleCursorPosition(h, COORD(c, r))
     s = s + " "*30
