@@ -1,6 +1,5 @@
-from pynput.keyboard import Key, Listener
+
 import time
-import pynput
 import queue
  
 q = queue.Queue()
