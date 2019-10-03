@@ -239,35 +239,17 @@ def findPlayer(targetID):
     global cursor
     if cursor == None:
         cursor = SQLHelper.connectToSource().cursor()
-    exactMatch = """select PlayerID from Players where playerID = %s limit 1"""
-    cursor.execute(exactMatch,(targetID,))
-    result = cursor.fetchall()
+    SQL = """select PlayerID from Players where PlayerID = %s or PlayerID =%s%s or GamerTag like %s order by missions desc limit 1"""
+    prefix = cfg.getConfigString("ID Prefix")
+    data = (id,prefix,id,'%%%s%%' % (id))
+    cursor.execute(SQL,data)
+    result = cursor.fetchone()
 
-    if result == None or len(result) == 0:
-        localID = cfg.getConfigString("ID Prefix") + targetID 
-        cursor.execute(exactMatch,(localID,))
-        cursor.fetchall()
-        if result != None and len(result) == 1:
-            return result[0][0]
-
-    else: 
-        return targetID
-        
-    nameMatch = """select PlayerID, Missions
-        from players 
-        where GamerTag like %s
-        order by missions desc
-        limit 1 
-        """
-    name = '%%%s%%' % targetID
-    cursor.execute(nameMatch,(name,))
-    results = cursor.fetchone()
     if result != None and len(result) == 1:
-        return result[0][0]
+        return result[0]
     return "0-0-0"
-    #Check prefix+suffix
-    #check for 'like', and retrieve player with most missions in current arena
 
+    
 def executeQueryIndividual (initTargetID):
     targetID = findPlayer(initTargetID)
     if targetID == "0-0-0":
