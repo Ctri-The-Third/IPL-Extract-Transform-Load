@@ -109,7 +109,7 @@ on ranks.GameUUID = tppg.GameUUID
 , StdData0 as( select 
 	p.PlayerID, 
 	GamerTag, 
-	avg(Score) as averageScore,
+	avg(Score) :: INTEGER as averageScore,
 	count(GamerTag) as gamesPlayed,
 	to_char(GameTimestamp, 'YYYY-MM') as GameMonth	
   FROM Participation p
@@ -136,7 +136,7 @@ limit 3
     global cursor
     global config
     global ordinal
-    data = (targetID,cfg.getConfigString("SiteNameReal"),targetID)
+    data = (cfg.getConfigString("SiteNameReal"),cfg.getConfigString("SiteNameReal"),targetID)
     cursor.execute(sql,data)
     feedbackQueue.q.put( "%s%s**Month to Month Stats:**%s\n" % (Back.BLACK,Fore.WHITE,Fore.WHITE))
     for result in cursor.fetchall():
@@ -184,7 +184,10 @@ limit 3
     global ordinal
     global cursor
     global config
-    cursor.execute(sql,(targetID,cfg.getConfigString("SiteNameReal")))
+    arena = cfg.getConfigString("SiteNameReal")
+    cursor.execute(sql,(arena,targetID))
+    
+
     results = cursor.fetchall()
     feedbackQueue.q.put("%s%s**Recent Games: for %s at %s **%s\n" % (Back.BLACK,Fore.WHITE,targetID,cfg.getConfigString("SiteNameShort"),Fore.WHITE))
     for result in results:
@@ -216,7 +219,7 @@ data as (
 	and g.ArenaName = %s
 	group by day, hour
 )
-select games,dayName,hour from data d join   dateData dd on d.day =dd.day
+select games,dayName,hour :: INTEGER from data d join   dateData dd on d.day =dd.day
 order by games desc
 limit 2
 '''

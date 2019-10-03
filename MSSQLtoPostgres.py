@@ -2,7 +2,7 @@
 import psycopg2
 import pyodbc
 
-PGconn = psycopg2.connect(host='localhost',port=5432 ,user='LaserScraper', password='LaserScraper', database = 'LaserScraper')
+PGconn = psycopg2.connect(host='192.168.0.133',port=5432 ,user='LaserScraper', password='LaserScraper', database = 'LaserScraper')
 MSconn = pyodbc.connect('Driver={SQL Server}; Server=TSINGA-KELKU\SQLEXPRESS; Database=LaserScraper; Trusted_Connection=yes;')
 
 PGCursor = PGconn.cursor()
@@ -18,7 +18,7 @@ def Players():
         try:
             PGCursor.execute(PGQuery,(row[0],row[1],row[2],row[3],row[4],row[5]))
             print("Added %s to DB" % (row[0])) 
-            PGCursor.commit()
+            PGconn.commit()
         except psycopg2.Error as e:
             print ("Bounced %s from DB: %s"% (row[0],e.pgerror))
             PGconn.rollback()
@@ -33,7 +33,7 @@ def Games():
         try:
             PGCursor.execute(PGQuery,(row[0],row[1],row[2],row[3]))
             print("Added %s to DB" % (row[3])) 
-            PGCursor.commit()
+            PGconn.commit()
         except psycopg2.Error as e:
             print ("Bounced %s from DB: %s"% (row[3],e.pgerror))
             PGconn.rollback()
@@ -48,7 +48,7 @@ def Participation():
         try:
             PGCursor.execute(PGQuery,(row[0],row[1],row[2],row[3]))
             print("Added %s|%s to DB" % (row[0],row[1]))
-            PGCursor.commit() 
+            PGconn.commit() 
         except psycopg2.Error as e:
             print ("Bounced %s|%s from DB: %s"% (row[0],row[1],e.pgerror))
             PGconn.rollback()
@@ -63,7 +63,7 @@ def Participation():
         try:
             PGCursor.execute(PGQuery,(row[0],row[1],row[2],row[3]))
             print("Added %s|%s to DB" % (row[0],row[1])) 
-            PGCursor.commit()
+            PGconn.commit()
         except psycopg2.Error as e:
             print ("Bounced %s|%s from DB: %s"% (row[0],row[1],e.pgerror))
             PGconn.rollback()
@@ -79,7 +79,7 @@ def AllAchievements():
         try:
             PGCursor.execute(PGQuery,(row[0],row[1],row[2],row[3],row[4]))
             print("Added %s|%s to DB" % (row[0],row[3])) 
-            PGCursor.commit()
+            PGconn.commit()
         except psycopg2.Error as e:
             print ("Bounced %s|%s from DB: %s"% (row[0],row[3],e.pgerror))
             PGconn.rollback()
@@ -95,7 +95,7 @@ def PlayerAchievement():
         try:
             PGCursor.execute(PGQuery,(row[0],row[1],row[3]))
             print("Added %s|%s to DB" % (row[0],row[1]))
-            PGCursor.commit() 
+            PGconn.commit() 
         except psycopg2.Error as e:
             print ("Bounced %s|%s from DB: %s"% (row[0],row[1],e.pgerror))
             PGconn.rollback()

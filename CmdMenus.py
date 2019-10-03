@@ -78,7 +78,7 @@ def drawHeader():
 
 def drawDateMenu():
     os.system('CLS')
-    config = getConfig()
+    config = cfg.getConfig()
     drawHeader()
 
     print_at (5,0, "%s/***** Start Date ***************************************************\%s" % (fg.yellow, fg.white))
@@ -195,7 +195,7 @@ while inputS != "exit" and inputS != "x":
         drawArenaMenu()
         #print("\nEnter option...")
         if inputS != "":
-            if inputS == "b":
+            if inputS == "b" or inputS == "B":
                 waitingFunction = ""
                 
             else:
@@ -234,10 +234,11 @@ while inputS != "exit" and inputS != "x":
         if inputS == "12": #needs reworking
             startDate = drawDateMenu()
             print ("%s ***** End Date         ***** %s" % (fg.yellow, fg.white))
-            #EndDate = input()
+            EndDate = input()
 
             if startDate != "B" and EndDate != "B":
-                feedback.append(setNewDates(startDate,EndDate))
+                
+                feedback.append(cfg.setNewDates(startDate,EndDate))
         if inputS == "4": 
             waitingFunction = "outputPane"
         elif inputS == "5":
