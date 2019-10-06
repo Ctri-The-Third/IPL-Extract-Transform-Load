@@ -99,6 +99,24 @@ CREATE TABLE Players(
             PlayerID
 ));
 
+-- Table: public.jobslist
+CREATE TABLE public.jobslist
+(
+    "desc" text NOT NULL,
+    id text NOT NULL,
+    methodname text NOT NULL,
+    "started" timestamp without time zone NOT NULL,
+    "finished" timestamp without time zone,
+    lastHeartbeat timestamp without time zone,
+    resumeindex int,
+    methodparams text NOT NULL,  
+    CONSTRAINT jobs_pkey PRIMARY KEY (id)
+);
+
+ALTER TABLE public.jobslist
+    OWNER to "LaserScraper";
+
+
 /****** Object:  View MostRecentGame    Script Date: 27-Aug-19 12:20:09 ******/
 
 

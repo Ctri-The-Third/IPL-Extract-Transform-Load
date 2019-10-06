@@ -7,18 +7,21 @@ from SQLconnector import connectToSource
 import ConfigHelper as cfg 
 
 
-def getInterestingPlayersRoster(includeChurned,startDate,period,siteName = None):
+def getInterestingPlayersRoster(includeChurned,startDate,period,siteName = None, offset = None):
  
     conn = connectToSource()
     cursor = conn.cursor()
+    if offset == None:
+        offset = "NULL"
     if includeChurned == True:
         query = """
         
         select  * from InterestingPlayers
         order by Missions desc, SeenIn60Days Asc
-        
+        OFFSET %s;
         """
-        cursor.execute(query)
+
+        cursor.execute(query, (offset,))
 
     else:
         query = sql.SQL("""
@@ -31,12 +34,14 @@ def getInterestingPlayersRoster(includeChurned,startDate,period,siteName = None)
 
     select  Missions, Level, PlayerID, MostRecent from MostRecentPerArena
     where mostRecent >  to_date(%s,'YYYY-MM-DD') - INTERVAL '1 day' * %s
-    order by Level desc, Missions desc, mostRecent Asc;
+    order by Level desc, Missions desc, mostRecent Asc
+    offset %s;
+
     """)
         
         if siteName == None: #If not set, use default
             siteName = cursor.execute(query,(cfg.getConfigString("SiteNameReal"),startDate,period))
-        cursor.execute(query,(siteName,startDate,period))
+        cursor.execute(query,(siteName,startDate,period,offset))
     results = cursor.fetchall()
     playerList = []
     for result in results:

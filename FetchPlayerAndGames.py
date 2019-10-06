@@ -24,7 +24,8 @@ import workerProgressQueue as wpq
 #    '7-8-0839' 
 #}
 updatedPlayers = []
-def executeQueryGames(scope ): #Scope should be "full" or "partial"
+
+def executeQueryGames(scope, interval = "Null", ArenaName = None,offset = None): #Scope should be "full" or "partial"
     params = {}
     params["scope"] = scope
     params["arenaName"] = cfg.getConfigString("SiteNameReal")
@@ -37,7 +38,7 @@ def executeQueryGames(scope ): #Scope should be "full" or "partial"
 
     queryPlayers(targetIDs,scope, siteName = params["arenaName"], jobID=ID)
 
-def queryPlayers (targetIDs,scope, siteName = None, jobID = None):
+def queryPlayers (targetIDs,scope, siteName = None, jobID = None, offset = None):
     updatedPlayers = []
     totalPlayerCount = len(targetIDs)
     counter = 0
