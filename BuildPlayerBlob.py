@@ -169,12 +169,11 @@ limit 10
 	JSONobject["SkillLevelName"] = SkillLevelName[row[2]]
 	JSONobject["MonthlyGamesPlayed"] = row[5]
 	JSONobject["AllGamesPlayed"] = row[3]
-	JSONobject["StarQuality"] = "%d" % row[7]
+	JSONobject["StarQuality"] = "%s" % row[7]
 	JSONobject["Achievements"] = row[9]
 
 
-
-	result = cursor.execute(goldenGameQuery,(targetID,targetArena,targetID,startDate,endDate))
+	result = cursor.execute(goldenGameQuery,(targetArena,targetArena,targetID,startDate,endDate))
 	rows = cursor.fetchall()
 	if len(rows) > 0:
 		row = rows[0]
