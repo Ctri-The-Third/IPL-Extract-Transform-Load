@@ -28,7 +28,7 @@ def executeBuildMonthlyStars():
 		, GameMonth  --average(rank) over (partition by GameTimestamp
 		,avg(cast(playerCount as float)) *  (avg(cast(playerCount as float8))/avg (cast(rank as float))) as AverageStarQuality
 		from data
-		where GameMonth in (%s,%s)
+		where GameMonth in (%s,%s) 
 		group by PlayerID, GamerTag, GameMonth
 	)
 
@@ -45,12 +45,12 @@ def executeBuildMonthlyStars():
 	on r1.PlayerID = r2.PlayerID and r1.GameMonth != r2.GameMonth
 	where r1.GameMonth = %s
 	order by AverageStarQuality desc
-
+	
 	'''
 	conn = connectToSource()
 	cursor = conn.cursor()
 
-	cursor.execute(SQL,(curMonth,lastMonth,arenaName,curMonth))
+	cursor.execute(SQL,(arenaName,curMonth,lastMonth,curMonth))
 	JSON = {
 		'ScoreTitle' : "Star Quality for all known players, between {1} and {0}" .format(curMonth,lastMonth),
 		'ScoreGreaterOrEqualDate' : curMonth,
@@ -72,11 +72,11 @@ def executeBuildMonthlyStars():
 
 		JSON['Player'].append(
 		{'Name' : result[1], 
-		'StarQualityPerGame' : result[2], 
-		'TotalStarQuality' : result[3],
-		'AverageOpponents' : result[4], 
+		'StarQualityPerGame' : "%s" % result[2], 
+		'TotalStarQuality' : "%s" % result[3],
+		'AverageOpponents' : "%s" % result[4], 
 		'gamesPlayed' : result[6], 
-		'AverageRank' : result[5], 
+		'AverageRank' : "%s" % result[5], 
 		'ChangeInRank' : ChangeInRank,
 		'ChangeInPlayers' : ChangeInPlayers,
 		'ChangeInSQPerGame' : ChangeInStars,
