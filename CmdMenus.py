@@ -27,9 +27,7 @@ import FetchIndividual
 import QueryIndividual
 import QueryArena
 import InputReader
-import feedbackQueue # shared module that contains a queue for giving output to the UI
-
-import FetchAchievements 
+import feedbackQueue # shared module tha
 import BuildMonthlyScoresToJSON 
 import BuildMonthlyStarQualityToJSON
 import BuildAchievementScoresToJSON
@@ -244,11 +242,27 @@ while inputS != "exit" and inputS != "x":
             waitingFunction = "5"
         elif inputS == "6":
             
-            BuildMonthlyScoresToJSON.executeMonthlyScoresBuild()
-            BuildMonthlyStarQualityToJSON.executeBuildMonthlyStars()
-            BuildAchievementScoresToJSON.executeAchievementBuild()
-            BuildPlayerBlob.executeBuildPlayerBlobs()
-            BuildHeadToHeadsToJSON.buildHeadToHeads() 
+            feedback.append("Building all blobs in parallel. Prepare for spam.")
+            t = threading.Thread(target=BuildMonthlyScoresToJSON.executeMonthlyScoresBuild())
+            threads.append(t)
+            t.start()
+
+            t = threading.Thread(target=BuildMonthlyStarQualityToJSON.executeBuildMonthlyStars())
+            threads.append(t)
+            t.start()
+
+            t = threading.Thread(target=BuildAchievementScoresToJSON.executeAchievementBuild())
+            threads.append(t)
+            t.start()
+
+            t = threading.Thread(target=BuildPlayerBlob.executeBuildPlayerBlobs())
+            threads.append(t)
+            t.start()
+
+            t = threading.Thread(target=BuildHeadToHeadsToJSON.buildHeadToHeads())
+            threads.append(t)
+            t.start()
+
             feedback.append("Blobs written")
             
             
