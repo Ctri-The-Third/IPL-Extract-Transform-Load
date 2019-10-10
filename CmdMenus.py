@@ -76,7 +76,7 @@ def drawHeader():
 
 def drawDateMenu():
     os.system('CLS')
-    config = getConfig()
+    config = cfg.getConfig()
     drawHeader()
 
     print_at (5,0, "%s/***** Start Date ***************************************************\%s" % (fg.yellow, fg.white))
@@ -232,10 +232,10 @@ while inputS != "exit" and inputS != "x":
         if inputS == "12": #needs reworking
             startDate = drawDateMenu()
             print ("%s ***** End Date         ***** %s" % (fg.yellow, fg.white))
-            #EndDate = input()
+            EndDate = input("Enter End Date:")
 
             if startDate != "B" and EndDate != "B":
-                feedback.append(setNewDates(startDate,EndDate))
+                feedback.append(cfg.setNewDates(startDate,EndDate))
         if inputS == "4": 
             waitingFunction = "outputPane"
         elif inputS == "5":
@@ -245,7 +245,7 @@ while inputS != "exit" and inputS != "x":
             feedback.append("Building all blobs in parallel. Prepare for spam.")
             t = threading.Thread(target=BuildMonthlyScoresToJSON.executeMonthlyScoresBuild())
             threads.append(t)
-            t.start()
+            t.start() 
 
             t = threading.Thread(target=BuildMonthlyStarQualityToJSON.executeBuildMonthlyStars())
             threads.append(t)
