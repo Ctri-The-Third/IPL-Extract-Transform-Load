@@ -1,10 +1,1 @@
-import curses
-from cur
-
-
-
-stdscr = curses.initscr()
-
-#row, column, string
-def print_at(r, c, s):
-    stdscr.
+print("Linux menus not yet implemented! Please run this application on Windows for now :(")
