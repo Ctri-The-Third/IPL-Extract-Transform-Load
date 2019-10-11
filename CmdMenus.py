@@ -74,7 +74,7 @@ def drawHeader():
     
     print_at (0,0,"/***** LF Profiler **************************************************\ ",PI=2)
 
-        
+         
     
     
     print_at(1,0,"Start Date:           [            ]          | " )
