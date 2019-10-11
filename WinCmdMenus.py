@@ -1,5 +1,7 @@
 from console import fg, bg, fx 
 from ctypes import *
+import WinInputReader 
+import threading
 import os
 
 class COORD(Structure):
@@ -20,3 +22,7 @@ def clearScreen():
 
 def endUI():
     clearScreen()
+
+def startInputThread():
+    thread = threading.Thread(target=WinInputReader.executeKeyboardLoop)
+    return thread

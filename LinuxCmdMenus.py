@@ -2,6 +2,7 @@ from console import fg, bg, fx
 import os
 import curses
 from curses import wrapper
+import LinuxInputReader
 print("\e[31mRedLinux menus not yet implemented! Please run this application on Windows for now :(\e[39m")
 
 screen = curses.initscr()
@@ -49,3 +50,7 @@ def clearScreen():
 def endUI():
     curses.endwin() 
 
+def startInputThread():
+    thread = threading.Thread(target=WinInputReader.executeKeyboardLoop)
+    return thread
+    
