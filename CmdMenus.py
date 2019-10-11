@@ -74,7 +74,7 @@ def drawHeader():
     
     print_at (0,0,"/***** LF Profiler **************************************************\ ",PI=2)
 
-        
+         
     
     
     print_at(1,0,"Start Date:           [            ]          | " )
@@ -112,7 +112,7 @@ def drawMainMenu():
 
     drawHeader()
 
-    print_at (5,0,"%s/***** Menu *********************************************************\ %s" % (fg.yellow, fg.white))
+    print_at (5,0,"/***** Menu *********************************************************\ %s", PI=2)
     print_at (6,0,"["+fg.yellow+"11 "+fg.white+"] Select different site")
     print_at (7,0,"["+fg.yellow+"12 "+fg.white+"] Select different dates")
     print_at (8,0,"["+fg.yellow+" 4 "+fg.white+"] Run status queries on current site")
