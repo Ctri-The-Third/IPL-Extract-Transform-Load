@@ -2,7 +2,7 @@ from console import fg, bg, fx
 import os
 import curses
 from curses import wrapper
-import LinuxInputReader
+
 import threading
 import InputReader
 import pynput
