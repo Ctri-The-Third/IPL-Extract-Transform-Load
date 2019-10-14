@@ -75,7 +75,8 @@ def drawHeader():
     
     print_at(1,0,"Start Date:           [            ]          | " )
     print_at(1,24,cfg.getConfigString("StartDate"),1)
-    renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),1,48,1,4)
+    renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),1,48,4,1)
+    
     
     print_at(2,0,"Start Date:           [            ]          | " )
     print_at(2,24,cfg.getConfigString("StartDate"),1) 

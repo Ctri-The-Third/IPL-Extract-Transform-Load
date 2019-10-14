@@ -23,6 +23,8 @@ colourPairs = [
     "%s%s"% (fg.black,bg.green),
     "%s%s"% (fg.black,bg.red)
 ]
+def initUI():
+    return 
 
 class COORD(Structure):
     pass
@@ -48,9 +50,11 @@ def endUI():
 
 def startInputThread():
     thread = threading.Thread(target=__inputThread__)
+    thread.start()
     return thread
 
-
+def drawScreen():
+    return 
  
 def __inputThread__():
     
