@@ -39,6 +39,8 @@ import QueryArena
 import feedbackQueue # shared module that contains a queue for giving output to the UI
 
 import FetchAchievements 
+import InputReader
+
 import BuildMonthlyScoresToJSON 
 import BuildMonthlyStarQualityToJSON
 import BuildAchievementScoresToJSON
@@ -253,21 +255,37 @@ while inputS != "exit" and inputS != "x" and stop != True:
         if inputS == "12": #needs reworking
             startDate = drawDateMenu()
             print ("%s ***** End Date         ***** %s" % (fg.yellow, fg.white))
-            #EndDate = input()
+            EndDate = input("Enter End Date:")
 
             if startDate != "B" and EndDate != "B":
-                feedback.append(setNewDates(startDate,EndDate))
+                feedback.append(cfg.setNewDates(startDate,EndDate))
         if inputS == "4": 
             waitingFunction = "outputPane"
         elif inputS == "5":
             waitingFunction = "5"
         elif inputS == "6":
             
-            BuildMonthlyScoresToJSON.executeMonthlyScoresBuild()
-            BuildMonthlyStarQualityToJSON.executeBuildMonthlyStars()
-            BuildAchievementScoresToJSON.executeAchievementBuild()
-            BuildPlayerBlob.executeBuildPlayerBlobs()
-            BuildHeadToHeadsToJSON.buildHeadToHeads() 
+            feedback.append("Building all blobs in parallel. Prepare for spam.")
+            t = threading.Thread(target=BuildMonthlyScoresToJSON.executeMonthlyScoresBuild())
+            threads.append(t)
+            t.start() 
+
+            t = threading.Thread(target=BuildMonthlyStarQualityToJSON.executeBuildMonthlyStars())
+            threads.append(t)
+            t.start()
+
+            t = threading.Thread(target=BuildAchievementScoresToJSON.executeAchievementBuild())
+            threads.append(t)
+            t.start()
+
+            t = threading.Thread(target=BuildPlayerBlob.executeBuildPlayerBlobs())
+            threads.append(t)
+            t.start()
+
+            t = threading.Thread(target=BuildHeadToHeadsToJSON.buildHeadToHeads())
+            threads.append(t)
+            t.start()
+
             feedback.append("Blobs written")
             
             

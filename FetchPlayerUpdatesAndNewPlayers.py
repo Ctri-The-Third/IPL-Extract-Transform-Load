@@ -25,16 +25,16 @@ def findNewPlayers():
     TickerIcon = ["|","/","-",'\\']
 #
     query = sql.SQL("""
- with PlayerSegments as (
- 	select distinct cast( split_part(pl.PlayerID,'-',3) as INTEGER) as IDSuffix
-	from players pl join Participation p on pl.PlayerID = p.PlayerID
-    join games g on p.GameUUID = g.GameUUID
-    where g.ArenaName = '%s'  )
-
- select max (IDSuffix) from PlayerSegments where  IDSuffix < 100000
-    
-    """).format(siteName)
-    cursor.execute(query)
+        with counts as (select count(*) - ( count(*) / 5000 ) as offs from players pl)
+        select distinct  cast (split_part(pl.PlayerID,'-',3) as integer), offs
+        from players pl join Participation p on pl.PlayerID = p.PlayerID
+        join games g on p.GameUUID = g.GameUUID
+        full outer join counts on 1 = 1 
+        where g.ArenaName like %s
+        order by 1 desc 
+        limit 1 offset 10 
+    """)
+    cursor.execute(query,(siteName,))
     result = cursor.fetchone()
     if result[0] == None:
         MaxPlayer = 199 #LaserForce seems to start numbering players at 100

@@ -369,7 +369,7 @@ BestScorer as (
 Achievers as (
     select playerID, count(*) achievements
     from PlayerAchievement pa join AllAchievements aa on aa.AchID = pa.AchID
-    where achievedDate is not null and aa.ArenaName = @targetArena
+    where achievedDate is not null and aa.ArenaName = %s
     group by playerID 
 ),
 BestAchiever as(
@@ -399,7 +399,7 @@ order by playerRank asc
         ,ArenaName
         ,startDate,endDate,ArenaName
         ,startDate,endDate,ArenaName
-        ,startDate,endDate,ArenaName)
+        ,startDate,endDate,ArenaName, ArenaName)
     cursor.execute(query,data)
     rows = cursor.fetchall()
     if rows == None:

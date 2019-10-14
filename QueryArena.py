@@ -128,16 +128,16 @@ select to_char(latestGame,'YYYY-MM-DD HH24:MI') mostRecentGame, DATE_PART('day',
     row = cursor.fetchone()
     
     if row[1] == None  or row[1] > 120:
-        cacheTarget = arenaName
-        cacheResponse = 2
+        executeQueryArenaName = arenaName
+        executeQueryArenaValue = 2
         return 2
     elif row[1] > 48:
-        cacheTarget = arenaName
-        cacheResponse = 1
+        executeQueryArenaName = arenaName
+        executeQueryArenaValue = 1
         return 1
     else:
-        cacheTarget = arenaName
-        cacheResponse = 0
+        executeQueryArenaName = arenaName
+        executeQueryArenaValue = 0
         return 0
 
 
