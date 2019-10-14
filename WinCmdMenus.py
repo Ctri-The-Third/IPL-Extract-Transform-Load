@@ -23,6 +23,8 @@ colourPairs = [
     "%s%s"% (fg.black,bg.green),
     "%s%s"% (fg.black,bg.red)
 ]
+def initUI():
+    return 
 
 class COORD(Structure):
     pass
@@ -45,6 +47,7 @@ def print_at(r, c, s, PI=0):
 ### END  https://rosettacode.org/wiki/Terminal_control/Cursor_positioning#Python ###
 
 def clearScreen(): 
+    print_at(0,0," clearing string ",0)
     os.system('cls')
 
 def endUI():
@@ -52,9 +55,11 @@ def endUI():
 
 def startInputThread():
     thread = threading.Thread(target=__inputThread__)
+    thread.start()
     return thread
 
-
+def drawScreen():
+    return 
  
 def __inputThread__():
     
