@@ -43,6 +43,7 @@ def print_at(r, c, s, PI=0):
 ### END  https://rosettacode.org/wiki/Terminal_control/Cursor_positioning#Python ###
 
 def clearScreen(): 
+    print_at(0,0," clearing string ",0)
     os.system('cls')
 
 def endUI():
