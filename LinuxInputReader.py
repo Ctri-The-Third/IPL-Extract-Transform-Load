@@ -13,7 +13,7 @@ stdscr = curses.initscr()
 curses.nocbreak()
 stdscr.keypad(True)
 message = ""
-while True:
+while False:
     
     #stdscr.addstr(0, 0, "Enter IM message: (hit Ctrl-G to send)")
     stdscr.addstr(4 ,0,"Enter message! %s" % message)

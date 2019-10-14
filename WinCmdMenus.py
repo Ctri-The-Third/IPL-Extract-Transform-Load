@@ -3,7 +3,9 @@ from ctypes import *
 import WinInputReader 
 import threading
 import os
-
+import InputReader
+import time
+import queue
 
 #PALET
 # 0 = white on black
@@ -45,5 +47,14 @@ def endUI():
     clearScreen()
 
 def startInputThread():
-    thread = threading.Thread(target=WinInputReader.executeKeyboardLoop)
+    thread = threading.Thread(target=__inputThread__)
     return thread
+
+
+ 
+def __inputThread__():
+    
+    inputS = ""
+    while inputS != "x":
+        inputS = input()
+        InputReader.q.put(inputS)

@@ -48,7 +48,7 @@ import workerProgressQueue
 # This application class serves as a wrapper for the initialization of curses
 # and also manages the actual forms of the application
 
-
+initUI()
 #PALLETE
 # 0 = White on black
 # 1 = Green on Black
@@ -60,12 +60,6 @@ import workerProgressQueue
 feedback = ["","","","","Initialised system..."]
 threads = []
 
-###  https://rosettacode.org/wiki/Terminal_control/Cursor_positioning#Python ###
-
-#green on black
-#yellow on black
-#red on black
-#white on black
 
  
 
@@ -140,7 +134,7 @@ def drawMainMenu():
     print_at (18,0,"[?] Help " )
     print_at (19,0,"[x] Exit")
     
-    print("")
+    
     
     if feedback.__len__() >= 5:
         print_at (21,0,"/***** Previous commands *********************************************\ ",PI=2)
@@ -182,8 +176,7 @@ inputS = ""
 
 
 t = startInputThread()
-threads.append(t)
-#t.start()    
+threads.append(t) 
 
 
     
@@ -195,7 +188,7 @@ workerStatusQ = workerProgressQueue.getQ()
 #rendering is done generically, but the wrapper and refresh must be handled by the CmdMenus part.
 stop = False
 while inputS != "exit" and inputS != "x" and stop != True:
-    stop = True
+    time.sleep(0.5)
     print_at(0,0,"LOOP [%s]"% stop)
     inputS = ""
     while not feedbackQueue.q.empty():
@@ -319,10 +312,12 @@ while inputS != "exit" and inputS != "x" and stop != True:
             feedback.append("Clearing console")
             clearScreen()
             waitingFunction = ""
-    else: 
-        drawHeader()
-        drawOutputPane()
-    time.sleep(5)
+    else:
+        Nothing = True 
+        #drawHeader()
+        #drawOutputPane()
+    drawScreen()
+    
 
 endUI()
 
