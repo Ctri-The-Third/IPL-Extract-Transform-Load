@@ -2,9 +2,17 @@ import os
 import colorama
 import time
 import math
-def renderBar(progress,forecolor,backcolor):
-    returnString = ""
+
+
+if os.name == "nt":
+    from WinCmdMenus import * 
+elif os.name == "posix":
+    from LinuxCmdMenus import *
     
+
+def renderBar(progress,row,colum,firstColourPairIndex,secondColourPairIndex):
+    returnString = ""
+    #print_at(1,0,"[%s,%s]"%(row,colum),5)
     progress = round(progress * 10000) / 100
     returnString = "%g%%" % progress
     lpadding = math.ceil(10-len(returnString)/2)
@@ -15,9 +23,13 @@ def renderBar(progress,forecolor,backcolor):
 
     returnString = "%s%s%s" % (lstring,returnString,rstring)
     progressi = math.floor(progress /5 )
-    returnString = "[%s%s"%(forecolor,backcolor)+returnString[0:progressi]+"%s%s"% (colorama.Fore.WHITE,colorama.Back.BLACK)+ returnString[progressi:len(returnString)]+"%s%s]" % (colorama.Fore.WHITE,colorama.Back.BLACK)
-    #print(progressi)
     
+    print_at(row,colum,"[",PI =1)
+    print_at(row,colum+1,returnString[0:progressi],firstColourPairIndex)
+    
+    print_at(row,(colum+progressi+1),returnString[progressi:len(returnString)],secondColourPairIndex)
+    print_at(row,(colum+21),"]",PI =1) 
+
     return returnString
 
 #for i in range (49):
