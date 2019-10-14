@@ -53,7 +53,10 @@ def print_at(r,c,s,PI = 0):
     screen.addstr(r,c,s,curses.color_pair(PI))
     
 def clearScreen():
+    global screen
     os.system('clear')
+    screen.redrawwin()
+
 
 def drawScreen():
     global screen

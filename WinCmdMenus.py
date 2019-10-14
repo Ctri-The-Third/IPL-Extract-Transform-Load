@@ -29,6 +29,10 @@ class COORD(Structure):
 STD_OUTPUT_HANDLE = -11
 COORD._fields_ = [("X", c_short), ("Y", c_short)]
 
+
+def initUI(): 
+    return 
+
 def print_at(r, c, s, PI=0):
     if PI > 5 or PI < 0:
         PI = 0
