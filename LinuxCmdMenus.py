@@ -27,8 +27,9 @@ def initUI():
     global screen
     global keyboard
     #curses.noecho()
-    curses.start_color()
     screen = curses.initscr()
+    curses.start_color()
+    
     curses.noecho()
     curses.cbreak()
 
