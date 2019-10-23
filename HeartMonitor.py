@@ -10,10 +10,15 @@ def executeMonitor():
     conn = connectToSource()
     cursor = conn.cursor()
     while not isTerminated():
-        SQL = """select EXTRACT(EPOCH  from (now() - COALESCE (lastheartbeat, started))) as age, *
+        SQL = """with data as (
+                select EXTRACT(EPOCH  from (now() - COALESCE (lastheartbeat, started))) as age, *
                 from jobslist 
-                where finished is null and age > 120
-                order by lastheartbeat asc, started asc """
+                
+            )
+            select * from data
+            where finished is null and age > 120 
+            order by lastheartbeat asc, started asc
+ """
         
         cursor.execute(SQL)
         conn.commit()
@@ -21,8 +26,8 @@ def executeMonitor():
         for result in cursor.fetchall():
 
 
-            if result[3] == "FetchPlayerAndGames.executeQueryGames"
-                params = json.loads(result[7])
+            if result[3] == "FetchPlayerAndGames.executeQueryGames":
+                params = json.loads(result[8])
                 FetchPlayerAndGames.executeQueryGames(params["scope"])
                 #execute known method.
             print(result)

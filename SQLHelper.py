@@ -11,8 +11,7 @@ def getInterestingPlayersRoster(includeChurned,startDate,period,siteName = None,
  
     conn = connectToSource()
     cursor = conn.cursor()
-    if offset == None:
-        offset = "NULL"
+    
     if includeChurned == True:
         query = """
         
