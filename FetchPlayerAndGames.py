@@ -25,23 +25,28 @@ import workerProgressQueue as wpq
 #}
 updatedPlayers = []
 
-def executeQueryGames(scope, interval = "Null", ArenaName = None,offset = None): #Scope should be "full" or "partial"
+def executeQueryGames(scope, interval = "Null", ArenaName = None, offset = None, ID = None): #Scope should be "full" or "partial"
     params = {}
     params["scope"] = scope
     params["arenaName"] = cfg.getConfigString("SiteNameReal")
     if scope == "full": 
-        targetIDs = getInterestingPlayersRoster(True,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"))
-        ID = jobStart("Fetch games, all players",0,"FetchPlayerAndGames.executeQueryGames",params)
+        targetIDs = getInterestingPlayersRoster(True,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),offset=offset)
+        if ID == None: #new job
+            ID = jobStart("Fetch games, all players",0,"FetchPlayerAndGames.executeQueryGames",params)
     else: 
-        targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),siteName = params["arenaName"])
-        ID = jobStart("Fetch games, [%s] active players " % (cfg.getConfigString("SiteNameShort")),0,"FetchPlayerAndGames.executeQueryGames",params) 
-
-    queryPlayers(targetIDs,scope, siteName = params["arenaName"], jobID=ID)
+        targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),offset=offset,siteName = params["arenaName"])
+        if ID == None: #new job
+            ID = jobStart("Fetch games, [%s] active players " % (cfg.getConfigString("SiteNameShort")),0,"FetchPlayerAndGames.executeQueryGames",params) 
+            
+    queryPlayers(targetIDs,scope, siteName = params["arenaName"], jobID=ID, offset=offset)
 
 def queryPlayers (targetIDs,scope, siteName = None, jobID = None, offset = None):
     updatedPlayers = []
-    totalPlayerCount = len(targetIDs)
+    
     counter = 0
+    if offset is not None:
+        counter = offset
+    totalPlayerCount = len(targetIDs) + counter
     startTime = datetime.datetime.now()
     lastHeartbeat = startTime
     global WorkerStatus
