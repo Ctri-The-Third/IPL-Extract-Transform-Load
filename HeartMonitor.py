@@ -16,8 +16,7 @@ def startMonitorThreads():
 def executeMonitor():
     conn = connectToSource()
     cursor = conn.cursor()
-    while not isTerminated():
-        SQL = """with data as (
+    SQL = """with data as (
                 select EXTRACT(EPOCH  from (now() - COALESCE (lastheartbeat, started))) as age, *
                 from jobslist 
                 
@@ -26,16 +25,23 @@ def executeMonitor():
             where finished is null and age > 120 
             order by lastheartbeat asc, started asc
  """
-        
+    while not isTerminated():
+       
         cursor.execute(SQL)
         conn.commit()
-        print ("---")
+        #print ("---")
         for result in cursor.fetchall():
 
 
             if result[3] == "FetchPlayerAndGames.executeQueryGames":
                 params = json.loads(result[8])
-                FetchPlayerAndGames.executeQueryGames(params["scope"])
+                t = threading.Thread(
+                    target=FetchPlayerAndGames.executeQueryGames, 
+                    args=(params["scope"],), 
+                    kwargs={"ID":result[2],"offset":result[7]}) #
+                t.start()
+                
+                
                 #execute known method.
             print(result)
         time.sleep(120)
@@ -46,4 +52,4 @@ def terminateMonitor():
 
 def isTerminated():
     return __terminateInstruction__
-executeMonitor()
+#executeMonitor()
