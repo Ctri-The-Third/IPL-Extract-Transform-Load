@@ -1,14 +1,14 @@
 import time
 import queue
 import math
-from  colorama import Fore,Back
+
 
 q = queue.Queue()
 WorkerStatus = {}
 WorkerStatus["CurEntry"] = 0
 WorkerStatus["TotalEntries"] = 1
-WorkerStatus["CurrentAction"] = "[%s        idle        %s]" % (Fore.GREEN, Fore.WHITE)
-WorkerStatus["ETA"] = "[%s      ETC: N/A      %s]" % (Fore.GREEN, Fore.WHITE)
+WorkerStatus["CurrentAction"] = "[        idle        ]" 
+WorkerStatus["ETA"] = "[      ETC: N/A      ]" 
 
 q.put(WorkerStatus)
 
@@ -20,12 +20,12 @@ def updateQ(curEntry,total,action,ETA):
     action = action[0:20]
     paddingL = math.floor(10 - (len(action)/2))
     paddingR = math.ceil(10 - (len(action)/2))
-    action = "[%s%s%s%s%s]" % (Fore.GREEN," " * paddingL,action," " * paddingR,Fore.WHITE)
+    action = "[%s%s%s]" % (" " * paddingL,action," " * paddingR)
     WorkerStatus["CurrentAction"] = action 
 
     paddingL = math.floor(10 - (len(ETA)/2))
     paddingR = math.ceil(10 - (len(ETA)/2))
-    ETA = "[%s%s%s%s%s]" % (Fore.GREEN," " * paddingL,ETA," " * paddingR,Fore.WHITE)
+    ETA = "[%s%s%s]" % (" " * paddingL,ETA," " * paddingR)
     WorkerStatus["ETA"] = ETA 
 
     global q 
