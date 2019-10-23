@@ -1,11 +1,18 @@
+"""This module will do a check on the DB every heartbeat, and check for jobs that are more than 4 heartbeats old.
+On finding such, it will attempt to restart the job."""
 import time
 import json
 import FetchPlayerAndGames
+import threading
 from  SQLconnector import connectToSource
 
-#This module will do a check on the DB every heartbeat, and check for jobs that are more than 4 heartbeats old.
-#On finding such, it will attempt to restart the job.
+
 __terminateInstruction__ = False
+def startMonitorThreads():
+    thread = threading.Thread(target=executeMonitor)
+    thread.start()
+    return thread
+
 def executeMonitor():
     conn = connectToSource()
     cursor = conn.cursor()

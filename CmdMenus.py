@@ -40,7 +40,7 @@ import feedbackQueue # shared module that contains a queue for giving output to 
 
 import FetchAchievements 
 import InputReader
-
+import HeartMonitor
 import BuildMonthlyScoresToJSON 
 import BuildMonthlyStarQualityToJSON
 import BuildAchievementScoresToJSON
@@ -181,6 +181,8 @@ inputS = ""
 t = startInputThread()
 threads.append(t) 
 
+heartMonitor = HeartMonitor.startMonitorThreads()
+threads.append(heartMonitor)
 
     
 DBG("Startup - menu",3)
@@ -337,7 +339,7 @@ while inputS != "exit" and inputS != "x" and stop != True:
         #drawOutputPane()
     drawScreen()
     
-
+HeartMonitor.terminateMonitor()
 endUI()
 
 
