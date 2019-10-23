@@ -68,34 +68,35 @@ threads = []
 def drawHeader():
     arenaHealth = QueryArena.healthCheck(cfg.getConfigString("SiteNameReal"))
     
-    print_at (0,0,"/***** LF Profiler **************************************************\ ",PI=2)
+    
+    print_at (0,0,"╔═════ LF Profiler ══════════════════════════════════════════════════╗ ",PI=2)
 
          
     
     
-    print_at(1,0,"Start Date:           [            ]          | " )
-    print_at(1,24,cfg.getConfigString("StartDate"),1)
+    print_at(1,0,"║Start Date:           [            ]          | " )
+    print_at(1,25,cfg.getConfigString("StartDate"),1)
     renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),1,48,4,1)
     
     
-    print_at(2,0,"Start Date:           [            ]          | " )
-    print_at(2,24,cfg.getConfigString("StartDate"),1) 
-    print_at(2,48,CurrentWorkerStatus["CurrentAction"],1)
+    print_at(2,1,"║Start Date:           [            ]          | " )
+    print_at(2,25,cfg.getConfigString("StartDate"),1) 
+    print_at(2,49,CurrentWorkerStatus["CurrentAction"],1)
     
 
-    print_at(3,0,"Target site:          [                     ] |  ")
+    print_at(3,1,"║Target site:          [                     ] |  ")
 
-    print_at(3,24,(cfg.getConfigString("SiteNameShort")+ " "*20)[0:20],arenaHealth+1)
-    print_at(3,48,"%s"%(CurrentWorkerStatus["ETA"]),1)
+    print_at(3,25,(cfg.getConfigString("SiteNameShort")+ " "*20)[0:20],arenaHealth+1)
+    print_at(3,49,"%s"%(CurrentWorkerStatus["ETA"]),1)
     #1print_at (3,0,outStr)
-    print_at (4,0,"") 
+    print_at (4,1,"║") 
 
 def drawDateMenu():
     os.system('CLS')
     config = cfg.getConfig()
     drawHeader()
- 
-    print_at (5,0, "/***** Start Date ***************************************************\ " ,PI=2 )
+    
+    print_at (5,0, "╠═════ Start Date ═══════════════════════════════════════════════════╗ " ,PI=2 )
     print_at (6,0,"%s In the form YYYY-MM-DD       %s" % (fg.yellow, fg.white))
     print_at (7,0,"%s or 'x' to go back            %s" % (fg.yellow, fg.white))
     print_at (8,0,"")
@@ -110,28 +111,28 @@ def drawMainMenu():
     drawHeader()
 
     print_at (5,0,"/***** Menu *********************************************************\ ",PI=2)
-    print_at (6,0,"[11 ] Select different site")
+    print_at (6,1,"[11 ] Select different site")
     
-    print_at (7,0,"[12 ] Select different dates")
+    print_at (7,1,"[12 ] Select different dates")
     
-    print_at (8,0,"[4  ] Run status queries on current site")
-    print_at (8,1,"4",PI=1)
-    print_at (9,0,"[5  ] Run queries on specific player")
-    print_at (9,1,"5",PI=1)
-    print_at (10,0,"[6  ] Rebuild the JSON blobs")
-    print_at (10,1,"6",PI=2)
-    print_at (11,0,"[61 ] Update individual player")
-    print_at (11,1,"61",PI=1)
-    print_at (12,0,"[66 ] Run DB game search for active players at site")
-    print_at (12,1,"66",PI=1)
-    print_at (13,0,"[67 ] Run Achievement refresh for all recent players")
-    print_at (13,1,"67",PI=3)
-    print_at (14,0,"[661] Run DB game search for all inactivate players" )
-    print_at (14,1,"661",PI=3)
-    print_at (15,0,"[666] Run DB summary refresh for all players")
-    print_at (15,1,"666",PI=3)
-    print_at (16,0,"[667] Find new players for active site")
-    print_at (16,1,"667",PI=2)
+    print_at (8,1,"[4  ] Run status queries on current site")
+    print_at (8,2,"4",PI=1)
+    print_at (9,1,"[5  ] Run queries on specific player")
+    print_at (9,2,"5",PI=1)
+    print_at (10,1,"[6  ] Rebuild the JSON blobs")
+    print_at (10,2,"6",PI=2)
+    print_at (11,1,"[61 ] Update individual player")
+    print_at (11,2,"61",PI=1)
+    print_at (12,1,"[66 ] Run DB game search for active players at site")
+    print_at (12,2,"66",PI=1)
+    print_at (13,1,"[67 ] Run Achievement refresh for all recent players")
+    print_at (13,2,"67",PI=3)
+    print_at (14,1,"[661] Run DB game search for all inactivate players" )
+    print_at (14,2,"661",PI=3)
+    print_at (15,1,"[666] Run DB summary refresh for all players")
+    print_at (15,2,"666",PI=3)
+    print_at (16,1,"[667] Find new players for active site")
+    print_at (16,2,"667",PI=2)
     
     print_at (17,0,"" )
     print_at (18,0,"[?] Help " )
