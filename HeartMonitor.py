@@ -25,31 +25,35 @@ def executeMonitor():
             where finished is null and age > 120 
             order by lastheartbeat asc, started asc
  """
+    seconds = 0
     while not isTerminated():
-       
-        cursor.execute(SQL)
-        conn.commit()
-        #print ("---")
-        for result in cursor.fetchall():
+        seconds = seconds + 1
+        if seconds % 120 == 0:
+            seconds = 0
+            cursor.execute(SQL)
+            conn.commit()
+            #print ("---")
+            for result in cursor.fetchall():
 
 
-            if result[3] == "FetchPlayerAndGames.executeQueryGames":
-                params = json.loads(result[8])
-                t = threading.Thread(
-                    target=FetchPlayerAndGames.executeQueryGames, 
-                    args=(params["scope"],), 
-                    kwargs={"ID":result[2],"offset":result[7]}) #
-                t.start()
-                
-                
-                #execute known method.
-            print(result)
-        time.sleep(120)
+                if result[3] == "FetchPlayerAndGames.executeQueryGames":
+                    params = json.loads(result[8])
+                    t = threading.Thread(
+                        target=FetchPlayerAndGames.executeQueryGames, 
+                        args=(params["scope"],), 
+                        kwargs={"ID":result[2],"offset":result[7]}) #
+                    t.start()
+                    
+                    
+                    #execute known method.
+                print(result)
+        time.sleep(1)
 
 def terminateMonitor():
+    global __terminateInstruction__
     __terminateInstruction__ = True
     return
 
 def isTerminated():
+    global __terminateInstruction__
     return __terminateInstruction__
-#executeMonitor()
