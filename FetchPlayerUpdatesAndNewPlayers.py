@@ -66,6 +66,7 @@ def findNewPlayers():
         heartbeatDelta = (datetime.datetime.now() - lastHeartbeat).total_seconds()
         if heartbeatDelta > 30:
             jobHeartbeat(jobID,0)
+            lastHeartbeat = datetime.datetime.now()
         player =  fetchPlayer_root('',region,siteNumber,currentTarget)
         if 'centre' in player:
             
@@ -91,25 +92,49 @@ def findNewPlayers():
     f.close()
     conn.commit()
     conn.close()
-def updateExistingPlayers():
+def updateExistingPlayers(JobID = None):
     startTime = datetime.datetime.now()
     conn = connectToSource()
     cursor = conn.cursor()
-
+    if JobID == None: 
+        JobID = jobStart("Fetch summaries, all known players",0,"FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers",None)
+        startTime = datetime.datetime.now()
+        offset = 0
+    else:
+        query = """select ID, started,lastheartbeat,resumeindex, methodname from jobslist 
+where finished is null and ID = %s and methodname = 'FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers'
+order by started desc"""
+        cursor.execute(query, (JobID,))
+        results = cursor.fetchone()
+        if results[2] is not None:
+            startTime = results [2]
+        else:
+            startTime = results[1]
+        offset = results[3]
+        
 
     query = """with data as ( select row_number() over (order by Level desc, Missions desc) as ID, PlayerID, Missions, Level from Players)
 	select PlayerID from data
             where (ID >= 0)
 			order by ID asc 
+            offset %s 
             """
-    cursor.execute(query)
+    cursor.execute(query, (offset,))
     results = cursor.fetchall()
 
     totalTargetsToUpdate = len(results)
-    counter = 0
+    
     global WorkerStatus
-    for result in results:
+
         
+    lastHeartbeat = startTime
+    counter = offset
+    jobHeartbeat(JobID,counter)
+    for result in results:
+        heartbeatDelta = (datetime.datetime.now() - lastHeartbeat).total_seconds()
+        if heartbeatDelta > 30:
+            jobHeartbeat(JobID,counter)
+            lastHeartbeat = datetime.datetime.now()
         counter = counter + 1
         WorkerStatus = {}
         WorkerStatus["CurEntry"] = counter

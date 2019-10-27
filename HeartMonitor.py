@@ -3,10 +3,11 @@ On finding such, it will attempt to restart the job."""
 import time
 import json
 import FetchPlayerAndGames
+import FetchPlayerUpdatesAndNewPlayers
 import threading
 from  SQLconnector import connectToSource
 
-
+ 
 __terminateInstruction__ = False
 def startMonitorThreads():
     thread = threading.Thread(target=executeMonitor)
@@ -40,11 +41,15 @@ def executeMonitor():
                     args=(params["scope"],), 
                     kwargs={"ID":result[2],"offset":result[7]}) #
                 t.start()
-                
-                
+            if result[3] == "FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers":
+                t = threading.Thread(
+                    target=FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers, 
+                    #args=(params["scope"],), 
+                    kwargs={"JobID":result[2]}) #this method gets offset from the job ID
+                t.start()
                 #execute known method.
             print(result)
-        time.sleep(120)
+        time.sleep(30)
 
 def terminateMonitor():
     __terminateInstruction__ = True
