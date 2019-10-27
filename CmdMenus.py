@@ -68,7 +68,8 @@ threads = []
 def drawHeader():
     arenaHealth = QueryArena.healthCheck(cfg.getConfigString("SiteNameReal"))
     
-    print_at (0,0,"/***** LF Profiler **************************************************\ ",PI=2)
+    
+    print_at (0,0,"/----- LF Profiler --------------------------------------------------\ ",PI=2)
 
          
     
@@ -78,8 +79,8 @@ def drawHeader():
     renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),1,48,4,1)
     
     
-    print_at(2,0,"Start Date:           [            ]          | " )
-    print_at(2,24,cfg.getConfigString("StartDate"),1) 
+    print_at(2,0,"End Date:             [            ]          | " )
+    print_at(2,24,cfg.getConfigString("EndDate"),1) 
     print_at(2,48,CurrentWorkerStatus["CurrentAction"],1)
     
 
@@ -94,8 +95,8 @@ def drawDateMenu():
     os.system('CLS')
     config = cfg.getConfig()
     drawHeader()
- 
-    print_at (5,0, "/***** Start Date ***************************************************\ " ,PI=2 )
+    
+    print_at (5,0, "/----- Start Date ---------------------------------------------------\ " ,PI=2 )
     print_at (6,0,"%s In the form YYYY-MM-DD       %s" % (fg.yellow, fg.white))
     print_at (7,0,"%s or 'x' to go back            %s" % (fg.yellow, fg.white))
     print_at (8,0,"")
@@ -108,8 +109,8 @@ def drawMainMenu():
     
 
     drawHeader()
-
-    print_at (5,0,"/***** Menu *********************************************************\ ",PI=2)
+    
+    print_at (5,0, "/----- Menu ---------------------------------------------------------\ " ,PI=2 )
     print_at (6,0,"[11 ] Select different site")
     
     print_at (7,0,"[12 ] Select different dates")
@@ -140,7 +141,7 @@ def drawMainMenu():
     
     
     if feedback.__len__() >= 5:
-        print_at (21,0,"/***** Previous commands *********************************************\ ",PI=2)
+        print_at (21,0,"/----- Previous commands ---------------------------------------------\ ",PI=2)
         counter = 0 
         for var in feedback[-5:]:
             counter = counter + 1
@@ -152,7 +153,7 @@ def drawMainMenu():
 def drawArenaMenu():
     global config
     counter = 5
-    print_at (5,0,"%s/***** Pick arena ***************************************************\ %s" % (fg.yellow, fg.white))
+    print_at (5,0,"%s/----- Pick arena --------------------------------------------------*\ %s" % (fg.yellow, fg.white))
     for arena in cfg.getConfigString("configs"):
         counter = counter + 1 
         print_at (counter,0,"[%s%i%s] %s" % (Fore.YELLOW,counter -5 ,Fore.WHITE,arena["SiteNameShort"]))
@@ -163,7 +164,7 @@ def drawArenaMenu():
 
 def drawOutputPane():
     counter = 0
-    print_at (5,0,"%s/***** Output ******************************************************\%s" % (fg.yellow, fg.white))
+    print_at (5,0,"%s/----- Output --------------------------------------------------****\%s" % (fg.yellow, fg.white))
     for var in feedback[-15:]:
         var = var + " " * 70 
         var = var[0:100] 
@@ -257,7 +258,7 @@ while inputS != "exit" and inputS != "x" and stop != True:
             clearScreen()
         if inputS == "12": #needs reworking
             startDate = drawDateMenu()
-            print ("%s ***** End Date         ***** %s" % (fg.yellow, fg.white))
+            print ("%s ----- End Date         ----- %s" % (fg.yellow, fg.white))
             EndDate = input("Enter End Date:")
 
             if startDate != "B" and EndDate != "B":
