@@ -3,11 +3,12 @@ from DBG import DBG
 import uuid
 import csv 
 import json
-from SQLconnector import connectToSource
+from SQLconnector import connectToSource, closeConnection
 import ConfigHelper as cfg 
+import hashlib
 
 
-def getInterestingPlayersRoster(includeChurned,startDate,period,siteName = None, offset = None):
+def getInterestingPlayersRoster(includeChurned,startDate,period,siteName = None, offset = 0):
  
     conn = connectToSource()
     cursor = conn.cursor()
@@ -39,7 +40,7 @@ def getInterestingPlayersRoster(includeChurned,startDate,period,siteName = None,
     """)
         
         if siteName == None: #If not set, use default
-            siteName = cursor.execute(query,(cfg.getConfigString("SiteNameReal"),startDate,period))
+            siteName = cfg.getConfigString("SiteNameReal")
         cursor.execute(query,(siteName,startDate,period,offset))
     results = cursor.fetchall()
     playerList = []
@@ -48,7 +49,7 @@ def getInterestingPlayersRoster(includeChurned,startDate,period,siteName = None,
         playerList.append(result[2])
 
     conn.commit()
-    conn.close()
+    closeConnection()
     return playerList
     
 
@@ -68,7 +69,7 @@ def getPlayersWhoMightNeedAchievementUpdates(scope):
 
     conn.commit()
     
-    conn.close()
+    closeConnection()
     return playerList
     
 
@@ -101,7 +102,7 @@ def addPlayer(playerID,GamerTag,Joined,missions,level):
         
         DBG("  DBG: SQLHelper.AddPlayer - Added new player %s" % playerID,3)
         conn.commit()
-        conn.close()
+        closeConnection()
         return 1 
     elif  result[3] != missions:
         query = sql.SQL("""update Players
@@ -112,13 +113,13 @@ def addPlayer(playerID,GamerTag,Joined,missions,level):
         
         print("  DBG: SQLHelper.AddPlayer - Updated player's missions [%s] to [%s]" % (result[3],missions))
         conn.commit()
-        conn.close()
+        closeConnection()
         return 2
     else: 
         
         #print("  DBG: SQLHelper.AddPlayer - No change to missions, no change.")
         conn.commit()
-        conn.close()
+        closeConnection()
         return 0
         
 
@@ -146,7 +147,7 @@ def addGame(timestamp, arena, gametype):
         cursor.execute(query,(timestamp,arena,gametype,gameUUID))
         #print ("SQLconnector.insertGame: Insert game check added a game! : %s" % result)
         conn.commit()
-        conn.close()
+        closeConnection()
         return gameUUID
     else: 
         # print ("SQLconnector: Insert game check found an exiting game! : %s" % result)
@@ -176,7 +177,7 @@ def addParticipation(gameUUID, playerID, score):
         #print ("SQLconnector.addParticipation: We already know this player played this game! : %s" % gameUUID)
 
     
-    conn.close()
+    closeConnection()
     return ''
 
 def addAchievement(achName, Description, image, arenaName):
@@ -194,7 +195,7 @@ def addAchievement(achName, Description, image, arenaName):
 
     if result == None:
         #print("SQLHelper.addAchievement: Didn't find [{0}], adding it".format(achName))
-        AchID = uuid.uuid4()
+        AchID = hashlib.md5(achName+arenaName)
         query = """
         INSERT into AllAchievements
          (AchID, AchName, image, Description, ArenaName)
@@ -204,7 +205,7 @@ def addAchievement(achName, Description, image, arenaName):
         cursor.execute(query,(str(AchID),achName,image,Description,arenaName))
         #print ("SQLHelper.addAchievement: Added it!")
         conn.commit()
-        conn.close()
+        closeConnection()
         return AchID
     else:
         
@@ -259,7 +260,7 @@ def addPlayerAchievement(AchID,playerID,newAchievement,achievedDate,progressA,pr
         results = cursor.execute(query,(newAchievement,achievedDate,progressA,progressB,AchID,playerID))
         #print(image)
     conn.commit()
-    conn.close()
+    closeConnection()
 
 def addPlayerAchievementScore (playerID, score):
     conn = connectToSource()
@@ -276,7 +277,7 @@ def addPlayerAchievementScore (playerID, score):
         cursor.execute(query,(score,playerID))
 
     conn.commit()
-    conn.close()
+    closeConnection()
 
 def getTop5PlayersRoster(startDate,endDate,ArenaName):
     conn = connectToSource()
@@ -416,7 +417,7 @@ order by playerRank asc
         print ("SQLHelper.getTop5Players found all 5 players")
 
     conn.commit()
-    conn.close()
+    closeConnection()
     return rows
 
 def dumpParticipantsAndGamesToCSV():
@@ -440,7 +441,7 @@ def dumpParticipantsAndGamesToCSV():
         count = count + 1
         file.write("%s,%s,%s\n" % (row[0],row[1],row[2]))
     file.close()
-    conn.close()
+    closeConnection()
     print("Dumped %i rows to CSV dump - Games.csv" % (count))
 
 
@@ -455,7 +456,7 @@ def importPlayersFromCSV(path):
         print(row)
         cursor.execute(sql,(row[0],row[1],row[2],row[3],row[4]))
     conn.commit()
-    conn.close()
+    closeConnection()
 
 
 
@@ -470,7 +471,7 @@ def jobStart(description,resumeIndex,methodName, methodParams):
     cursor.execute(SQL,(description,ID,methodName,json.dumps(methodParams)))
 
     conn.commit()
-    conn.close()
+    closeConnection()
 
 
     return ID
@@ -487,7 +488,7 @@ def jobEnd(ID):
     cursor.execute(SQL,(ID,))
 
     conn.commit()
-    conn.close()
+    closeConnection()
 
 
 def jobHeartbeat(ID,progressIndex):
@@ -502,5 +503,5 @@ def jobHeartbeat(ID,progressIndex):
     cursor.execute(SQL,(progressIndex,ID))
 
     conn.commit()
-    conn.close()
+    closeConnection()
     

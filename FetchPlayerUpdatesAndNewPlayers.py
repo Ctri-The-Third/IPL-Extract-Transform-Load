@@ -91,7 +91,7 @@ def findNewPlayers():
     wpq.updateQ(1,1,"Seeking new... %s","Complete")
     f.close()
     conn.commit()
-    conn.close()
+    closeConnection()
 def updateExistingPlayers(JobID = None):
     startTime = datetime.datetime.now()
     conn = connectToSource()

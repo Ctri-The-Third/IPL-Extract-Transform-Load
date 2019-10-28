@@ -1,3 +1,8 @@
+"""Output a debug string to the UI and the console, with colours for the severity.
+Severity 1 = red / error
+Severity 2 = Yellow / Warning
+Severity 3 = green / info"""
+
 import feedbackQueue
 import os
 import colorama

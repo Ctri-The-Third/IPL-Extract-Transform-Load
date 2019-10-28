@@ -126,17 +126,19 @@ def drawMainMenu():
     print_at (12,0,"[66 ] Run DB game search for active players at site")
     print_at (12,1,"66",PI=1)
     print_at (13,0,"[67 ] Run Achievement refresh for all recent players")
-    print_at (13,1,"67",PI=3)
-    print_at (14,0,"[661] Run DB game search for all inactivate players" )
-    print_at (14,1,"661",PI=3)
-    print_at (15,0,"[666] Run DB summary refresh for all players")
-    print_at (15,1,"666",PI=3)
-    print_at (16,0,"[667] Find new players for active site")
-    print_at (16,1,"667",PI=2)
+    print_at (13,1,"67",PI=2)
+    print_at (14,0,"[677] Run Achievement refresh for all active players")
+    print_at (14,1,"677",PI=3)
+    print_at (15,0,"[661] Run DB game search for all inactivate players" )
+    print_at (15,1,"661",PI=3)
+    print_at (16,0,"[666] Run DB summary refresh for all players")
+    print_at (16,1,"666",PI=3)
+    print_at (17,0,"[667] Find new players for active site")
+    print_at (17,1,"667",PI=2)
     
-    print_at (17,0,"" )
-    print_at (18,0,"[?] Help " )
-    print_at (19,0,"[x] Exit")
+    print_at (18,0,"" )
+    print_at (19,0,"[?] Help " )
+    print_at (20,0,"[x] Exit")
     
     
     
@@ -305,13 +307,17 @@ while inputS != "exit" and inputS != "x" and stop != True:
             t.start()      
             inputS = ""
         elif inputS == "67":
-
             feedback.append("Performing background update of achievements for recent players...")
+            t = threading.Thread(target=executeFetchAchievements, args =("recent",))
+            threads.append(t)
+            t.start()      
+            inputS = ""
+        elif inputS == "677":
+            feedback.append("Performing background update of achievements for active players...")
             t = threading.Thread(target=executeFetchAchievements, args =("partial",))
             threads.append(t)
             t.start()      
             inputS = ""
-
         elif inputS == "661":
             feedback.append("Performing update of inactivate players in background...")
             t = threading.Thread(target=executeQueryGames, args=("full",))

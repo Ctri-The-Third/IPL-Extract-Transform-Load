@@ -4,7 +4,9 @@ import time
 import json
 import FetchPlayerAndGames
 import FetchPlayerUpdatesAndNewPlayers
+import FetchAchievements
 import threading
+
 from  SQLconnector import connectToSource
 
  
@@ -17,19 +19,16 @@ def startMonitorThreads():
 def executeMonitor():
     conn = connectToSource()
     cursor = conn.cursor()
-    SQL = """with data as (
-                select EXTRACT(EPOCH  from (now() - COALESCE (lastheartbeat, started))) as age, *
-                from jobslist 
-                
-            )
-            select * from data
+    SQL = """
+            select age,"desc",ID,methodname,started,finished,lastheartbeat,resumeindex, methodParams, healthstatus 
+            from public."jobsView"
             where finished is null and age > 120 
             order by lastheartbeat asc, started asc
  """
     seconds = 0
     while not isTerminated():
         seconds = seconds + 1
-        if seconds % 30 == 0: #every 30th second
+        if seconds % 30 == 1: #every 30th second
             seconds = 0
             cursor.execute(SQL)
             conn.commit()
@@ -49,8 +48,17 @@ def executeMonitor():
                         kwargs={"JobID":result[2]}) #this method gets offset from the job ID
                     t.start()
                     #execute known method.
+                #
+                
+                if result[3] == "FetchAchievements.executeFetchAchievements":
+                    params = json.loads(result[8])
+                    t = threading.Thread(
+                        target=FetchAchievements.executeFetchAchievements, 
+                        args=(params["scope"],), 
+                        kwargs={"jobID":result[2],"offset":result[7]}) #
+                    t.start()
                 print(result)
-        time.sleep(1)
+        time.sleep(1) #sleep for a second to allow termination checks
 
 def terminateMonitor():
     global __terminateInstruction__
@@ -60,3 +68,5 @@ def terminateMonitor():
 def isTerminated():
     global __terminateInstruction__
     return __terminateInstruction__
+
+#executeMonitor()
