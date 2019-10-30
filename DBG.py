@@ -8,7 +8,7 @@ import os
 import colorama
 from colorama import Fore
 import datetime
-
+import threading
 
 
 #3 = Info
@@ -29,5 +29,5 @@ def DBG(STR,Level):
         feedbackQueue.q.put(outStr)
     f = open("DBG.log","a+")
     loggingLevels = ["[ERROR]  ","[WARNING]","[INFO]   "]
-    f.write("%s [%s]\t %s\n" % (loggingLevels[Level-1],str(datetime.datetime.now()),STR))
+    f.write("%s [%s]\t%s \t%s\n" % (loggingLevels[Level-1],str(datetime.datetime.now()),threading.get_ident(),STR))
     f.close()

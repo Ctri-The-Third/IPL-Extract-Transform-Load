@@ -53,14 +53,15 @@ def getInterestingPlayersRoster(includeChurned,startDate,period,siteName = None,
     return playerList
     
 
-def getPlayersWhoMightNeedAchievementUpdates(scope):
+def getPlayersWhoMightNeedAchievementUpdates(scope, offset = 0):
     conn = connectToSource()
     cursor = conn.cursor()
     query = """
     select distinct PlayerID from Participation
     where insertedTimestamp > current_date - INTERVAL '7 days'
+    offset %s
     """
-    cursor.execute(query)
+    cursor.execute(query,(offset,))
     results = cursor.fetchall()
     playerList = []
     for result in results:
@@ -195,7 +196,8 @@ def addAchievement(achName, Description, image, arenaName):
 
     if result == None:
         #print("SQLHelper.addAchievement: Didn't find [{0}], adding it".format(achName))
-        AchID = hashlib.md5(achName+arenaName)
+        AchID = "%s%s" % (achName,arenaName)
+        AchID = hashlib.md5(AchID.encode("utf-8"))
         query = """
         INSERT into AllAchievements
          (AchID, AchName, image, Description, ArenaName)
@@ -280,6 +282,7 @@ def addPlayerAchievementScore (playerID, score):
     closeConnection()
 
 def getTop5PlayersRoster(startDate,endDate,ArenaName):
+    
     conn = connectToSource()
     cursor = conn.cursor()
     query = """with PlayersInGame as (

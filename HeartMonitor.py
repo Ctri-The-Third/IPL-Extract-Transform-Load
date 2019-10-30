@@ -41,7 +41,8 @@ def executeMonitor():
                         args=(params["scope"],), 
                         kwargs={"ID":result[2],"offset":result[7]}) #
                     t.start()
-                if result[3] == "FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers":
+                
+                elif result[3] == "FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers":
                     t = threading.Thread(
                         target=FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers, 
                         #args=(params["scope"],), 
@@ -50,7 +51,7 @@ def executeMonitor():
                     #execute known method.
                 #
                 
-                if result[3] == "FetchAchievements.executeFetchAchievements":
+                elif result[3] == "FetchAchievements.executeFetchAchievements":
                     params = json.loads(result[8])
                     t = threading.Thread(
                         target=FetchAchievements.executeFetchAchievements, 

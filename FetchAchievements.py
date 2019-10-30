@@ -28,7 +28,6 @@ def executeFetchAchievements (scope, jobID = None, offset = 0):
     params = {}
     params["scope"] = scope
     
-    
     if scope == "full":
         targetIDs = getInterestingPlayersRoster(True,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),offset=offset)
         if jobID == None: 
@@ -38,7 +37,7 @@ def executeFetchAchievements (scope, jobID = None, offset = 0):
         if jobID == None: 
             jobID=jobStart("Fetch achievements, active players",0,"FetchAchievements.executeFetchAchievements",params)
     elif scope == "recent":
-        targetIDs = getPlayersWhoMightNeedAchievementUpdates(scope)
+        targetIDs = getPlayersWhoMightNeedAchievementUpdates(scope, offset=offset)
         if jobID == None: 
             jobID= jobStart("Fetch achievements, players from the last 7 days",0,"FetchAchievements.executeFetchAchievements",params)
     
@@ -127,7 +126,7 @@ order by started desc"""
                     else:   #new achievement!     
                         uuid = addAchievement(achievement["name"],achievement["description"],achievement["image"], centre['name'])
                         addPlayerAchievement(uuid,ID,achievement["newAchievement"],achievement["achievedDate"],achievement["progressA"],achievement["progressB"])
-                        DBG("updated player progress for NEW achievement %s vs %s" % (achievement["achievedDate"],knownAchievements[md5value][3]),3)
+                        DBG("updated player progress for NEW achievement %s vs %s" % (achievement["achievedDate"],uuid),3)
                     
                 totalAchievemnts = totalAchievemnts + len(centre["achievements"])
             print ("Updated %i achievements for player %s. [%i/%i]" % (totalAchievemnts,ID,playerCounter,totalToUpdate))

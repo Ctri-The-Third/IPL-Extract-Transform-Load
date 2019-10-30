@@ -272,23 +272,23 @@ while inputS != "exit" and inputS != "x" and stop != True:
         elif inputS == "6":
             
             feedback.append("Building all blobs in parallel. Prepare for spam.")
-            t = threading.Thread(target=BuildMonthlyScoresToJSON.executeMonthlyScoresBuild())
+            t = threading.Thread(target=BuildMonthlyScoresToJSON.executeMonthlyScoresBuild)
             threads.append(t)
             t.start() 
 
-            t = threading.Thread(target=BuildMonthlyStarQualityToJSON.executeBuildMonthlyStars())
+            t = threading.Thread(target=BuildMonthlyStarQualityToJSON.executeBuildMonthlyStars)
             threads.append(t)
             t.start()
 
-            t = threading.Thread(target=BuildAchievementScoresToJSON.executeAchievementBuild())
+            t = threading.Thread(target=BuildAchievementScoresToJSON.executeAchievementBuild)
             threads.append(t)
             t.start()
 
-            t = threading.Thread(target=BuildPlayerBlob.executeBuildPlayerBlobs())
+            t = threading.Thread(target=BuildPlayerBlob.executeBuildPlayerBlobs)
             threads.append(t)
             t.start()
 
-            t = threading.Thread(target=BuildHeadToHeadsToJSON.buildHeadToHeads())
+            t = threading.Thread(target=BuildHeadToHeadsToJSON.buildHeadToHeads)
             threads.append(t)
             t.start()
 

@@ -5,12 +5,12 @@ import ConfigHelper as cfg
 
 
 def executeBuildMonthlyStars():
-	
+	cachedconfig = cfg.getConfig()	
 
-	curMonth = cfg.getConfigString("StartDate")[0:7]
-	lastMonth  = cfg.getConfigString("LastMonthStart")[0:7]
-	endDate = cfg.getConfigString("EndDate")
-	arenaName = cfg.getConfigString("SiteNameReal")
+	curMonth = cachedconfig["StartDate"][0:7]
+	lastMonth  = cachedconfig["LastMonthStart"][0:7]
+	endDate = cachedconfig["EndDate"]
+	arenaName = cachedconfig["SiteNameReal"]
 	SQL = '''
 	with data as (
 		select pl.PlayerID, pl.GamerTag, GameName, GameTimestamp, p.score, 
@@ -84,6 +84,6 @@ def executeBuildMonthlyStars():
 
 	f = open("JSONBlobs\\StarQualityLatest.json", "w+")
 	f.write(json.dumps(JSON,indent=4))
-	f = open("JSONBlobs\\%sStarQuality.json" % cfg.getConfigString("ID Prefix"), "w+")
+	f = open("JSONBlobs\\%sStarQuality.json" % cachedconfig["ID Prefix"], "w+")
 	f.write(json.dumps(JSON,indent=4))
 	print ("Star Quality blobs written!")

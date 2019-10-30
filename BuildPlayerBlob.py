@@ -8,8 +8,8 @@ import ConfigHelper as cfg
 from DBG import DBG
 
 
-
 def buildPlayerBlob (startDate,endDate,targetID):
+	cachedconfig = cfg.getConfig()
 	infoQuery = """
 
 		with PlayersInGame as (
@@ -144,13 +144,13 @@ limit 10
  
 	conn = connectToSource()
 	cursor = conn.cursor()
-	DBG("BuildPlayerBlob.buildPlayerBlob start[%s], end[%s], target[%s], arena[%s]" % (cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetID,cfg.getConfigString("SiteNameReal")),3)
+	DBG("BuildPlayerBlob.buildPlayerBlob start[%s], end[%s], target[%s], arena[%s]" % (cachedconfig["StartDate"],cachedconfig["EndDate"],targetID,cachedconfig["SiteNameReal"]),3)
 
 	#startDate, endDate, arenaName, startDate, endDate, arenaName,  startDate, endDate, arenaName, arenaName, PlayerID
 	
-	endDate = cfg.getConfigString("EndDate")
-	startDate = cfg.getConfigString("StartDate")
-	targetArena = cfg.getConfigString("SiteNameReal")
+	endDate = cachedconfig["EndDate"]
+	startDate = cachedconfig["StartDate"]
+	targetArena = cachedconfig["SiteNameReal"]
 	
 	
 	result = cursor.execute(infoQuery,(startDate, endDate, targetArena, startDate, endDate, targetArena,  startDate, endDate, targetArena, targetArena, targetID))
@@ -165,7 +165,7 @@ limit 10
 
 	JSONobject = {}
 	JSONobject["PlayerName"] = row[1]
-	JSONobject["HomeArenaTrunc"] = cfg.getConfigString("SiteNameShort")
+	JSONobject["HomeArenaTrunc"] = cachedconfig["SiteNameShort"]
 	JSONobject["SkillLevelName"] = SkillLevelName[row[2]]
 	JSONobject["MonthlyGamesPlayed"] = row[5]
 	JSONobject["AllGamesPlayed"] = row[3]
@@ -211,21 +211,22 @@ limit 10
 	
 
 def executeBuildPlayerBlobs():
-	targetIDs = getTop5PlayersRoster(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),cfg.getConfigString("SiteNameReal"))
+	cachedconfig = cfg.getConfig()
+	targetIDs = getTop5PlayersRoster(cachedconfig["StartDate"],cachedconfig["EndDate"],cachedconfig["SiteNameReal"])
 	print(targetIDs)
 
 	print ("Player profile blobs written!")
 	JSONobject = {}
-	if len(targetIDs) >= 1:
-		JSONobject["GoldenPlayer"] = buildPlayerBlob(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetIDs[0][0])
+	if len(targetIDs) >= 1: 
+		JSONobject["GoldenPlayer"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[0][0])
 	if len(targetIDs) >= 2:
-		JSONobject["SilverPlayer"] = buildPlayerBlob(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetIDs[1][0])
+		JSONobject["SilverPlayer"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[1][0])
 	if len(targetIDs) >= 3:
-		JSONobject["BronzePlayer"] = buildPlayerBlob(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetIDs[2][0])
+		JSONobject["BronzePlayer"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[2][0])
 	if len(targetIDs) >= 4:
-		JSONobject["OtherPlayer1"] = buildPlayerBlob(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetIDs[3][0])
+		JSONobject["OtherPlayer1"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[3][0])
 	if len(targetIDs) >= 5:
-		JSONobject["OtherPlayer2"] = buildPlayerBlob(cfg.getConfigString("StartDate"),cfg.getConfigString("EndDate"),targetIDs[4][0])
+		JSONobject["OtherPlayer2"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[4][0])
 	if len(targetIDs) < 5:
 		DBGstring = "Big 5 returned %i: " % (len(targetIDs))
 		for target in targetIDs:
@@ -236,7 +237,7 @@ def executeBuildPlayerBlobs():
 	f = open("JSONBlobs\\playerBlob.json", "w+")
 	f.write(json.dumps(JSONobject))
 	f.close()
-	f = open("JSONBlobs\\%splayerBlob.json" % (cfg.getConfigString("ID Prefix")), "w+")
+	f = open("JSONBlobs\\%splayerBlob.json" % (cachedconfig["ID Prefix"]), "w+")
 	f.write(json.dumps(JSONobject))
 	f.close()
 
