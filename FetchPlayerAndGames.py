@@ -32,11 +32,11 @@ def executeQueryGames(scope, interval = "Null", ArenaName = None, offset = None,
     if scope == "full": 
         targetIDs = getInterestingPlayersRoster(True,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),offset=offset)
         if ID == None: #new job
-            ID = jobStart("Fetch games, all players",0,"FetchPlayerAndGames.executeQueryGames",params)
+            ID = jobStart("Fetch games, all players",0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs))
     else: 
         targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),offset=offset,siteName = params["arenaName"])
         if ID == None: #new job
-            ID = jobStart("Fetch games, [%s] active players " % (cfg.getConfigString("SiteNameShort")),0,"FetchPlayerAndGames.executeQueryGames",params) 
+            ID = jobStart("Fetch games, [%s] active players " % (cfg.getConfigString("SiteNameShort")),0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs)) 
             
     queryPlayers(targetIDs,scope, siteName = params["arenaName"], jobID=ID, offset=offset)
 
@@ -46,6 +46,8 @@ def queryPlayers (targetIDs,scope, siteName = None, jobID = None, offset = None)
     counter = 0
     if offset is not None:
         counter = offset
+    jobHeartbeat(jobID,counter)
+    
     totalPlayerCount = len(targetIDs) + counter
     startTime = datetime.datetime.now()
     lastHeartbeat = startTime
@@ -54,7 +56,7 @@ def queryPlayers (targetIDs,scope, siteName = None, jobID = None, offset = None)
         ETA = "Calculating"
         if  jobID != None:
             heartbeatDelta = ((datetime.datetime.now() - lastHeartbeat).total_seconds()) 
-            if heartbeatDelta > 30:
+            if heartbeatDelta > 30 or counter % 5 == 0:
                 jobHeartbeat(jobID,counter)
                 lastHeartbeat = datetime.datetime.now()
         if counter >= 20:

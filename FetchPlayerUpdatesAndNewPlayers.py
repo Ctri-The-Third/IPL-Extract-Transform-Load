@@ -6,7 +6,7 @@ import colorama
 import queue
 import time 
 from colorama import Fore, Back
-from SQLconnector import connectToSource
+from SQLconnector import connectToSource, closeConnection
 from SQLHelper import addPlayer
 from FetchHelper import fetchPlayer_root
 import workerProgressQueue as wpq
@@ -91,16 +91,14 @@ def findNewPlayers():
     wpq.updateQ(1,1,"Seeking new... %s","Complete")
     f.close()
     conn.commit()
+    
     closeConnection()
 def updateExistingPlayers(JobID = None):
     startTime = datetime.datetime.now()
     conn = connectToSource()
     cursor = conn.cursor()
-    if JobID == None: 
-        JobID = jobStart("Fetch summaries, all known players",0,"FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers",None)
-        startTime = datetime.datetime.now()
-        offset = 0
-    else:
+    offset = 0
+    if JobID != None: 
         query = """select ID, started,lastheartbeat,resumeindex, methodname from jobslist 
 where finished is null and ID = %s and methodname = 'FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers'
 order by started desc"""
@@ -123,6 +121,10 @@ order by started desc"""
     results = cursor.fetchall()
 
     totalTargetsToUpdate = len(results)
+    if JobID == None:
+        JobID = jobStart("Fetch summaries, all known players",0,"FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers",None,totalTargetsToUpdate)
+        startTime = datetime.datetime.now()
+
     
     global WorkerStatus
 
@@ -177,7 +179,7 @@ order by started desc"""
 
         #print("Summary update for player %s-%s-%s, [%i/%i]" % (ID[0],ID[1],ID[2],counter,totalTargetsToUpdate))
         addPlayer(result[0],codeName,joined,missions,level)
-
+    jobEnd(JobID)
     endTime = datetime.datetime.now()
     f = open("Stats.txt","a+")
     f.write("Queried {0} players' aggregates, operation completed after {1}. \t\n".format(len(results),endTime - startTime ))

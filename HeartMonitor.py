@@ -20,7 +20,7 @@ def executeMonitor():
     conn = connectToSource()
     cursor = conn.cursor()
     SQL = """
-            select age,"desc",ID,methodname,started,finished,lastheartbeat,resumeindex, methodParams, healthstatus 
+            select age,"desc",ID,methodname,started,finished,lastheartbeat,resumeindex, methodParams, healthstatus,percenttocompletion 
             from public."jobsView"
             where finished is null and age > 120 
             order by lastheartbeat asc, started asc
@@ -36,6 +36,8 @@ def executeMonitor():
             for result in cursor.fetchall():
                 if result[3] == "FetchPlayerAndGames.executeQueryGames":
                     params = json.loads(result[8])
+                    if result[7] is not None:
+                        print("Debug insertion")
                     t = threading.Thread(
                         target=FetchPlayerAndGames.executeQueryGames, 
                         args=(params["scope"],), 
@@ -70,4 +72,3 @@ def isTerminated():
     global __terminateInstruction__
     return __terminateInstruction__
 
-#executeMonitor()

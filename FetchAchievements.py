@@ -31,15 +31,15 @@ def executeFetchAchievements (scope, jobID = None, offset = 0):
     if scope == "full":
         targetIDs = getInterestingPlayersRoster(True,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),offset=offset)
         if jobID == None: 
-            jobID=jobStart("Fetch achievements, inactive players",0,"FetchAchievements.executeFetchAchievements",params)
+            jobID=jobStart("Fetch achievements, inactive players",0,"FetchAchievements.executeFetchAchievements",params, len(targetIDs))
     elif scope == "partial":
         targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"), offset=offset)
         if jobID == None: 
-            jobID=jobStart("Fetch achievements, active players",0,"FetchAchievements.executeFetchAchievements",params)
+            jobID=jobStart("Fetch achievements, active players",0,"FetchAchievements.executeFetchAchievements",params,len(targetIDs))
     elif scope == "recent":
         targetIDs = getPlayersWhoMightNeedAchievementUpdates(scope, offset=offset)
         if jobID == None: 
-            jobID= jobStart("Fetch achievements, players from the last 7 days",0,"FetchAchievements.executeFetchAchievements",params)
+            jobID= jobStart("Fetch achievements, players from the last 7 days",0,"FetchAchievements.executeFetchAchievements",params,len(targetIDs))
     
     print("Scope : %s" % (scope))
     fetchAllAchievements(targetIDs, jobID=jobID)

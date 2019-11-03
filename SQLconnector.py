@@ -11,7 +11,7 @@ def connectToSource():
     if counter <= 0:
 
         conn = psycopg2.connect(host='192.168.0.133',port=5432 ,user='LaserScraper', password='LaserScraper', database = 'LaserScraper')
-        
+        conn.set_session(autocommit = True)
     else:
         try:
             cursor = conn.cursor()
