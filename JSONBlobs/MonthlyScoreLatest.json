@@ -6,15 +6,39 @@
         {},
         {
             "Name": "C'tri",
-            "AverageScore": 21165,
+            "AverageScore": 18702,
+            "MissionsPlayed": 3,
+            "ChangeInScore": "\u21914231.67"
+        },
+        {
+            "Name": "Rayth",
+            "AverageScore": 16125,
             "MissionsPlayed": 1,
-            "ChangeInScore": "\u21916695.00"
+            "ChangeInScore": "\u21932270.00"
+        },
+        {
+            "Name": "Reboot",
+            "AverageScore": 14515,
+            "MissionsPlayed": 2,
+            "ChangeInScore": "\u21913835.00"
+        },
+        {
+            "Name": "Achilles",
+            "AverageScore": 14250,
+            "MissionsPlayed": 2,
+            "ChangeInScore": "\u21931470.00"
         },
         {
             "Name": "Mindi",
-            "AverageScore": 10833,
-            "MissionsPlayed": 1,
-            "ChangeInScore": "\u21911034.67"
+            "AverageScore": 11361,
+            "MissionsPlayed": 3,
+            "ChangeInScore": "\u21911562.67"
+        },
+        {
+            "Name": "T D",
+            "AverageScore": 11310,
+            "MissionsPlayed": 2,
+            "ChangeInScore": "\u21912085.00"
         },
         {
             "Name": "Oscar",
@@ -30,21 +54,15 @@
         },
         {
             "Name": "Paradigm",
-            "AverageScore": 8743,
-            "MissionsPlayed": 1,
+            "AverageScore": 8714,
+            "MissionsPlayed": 3,
             "ChangeInScore": null
         },
         {
-            "Name": "Mike Hunt",
-            "AverageScore": 8153,
-            "MissionsPlayed": 1,
-            "ChangeInScore": "\u2193418.50"
-        },
-        {
             "Name": "Billybob",
-            "AverageScore": 7123,
-            "MissionsPlayed": 1,
-            "ChangeInScore": "\u21933141.33"
+            "AverageScore": 8244,
+            "MissionsPlayed": 2,
+            "ChangeInScore": "\u21932020.33"
         },
         {
             "Name": "Smokey Bandit",
@@ -59,6 +77,12 @@
             "ChangeInScore": "\u21931934.25"
         },
         {
+            "Name": "Barney",
+            "AverageScore": 6455,
+            "MissionsPlayed": 3,
+            "ChangeInScore": "\u2193748.33"
+        },
+        {
             "Name": " Alan",
             "AverageScore": 6402,
             "MissionsPlayed": 1,
@@ -69,6 +93,12 @@
             "AverageScore": 6121,
             "MissionsPlayed": 1,
             "ChangeInScore": "\u2191555.00"
+        },
+        {
+            "Name": "Mike Hunt",
+            "AverageScore": 4924,
+            "MissionsPlayed": 3,
+            "ChangeInScore": "\u21933647.17"
         }
     ]
 }

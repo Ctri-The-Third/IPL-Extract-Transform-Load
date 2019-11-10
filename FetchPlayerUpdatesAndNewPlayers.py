@@ -33,29 +33,27 @@ def findNewPlayers():
     
     
     TickerIcon = ["|","/","-",'\\']
-#
+    sitePrefixforSQL = sitePrefix + "%"
     query = sql.SQL("""
-        with counts as (select count(*) - ( count(*) / 5000 ) as offs from players pl)
-        select distinct  cast (split_part(pl.PlayerID,'-',3) as integer), offs
-        from players pl join Participation p on pl.PlayerID = p.PlayerID
-        join games g on p.GameUUID = g.GameUUID
-        full outer join counts on 1 = 1 
-        where g.ArenaName like %s
-        order by 1 desc 
-        limit 1 offset 10 
+with IDs as ( select 
+cast (split_part(pl.PlayerID,'-',3) as integer) as ID
+from players pl
+where playerID like %s
+order by 1 desc
+offset 5
+)
+select max (ID) from IDs
     """)
-    cursor.execute(query,(siteName,))
+    cursor.execute(query,(sitePrefixforSQL,))
     result = cursor.fetchone()
     if result[0] == None:
         MaxPlayer = 199 #LaserForce seems to start numbering players at 100
     else: 
         MaxPlayer = result[0]
-        #MaxPlayer = 38100 #LaserForce seems to start numbering players at 100
     region = sitePrefix.split("-")[0]
     siteNumber = sitePrefix.split("-")[1]
 
     
-    #MaxPlayer = 243 #OVERRIDE, remove before committing
     ticker = 0
     consecutiveMisses = 0
     currentTarget = MaxPlayer - 100 #we've had situations where the system adds user IDs behind the maximum. This is a stopgap dragnet to catch trailing players.
@@ -108,7 +106,9 @@ order by started desc"""
             startTime = results [2]
         else:
             startTime = results[1]
-        offset = results[3]
+
+        if results[3] is not None:
+            offset = results[3]
         
 
     query = """with data as ( select row_number() over (order by Level desc, Missions desc) as ID, PlayerID, Missions, Level from Players)

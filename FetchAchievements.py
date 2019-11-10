@@ -126,7 +126,7 @@ order by started desc"""
                     else:   #new achievement!     
                         uuid = addAchievement(achievement["name"],achievement["description"],achievement["image"], centre['name'])
                         addPlayerAchievement(uuid,ID,achievement["newAchievement"],achievement["achievedDate"],achievement["progressA"],achievement["progressB"])
-                        DBG("updated player progress for NEW achievement %s vs %s" % (achievement["achievedDate"],uuid),3)
+                        DBG("updated player progress for NEW achievement: [%s][%s]" % (achievement["name"],centre['name']),3)
                     
                 totalAchievemnts = totalAchievemnts + len(centre["achievements"])
             print ("Updated %i achievements for player %s. [%i/%i]" % (totalAchievemnts,ID,playerCounter,totalToUpdate))

@@ -2,6 +2,7 @@ import json
 from psycopg2 import sql
 from SQLconnector import connectToSource
 import ConfigHelper as cfg
+from DBG import DBG
 
 def executeAchievementBuild():
     targetArena = cfg.getConfigString("SiteNameReal")
@@ -58,12 +59,12 @@ limit 15
         }],
         }
     for result in cursor.fetchall():
-        print (result)
+        #print (result)
         JSON['Player'].append({'Name' : result[1], 'AchievementsCompleted' : result[2], 'RarestAchievement' : result[3], 'OthersWith' : "(%i)" % (result[4])})
 
     
     f = open("JSONBlobs\\%sAchievements.json" % (cfg.getConfigString("ID Prefix")), "w+")
     f.write(json.dumps(JSON,indent=4))
-    print ("Achievement score blob written!")
+    DBG("Achievement score blob written!",3)
 
 

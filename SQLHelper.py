@@ -197,7 +197,7 @@ def addAchievement(achName, Description, image, arenaName):
     if result == None:
         #print("SQLHelper.addAchievement: Didn't find [{0}], adding it".format(achName))
         AchID = "%s%s" % (achName,arenaName)
-        AchID = hashlib.md5(AchID.encode("utf-8"))
+        AchID = hashlib.md5(AchID.encode("utf-8")).hexdigest()
         query = """
         INSERT into AllAchievements
          (AchID, AchName, image, Description, ArenaName)

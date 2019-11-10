@@ -2,7 +2,7 @@ import json
 
 from SQLconnector import connectToSource
 import ConfigHelper as cfg
-
+from DBG import DBG
 
 def executeBuildMonthlyStars():
 	cachedconfig = cfg.getConfig()	
@@ -62,7 +62,7 @@ def executeBuildMonthlyStars():
 		}],
 		}
 	for result in cursor.fetchall():
-		print (result)
+		#print (result)
 		ChangeInRank  = None
 		ChangeInPlayers = None 
 		ChangeInStars = None
@@ -86,4 +86,4 @@ def executeBuildMonthlyStars():
 	f.write(json.dumps(JSON,indent=4))
 	f = open("JSONBlobs\\%sStarQuality.json" % cachedconfig["ID Prefix"], "w+")
 	f.write(json.dumps(JSON,indent=4))
-	print ("Star Quality blobs written!")
+	DBG ("Star Quality blobs written!",3)
