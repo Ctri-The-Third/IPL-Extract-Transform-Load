@@ -6,7 +6,6 @@ from curses import wrapper
 import threading
 import InputReader
 import pynput
-from pynput.keyboard import Key, Controller
 print("\e[31mRedLinux menus not yet implemented! Please run this application on Windows for now :(\e[39m")
 
 screen = None  
@@ -79,19 +78,24 @@ def startInputThread():
 
 def __inputThread__():
     global screen
-    global inputString
+    inputString = ''
+    while True:
+        try:
+            key = screen.getkey()
 
-    
-    text = ""
-    while text != "x":
-        win = curses.newwin(26,0,20,30)
-        tb = curses.textpad.Textbox(win)
-        text = tb.edit(__enter_is_terminate__)[:-2].rstrip()
-        InputReader.q.put(text)
-        del win 
+            if str(key) == '^?' or key == '\x7f':
+                inputString = inputString[:-1]
+            elif str(key) == '\n':
+                InputReader.q.put(inputString)
+                inputString = ''
+            else:
+                inputString += str(key)
+            
+            #clearScreen()
+            #print_at(1,1,inputString)
 
-def __enter_is_terminate__(x):
-    if x == 10:
-        return 7
-    else:
-        return x
+            
+        except Exception as e: 
+            #no input
+            pass
+

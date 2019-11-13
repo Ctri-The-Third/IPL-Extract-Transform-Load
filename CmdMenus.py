@@ -7,9 +7,14 @@ if os.name == "nt":
 elif os.name == "posix":
     from LinuxCmdMenus import *
     
-
+#INSTALL PostGresSQL
+#Create LaserScraper Database
+#Run DBSetup.sql
 #queue
 #colorama
+#console
+#pynput
+#curses
 
 
 import time
