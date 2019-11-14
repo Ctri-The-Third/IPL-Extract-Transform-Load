@@ -1,30 +1,13 @@
-CREATE ROLE "LaserScraper" WITH
-	LOGIN
-	SUPERUSER
-	CREATEDB
-	CREATEROLE
-	INHERIT
-	NOREPLICATION
-	CONNECTION LIMIT -1
-	PASSWORD 'LaserScraper';
-
-
-
-CREATE DATABASE "LaserScraper"
-    WITH 
-    OWNER = "LaserScraper"
-    ENCODING = 'UTF8'
-    CONNECTION LIMIT = -1;
 
 
 /****** Object:  Table AllAchievements    Script Date: 27-Aug-19 12:19:17 ******/
 CREATE TABLE AllAchievements(
     AchName varchar(50) NOT NULL,
-        Description text NOT NULL,
-        image varchar(64) NULL,
-        ArenaName varchar(50) NOT NULL,
-        AchID varchar(50) NOT NULL,
-        CONSTRAINT PK_AllAchievements PRIMARY KEY  
+	Description text NOT NULL,
+	image varchar(64) NULL,
+	ArenaName varchar(50) NOT NULL,
+	AchID varchar(50) NOT NULL,
+	CONSTRAINT PK_AllAchievements PRIMARY KEY  
 (
     AchID
 ));
@@ -34,20 +17,20 @@ CREATE TABLE AllAchievements(
 
 CREATE TABLE Games(
     GameTimestamp timestamp NOT NULL,
-        GameName varchar(50) NOT NULL,
-        ArenaName varchar(50) NOT NULL,
-        GameUUID varchar(50) NOT NULL,
-        CONSTRAINT PK_Games PRIMARY KEY 
+	GameName varchar(50) NOT NULL,
+	ArenaName varchar(50) NOT NULL,
+	GameUUID varchar(50) NOT NULL,
+	CONSTRAINT PK_Games PRIMARY KEY 
 (
     GameUUID
 ));
 /****** Object:  Table Participation    Script Date: 27-Aug-19 12:19:38 ******/
 CREATE TABLE Participation(
     PlayerID varchar(15) NOT NULL,
-        GameUUID varchar(50) NOT NULL,
-        Score int NOT NULL,
-        insertedTimestamp timestamp NULL,
-        CONSTRAINT PK_Participation PRIMARY KEY 
+	GameUUID varchar(50) NOT NULL,
+	Score int NOT NULL,
+	insertedTimestamp timestamp NULL,
+	CONSTRAINT PK_Participation PRIMARY KEY 
 (
     PlayerID,GameUUID
 ));
@@ -56,8 +39,8 @@ CREATE TABLE Participation(
 
 CREATE TABLE "jobsList"
 (
-    Desc text COLLATE pg_catalog."default" NOT NULL,
-    ID text COLLATE pg_catalog."default" NOT NULL,
+    "desc" text COLLATE pg_catalog."default" NOT NULL,
+    id text COLLATE pg_catalog."default" NOT NULL,
     finished timestamp with time zone,
     lastHeartbeat timestamp with time zone,
     resumeIndex text COLLATE pg_catalog."default",
@@ -65,19 +48,19 @@ CREATE TABLE "jobsList"
     Dependencies text COLLATE pg_catalog."default",
     methodName text COLLATE pg_catalog."default",
     methodParams text COLLATE pg_catalog."default",
-    CONSTRAINT "jobsList_pkey" PRIMARY KEY ("ID")
-)
+    CONSTRAINT "jobsList_pkey" PRIMARY KEY ("id")
+);
 /****** Object:  Table PlayerAchievement    Script Date: 27-Aug-19 12:19:45 ******/
 
 CREATE TABLE PlayerAchievement(
     AchID varchar(50) NOT NULL,
 
-        PlayerID varchar(50) NOT NULL,
-        newAchievement int NULL,
-        achievedDate date NULL,
-        progressA int NULL,
-        progressB int NULL,
-        CONSTRAINT PK_PlayerAchievement PRIMARY KEY  
+	PlayerID varchar(50) NOT NULL,
+	newAchievement int NULL,
+	achievedDate date NULL,
+	progressA int NULL,
+	progressB int NULL,
+	CONSTRAINT PK_PlayerAchievement PRIMARY KEY  
 (
     AchID, PlayerID
 ));
@@ -89,14 +72,14 @@ CREATE TABLE PlayerAchievement(
 
 CREATE TABLE Players(
     PlayerID varchar(15) NOT NULL,
-        GamerTag varchar(20) NOT NULL,
-        Joined date NULL,
-        Missions int NULL,
-        Level int NULL,
-        AchievementScore int NULL,
-        CONSTRAINT PK_Players PRIMARY KEY  
-        (
-            PlayerID
+	GamerTag varchar(20) NOT NULL,
+	Joined date NULL,
+	Missions int NULL,
+	Level int NULL,
+	AchievementScore int NULL,
+	CONSTRAINT PK_Players PRIMARY KEY  
+	(
+	    PlayerID
 ));
 
 -- Table: public.jobslist

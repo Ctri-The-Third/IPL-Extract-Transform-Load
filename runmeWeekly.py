@@ -1,8 +1,8 @@
 import SQLHelper
-import ConfigHelper
+import ConfigHelper as cfg
 import string
 
-ConfigHelper.setActive(0)
+cfg.setActive(0)
 SQLHelper.getInterestingPlayersRoster(False,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),offset=offset,siteName = params["arenaName"])
 SQLHelper.jobStart("Fetch games, [%s] active players " % (cfg.getConfigString("SiteNameShort")),0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs),delay=-2) 
 
@@ -22,7 +22,7 @@ SQLHelper.getInterestingPlayersRoster(False,cfg.getConfigString("StartDate"),cfg
 SQLHelper.jobStart("Fetch games, [%s] active players " % (cfg.getConfigString("SiteNameShort")),0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs),delay=-2) 
 
 targetIDs = SQLHelper.getPlayersWhoMightNeedAchievementUpdates(scope)
-jobStart("Fetch achievements, players from the last 7 days",0,"FetchAchievements.executeFetchAchievements",params,len(targetIDs))
+SQLHelper.jobStart("Fetch achievements, players from the last 7 days",0,"FetchAchievements.executeFetchAchievements",params,len(targetIDs),delay=20)
 
 print ("Jobs queued! Would you like to continue and launch the main program?")
 validInput = False
