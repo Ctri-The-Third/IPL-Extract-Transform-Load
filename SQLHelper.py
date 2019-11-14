@@ -463,15 +463,15 @@ def importPlayersFromCSV(path):
 
 
 
-def jobStart(description,resumeIndex,methodName, methodParams, completeIndex = None):
+def jobStart(description,resumeIndex,methodName, methodParams, completeIndex = None, delay = None):
 
     ID = str(uuid.uuid4())
     SQL  = """INSERT into jobsList ("desc","id","started","methodname","methodparams","completeindex") values 
-    (%s,%s,now(),%s,%s,%s)"""
+    (%s,%s,now() + interval '%s minutes',%s,%s,%s)"""
     conn=connectToSource()
     cursor = conn.cursor()
 
-    cursor.execute(SQL,(description,ID,methodName,json.dumps(methodParams),completeIndex))
+    cursor.execute(SQL,(description,ID,delay,methodName,json.dumps(methodParams),completeIndex))
 
     conn.commit()
     closeConnection()
