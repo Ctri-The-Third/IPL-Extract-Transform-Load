@@ -1,4 +1,3 @@
-from console import fg, bg, fx 
 import os
 import curses
 from curses import wrapper
@@ -50,7 +49,11 @@ def print_at(r,c,s,PI = 0):
         return
     if PI > 5 or PI < 0:
         PI = 0
-    screen.addstr(r,c,s,curses.color_pair(PI))
+    try:
+        screen.addstr(r,c,s,curses.color_pair(PI))
+    except Exception as e:
+        pass
+    
     
 def clearScreen():
     global screen
@@ -79,7 +82,7 @@ def startInputThread():
 def __inputThread__():
     global screen
     inputString = ''
-    while True:
+    while inputString != "x\n":
         try:
             key = screen.getkey()
 

@@ -36,7 +36,7 @@ def findNewPlayers():
     """)
     cursor.execute(query,(siteName,))
     result = cursor.fetchone()
-    if result[0] == None:
+    if result == None or result[0] == None:
         MaxPlayer = 199 #LaserForce seems to start numbering players at 100
     else: 
         MaxPlayer = result[0]
