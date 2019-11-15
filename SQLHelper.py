@@ -463,7 +463,7 @@ def importPlayersFromCSV(path):
 
 
 
-def jobStart(description,resumeIndex,methodName, methodParams, completeIndex = None, delay = None):
+def jobStart(description,resumeIndex,methodName, methodParams, completeIndex = None, delay = 0):
 
     ID = str(uuid.uuid4())
     SQL  = """INSERT into jobsList ("desc","id","started","methodname","methodparams","completeindex") values 
