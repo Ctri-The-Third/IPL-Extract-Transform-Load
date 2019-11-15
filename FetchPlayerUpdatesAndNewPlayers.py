@@ -36,7 +36,7 @@ def findNewPlayers():
     """)
     cursor.execute(query,(siteName,))
     result = cursor.fetchone()
-    if result[0] == None:
+    if result == None or result[0] == None:
         MaxPlayer = 199 #LaserForce seems to start numbering players at 100
     else: 
         MaxPlayer = result[0]
@@ -148,7 +148,7 @@ def manualTargetSummary(rootID):
     if player == {}:
         DBG("ManualTargetSummary failed! Aborting",1)
         return
-    print("Manual update of player sumary complete")
+    DBG("Manual update of player sumary complete",1)
     addPlayer(rootID,player["centre"][0]["codename"],player["centre"][0]["joined"],player["centre"][0]["missions"],player["centre"][0]["skillLevelNum"])
 
 

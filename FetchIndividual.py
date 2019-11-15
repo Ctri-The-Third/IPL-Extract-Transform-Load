@@ -20,7 +20,7 @@ def fetchIndividualWithID(id):
     cursor.execute(SQL,data)
     results = cursor.fetchone()
 
-    if len(results) == 1:
+    if results is not None and len(results) == 1:
         
         #print(results)
         feedbackQueue.q.put("Found player, updating")
@@ -39,7 +39,7 @@ def fetchIndividualWithID(id):
         #buildHeadToHeads()
         #executeBuildPlayerBlobs()
         #executeBuildMonthlyStars()
-    elif len(results) == 0:
+    elif results is None:
         feedbackQueue.q.put("Didn't find ID in database, performing summary search")
         manualTargetSummary(id)
 
