@@ -19,7 +19,7 @@ def DBG(STR,Level=1):
     if (Level == 1):
         outStr = "%sDBG: [%s] %s" % (Fore.RED, STR, Fore.WHITE) 
 
-    print(outStr)
+    #print(outStr)
     if Level <= 2:
         feedbackQueue.q.put(outStr)
     f = open("DBG.log","a+")

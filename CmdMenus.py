@@ -55,7 +55,6 @@ import workerProgressQueue
 # This application class serves as a wrapper for the initialization of curses
 # and also manages the actual forms of the application
 
-initUI()
 #PALLETE
 # 0 = White on black
 # 1 = Green on Black
@@ -66,7 +65,9 @@ initUI()
 
 feedback = ["","","","","Initialised system..."]
 threads = []
-
+t = initUI()
+if t is not None:
+    threads.append(t)
 
  
 
@@ -92,7 +93,7 @@ def drawHeader():
     
     threadcounter = 1
     for t in threads:
-        if t.isAlive():
+        if t is not None and t.isAlive():
             threadcounter = threadcounter + 1
     print_at(3,0,"Currently active threads: [            ]      | " )
     print_at(3,28,"%s threads"[:10] % threadcounter,2) 
@@ -201,7 +202,7 @@ workerStatusQ = workerProgressQueue.getQ()
 #rendering is done generically, but the wrapper and refresh must be handled by the CmdMenus part.
 stop = False
 while inputS != "exit" and inputS != "x" and stop != True:
-    time.sleep(0.5)
+    time.sleep(0.33)
     print_at(0,0,"LOOP [%s]"% stop)
     inputS = ""
     while not feedbackQueue.q.empty():

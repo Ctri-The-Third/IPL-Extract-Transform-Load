@@ -102,7 +102,7 @@ def addPlayer(playerID,GamerTag,Joined,missions,level):
         WHERE PlayerID = %s""")
         cursor.execute(query,(missions,level,playerID))
         
-        DBG("  DBG: SQLHelper.AddPlayer - Updated player's missions [%s] to [%s]" % (result[3],missions),1)
+        DBG("  DBG: SQLHelper.AddPlayer - Updated player's missions [%s] to [%s]" % (result[3],missions),3)
         conn.commit()
         conn.close()
         return 2
@@ -405,7 +405,7 @@ order by playerRank asc
     if rows == None:
         DBG(" SQLHelper.getTop5Players didn't find any players. Is there data in all tables?/",2)
     else:
-        DBG ("SQLHelper.getTop5Players found all 5 players",1)
+        DBG ("SQLHelper.getTop5Players found all 5 players",3)
 
     conn.commit()
     conn.close()
