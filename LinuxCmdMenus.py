@@ -4,7 +4,6 @@ from curses import wrapper
 
 import threading
 import InputReader
-import pynput
 print("\e[31mRedLinux menus not yet implemented! Please run this application on Windows for now :(\e[39m")
 
 screen = None  
