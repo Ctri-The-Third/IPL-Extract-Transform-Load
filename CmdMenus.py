@@ -67,6 +67,7 @@ feedback = ["","","","","Initialised system..."]
 threads = []
 t = initUI()
 if t is not None:
+    t.name = "RenderThread"
     threads.append(t)
 
  
@@ -85,12 +86,6 @@ def drawHeader():
     renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),1,48,4,1)
     
     
-<<<<<<< HEAD
-    print_at(2,0,"End Date:             [            ]          | " )
-    print_at(2,24,cfg.getConfigString("EndDate"),1) 
-    print_at(2,48,CurrentWorkerStatus["CurrentAction"],1)
-=======
->>>>>>> master
     
 
     print_at(2,0,"Target site:     [                     ]      |  ")
@@ -113,17 +108,10 @@ def drawDateMenu():
     os.system('CLS')
     config = cfg.getConfig()
     drawHeader()
-<<<<<<< HEAD
-    
-    print_at (5,0, "/----- Start Date ---------------------------------------------------\ " ,PI=2 )
-    print_at (6,0,"%s In the form YYYY-MM-DD       %s" % (fg.yellow, fg.white))
-    print_at (7,0,"%s or 'x' to go back            %s" % (fg.yellow, fg.white))
-=======
  
     print_at (5,0, "/***** Start Date ***************************************************\ " ,PI=2 )
     print_at (6,0,"In the form YYYY-MM-DD       ",PI=2)
     print_at (7,0,"or 'x' to go back            ",PI=2)
->>>>>>> master
     print_at (8,0,"")
     return input("Enter Start Date: ")
 def drawMainMenu():
@@ -162,8 +150,8 @@ def drawMainMenu():
     print_at (17,1,"667",PI=2)
     
     print_at (18,0,"" )
-    print_at (19,0,"[?] Help " )
-    print_at (20,0,"[x] Exit")
+    print_at (19,0,"[t] threads \t[x] Exit" )
+    print_at (20,0,"")
     
     
     
@@ -180,11 +168,7 @@ def drawMainMenu():
 def drawArenaMenu():
     global config
     counter = 5
-<<<<<<< HEAD
-    print_at (5,0,"%s/----- Pick arena --------------------------------------------------*\ %s" % (fg.yellow, fg.white))
-=======
-    print_at (5,0,"/***** Pick arena ***************************************************\ ", PI=2)
->>>>>>> master
+    print_at (5,0,"%s/***** Pick arena ***************************************************\ %s" % (fg.yellow, fg.white))
     for arena in cfg.getConfigString("configs"):
         counter = counter + 1 
         print_at (counter,0,"[%s%i%s] %s" % (Fore.YELLOW,counter -5 ,Fore.WHITE,arena["SiteNameShort"]))
@@ -195,11 +179,7 @@ def drawArenaMenu():
 
 def drawOutputPane():
     counter = 0
-<<<<<<< HEAD
-    print_at (5,0,"%s/----- Output --------------------------------------------------****\%s" % (fg.yellow, fg.white))
-=======
     print_at (5,0,"/***** Output ******************************************************\ ", PI=2)
->>>>>>> master
     for var in feedback[-15:]:
         var = var + " " * 70 
         var = var[0:100] 
@@ -215,14 +195,13 @@ inputS = ""
 
 
 t = startInputThread() #screen goes black here. Why?
-threads.append(t) 
+if t is not None: 
+    t.name = "inputThread"
+    threads.append(t) 
 
-<<<<<<< HEAD
 heartMonitor = HeartMonitor.startMonitorThreads()
 threads.append(heartMonitor)
 
-=======
->>>>>>> master
     
 DBG("Startup - menu",3)
 clearScreen()
@@ -296,11 +275,7 @@ while inputS != "exit" and inputS != "x" and stop != True:
             clearScreen()
         if inputS == "12": #needs reworking
             startDate = drawDateMenu()
-<<<<<<< HEAD
-            print ("%s ----- End Date         ----- %s" % (fg.yellow, fg.white))
-=======
             print_at (10,1,"LOCATION? ***** End Date         ***** ",PI=2)
->>>>>>> master
             EndDate = input("Enter End Date:")
 
             if startDate != "B" and EndDate != "B":
@@ -313,22 +288,27 @@ while inputS != "exit" and inputS != "x" and stop != True:
             
             feedback.append("Building all blobs in parallel. Prepare for spam.")
             t = threading.Thread(target=BuildMonthlyScoresToJSON.executeMonthlyScoresBuild)
+            t.name = "renderMonthlySTDScores"
             threads.append(t)
             t.start() 
 
             t = threading.Thread(target=BuildMonthlyStarQualityToJSON.executeBuildMonthlyStars)
+            t.name = "renderMonthlyStarScores"
             threads.append(t)
             t.start()
 
             t = threading.Thread(target=BuildAchievementScoresToJSON.executeAchievementBuild)
+            t.name = "renderAchievementScores"
             threads.append(t)
             t.start()
 
             t = threading.Thread(target=BuildPlayerBlob.executeBuildPlayerBlobs)
+            t.name = "rendBig5Blobs"
             threads.append(t)
             t.start()
 
             t = threading.Thread(target=BuildHeadToHeadsToJSON.buildHeadToHeads)
+            t.name = "renderHead2Heads"
             threads.append(t)
             t.start()
 
@@ -343,36 +323,43 @@ while inputS != "exit" and inputS != "x" and stop != True:
         elif inputS == "66":
             feedback.append("Performing update of active local players in background...")
             t = threading.Thread(target=executeQueryGames, args=("partial",))
+            t.name = "66, active locals"
             threads.append(t)
             t.start()      
             inputS = ""
         elif inputS == "67":
             feedback.append("Performing background update of achievements for recent players...")
             t = threading.Thread(target=executeFetchAchievements, args =("recent",))
+            t.name = "67, ach <=7 days"
             threads.append(t)
             t.start()      
             inputS = ""
         elif inputS == "677":
             feedback.append("Performing background update of achievements for active players...")
             t = threading.Thread(target=executeFetchAchievements, args =("partial",))
+            t.names = "677 - ach actives"
             threads.append(t)
             t.start()      
             inputS = ""
         elif inputS == "661":
             feedback.append("Performing update of inactivate players in background...")
             t = threading.Thread(target=executeQueryGames, args=("full",))
+            t.name = "661 - games, all inactive "
             threads.append(t)
             t.start()      
             inputS = ""
         elif inputS == "666":
             feedback.append("Performing complete update in background...")
             t = threading.Thread(target=updateExistingPlayers)
+            t.name = "666, summary update all"
             threads.append(t)
+            t.name 
             t.start()
             inputS = ""
         elif inputS == "667":
             feedback.append("Seeking new players in background...")
             t = threading.Thread(target=findNewPlayers)
+            t.name = "667, new player search for someone"
             threads.append(t)
             t.start()
             inputS = ""

@@ -13,6 +13,7 @@ from  SQLconnector import connectToSource
 __terminateInstruction__ = False
 def startMonitorThreads():
     thread = threading.Thread(target=executeMonitor)
+    thread.name = "HeartMonitor" 
     thread.start()
     return thread
 

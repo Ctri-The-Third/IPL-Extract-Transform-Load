@@ -42,7 +42,7 @@ def drawScreen():
 
 def endUI():
     print ("Exited menus")
-
+    LRT.end()
 
 def startInputThread():
     # included within render thread
