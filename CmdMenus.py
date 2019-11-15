@@ -7,9 +7,14 @@ if os.name == "nt":
 elif os.name == "posix":
     from LinuxCmdMenus import *
     
-
+#INSTALL PostGresSQL
+#Create LaserScraper Database
+#Run DBSetup.sql
 #queue
 #colorama
+#console
+#pynput
+#curses
 
 
 import time
@@ -50,7 +55,6 @@ import workerProgressQueue
 # This application class serves as a wrapper for the initialization of curses
 # and also manages the actual forms of the application
 
-initUI()
 #PALLETE
 # 0 = White on black
 # 1 = Green on Black
@@ -61,7 +65,9 @@ initUI()
 
 feedback = ["","","","","Initialised system..."]
 threads = []
-
+t = initUI()
+if t is not None:
+    threads.append(t)
 
  
 
@@ -73,21 +79,33 @@ def drawHeader():
 
          
     
-    
-    print_at(1,0,"Start Date:           [            ]          | " )
-    print_at(1,24,cfg.getConfigString("StartDate"),1)
+    print_at(1,0,"Dates:  [            ] to [            ]      | " )
+    print_at(1,10,cfg.getConfigString("StartDate"),1)
+    print_at(1,28,cfg.getConfigString("EndDate"),1) 
     renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),1,48,4,1)
     
     
+<<<<<<< HEAD
     print_at(2,0,"End Date:             [            ]          | " )
     print_at(2,24,cfg.getConfigString("EndDate"),1) 
     print_at(2,48,CurrentWorkerStatus["CurrentAction"],1)
+=======
+>>>>>>> master
     
 
-    print_at(3,0,"Target site:          [                     ] |  ")
-
-    print_at(3,24,(cfg.getConfigString("SiteNameShort")+ " "*20)[0:20],arenaHealth+1)
+    print_at(2,0,"Target site:     [                     ]      |  ")
+    print_at(2,19,(cfg.getConfigString("SiteNameShort")+ " "*20)[0:20],arenaHealth+1)
+    print_at(2,48,CurrentWorkerStatus["CurrentAction"],1)
+    
+    
+    threadcounter = 1
+    for t in threads:
+        if t is not None and t.isAlive():
+            threadcounter = threadcounter + 1
+    print_at(3,0,"Currently active threads: [            ]      | " )
+    print_at(3,28,"%s threads"[:10] % threadcounter,2) 
     print_at(3,48,"%s"%(CurrentWorkerStatus["ETA"]),1)
+    
     #1print_at (3,0,outStr)
     print_at (4,0,"") 
 
@@ -95,10 +113,17 @@ def drawDateMenu():
     os.system('CLS')
     config = cfg.getConfig()
     drawHeader()
+<<<<<<< HEAD
     
     print_at (5,0, "/----- Start Date ---------------------------------------------------\ " ,PI=2 )
     print_at (6,0,"%s In the form YYYY-MM-DD       %s" % (fg.yellow, fg.white))
     print_at (7,0,"%s or 'x' to go back            %s" % (fg.yellow, fg.white))
+=======
+ 
+    print_at (5,0, "/***** Start Date ***************************************************\ " ,PI=2 )
+    print_at (6,0,"In the form YYYY-MM-DD       ",PI=2)
+    print_at (7,0,"or 'x' to go back            ",PI=2)
+>>>>>>> master
     print_at (8,0,"")
     return input("Enter Start Date: ")
 def drawMainMenu():
@@ -155,7 +180,11 @@ def drawMainMenu():
 def drawArenaMenu():
     global config
     counter = 5
+<<<<<<< HEAD
     print_at (5,0,"%s/----- Pick arena --------------------------------------------------*\ %s" % (fg.yellow, fg.white))
+=======
+    print_at (5,0,"/***** Pick arena ***************************************************\ ", PI=2)
+>>>>>>> master
     for arena in cfg.getConfigString("configs"):
         counter = counter + 1 
         print_at (counter,0,"[%s%i%s] %s" % (Fore.YELLOW,counter -5 ,Fore.WHITE,arena["SiteNameShort"]))
@@ -166,12 +195,16 @@ def drawArenaMenu():
 
 def drawOutputPane():
     counter = 0
+<<<<<<< HEAD
     print_at (5,0,"%s/----- Output --------------------------------------------------****\%s" % (fg.yellow, fg.white))
+=======
+    print_at (5,0,"/***** Output ******************************************************\ ", PI=2)
+>>>>>>> master
     for var in feedback[-15:]:
         var = var + " " * 70 
         var = var[0:100] 
         counter = counter + 1
-        print_at(5+counter,0,("%s%s%s%s%s" % (bg.green,fg.black,var,bg.black, fg.white)))
+        print_at(5+counter,0,var,PI=4)
     if len(feedback) < 15:
         for i in range(15 - len(feedback)):
             print_at(5+counter+i+1,0," " * 70)
@@ -181,12 +214,15 @@ preS = ""
 inputS = ""
 
 
-t = startInputThread()
+t = startInputThread() #screen goes black here. Why?
 threads.append(t) 
 
+<<<<<<< HEAD
 heartMonitor = HeartMonitor.startMonitorThreads()
 threads.append(heartMonitor)
 
+=======
+>>>>>>> master
     
 DBG("Startup - menu",3)
 clearScreen()
@@ -196,7 +232,7 @@ workerStatusQ = workerProgressQueue.getQ()
 #rendering is done generically, but the wrapper and refresh must be handled by the CmdMenus part.
 stop = False
 while inputS != "exit" and inputS != "x" and stop != True:
-    time.sleep(0.5)
+    time.sleep(0.33)
     print_at(0,0,"LOOP [%s]"% stop)
     inputS = ""
     while not feedbackQueue.q.empty():
@@ -215,43 +251,43 @@ while inputS != "exit" and inputS != "x" and stop != True:
 
     #print(CurrentWorkerStatus)
     #currently prioritise minor update over major update
-    
-    if waitingFunction == "11":
-        
-        drawHeader()
-        drawArenaMenu()
-        #print("\nEnter option...")
-        if inputS != "":
-            if inputS == "b":
-                waitingFunction = ""
-                
-            else:
-                cfg.setActive(int(inputS)-1)
-                waitingFunction = ""
-                
+    if waitingFunction != "":
+        if waitingFunction == "11":
+            
+            drawHeader()
+            drawArenaMenu()
+            #print("\nEnter option...")
+            if inputS != "":
+                if inputS == "b":
+                    waitingFunction = ""
+                    
+                else:
+                    cfg.setActive(int(inputS)-1)
+                    waitingFunction = ""
+                    
 
-    elif waitingFunction == "61" and inputS != '':
-        
-        drawHeader()
-        drawOutputPane()
-        FetchIndividual.fetchIndividualWithID(inputS)
-        feedbackQueue.q.put("Enter A to continue...")
-        waitingFunction = "outputPane"
-        
-    elif waitingFunction == "5":
-        if inputS != '':
+        elif waitingFunction == "61" and inputS != '':
+            
             drawHeader()
             drawOutputPane()
-            QueryIndividual.executeQueryIndividual(inputS)
+            FetchIndividual.fetchIndividualWithID(inputS)
             feedbackQueue.q.put("Enter A to continue...")
             waitingFunction = "outputPane"
-    elif waitingFunction == "outputPane":
-        if inputS == 'a':
-            waitingFunction = ""
-            clearScreen() #TODO replace this by having the Menu be drawn better.        
-        else: 
-            drawHeader()
-            drawOutputPane()
+            
+        elif waitingFunction == "5":
+            if inputS != '':
+                drawHeader()
+                drawOutputPane()
+                QueryIndividual.executeQueryIndividual(inputS)
+                feedbackQueue.q.put("Enter A to continue...")
+                waitingFunction = "outputPane"
+        elif waitingFunction == "outputPane":
+            if inputS == 'a':
+                waitingFunction = ""
+                clearScreen() #TODO replace this by having the Menu be drawn better.        
+            else: 
+                drawHeader()
+                drawOutputPane()
 
     elif waitingFunction == "": #The user is in the root menu
         drawMainMenu()
@@ -260,7 +296,11 @@ while inputS != "exit" and inputS != "x" and stop != True:
             clearScreen()
         if inputS == "12": #needs reworking
             startDate = drawDateMenu()
+<<<<<<< HEAD
             print ("%s ----- End Date         ----- %s" % (fg.yellow, fg.white))
+=======
+            print_at (10,1,"LOCATION? ***** End Date         ***** ",PI=2)
+>>>>>>> master
             EndDate = input("Enter End Date:")
 
             if startDate != "B" and EndDate != "B":

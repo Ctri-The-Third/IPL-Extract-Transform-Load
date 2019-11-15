@@ -14,7 +14,7 @@ import threading
 #3 = Info
 #2 = Warning
 #1 = Error
-def DBG(STR,Level):
+def DBG(STR,Level=1):
     if Level < 0 or Level > 3:
         Level = 1
     if (Level == 3):
@@ -24,7 +24,7 @@ def DBG(STR,Level):
     if (Level == 1):
         outStr = "%sDBG: [%s] %s" % (Fore.RED, STR, Fore.WHITE) 
 
-    print(outStr)
+    #print(outStr)
     if Level <= 2:
         feedbackQueue.q.put(outStr)
     f = open("DBG.log","a+")
