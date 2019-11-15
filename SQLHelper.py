@@ -102,7 +102,7 @@ def addPlayer(playerID,GamerTag,Joined,missions,level):
         WHERE PlayerID = %s""")
         cursor.execute(query,(missions,level,playerID))
         
-        print("  DBG: SQLHelper.AddPlayer - Updated player's missions [%s] to [%s]" % (result[3],missions))
+        DBG("  DBG: SQLHelper.AddPlayer - Updated player's missions [%s] to [%s]" % (result[3],missions),1)
         conn.commit()
         conn.close()
         return 2
@@ -261,7 +261,7 @@ def addPlayerAchievementScore (playerID, score):
     cursor.execute(query,data)
 
     if cursor.fetchone() == None:
-        print("[Warning] SQLHelper.addPlayerAchievementScore didn't find the player, could not update score")
+        DBG("SQLHelper.addPlayerAchievementScore didn't find the player, could not update score",2)
     else:
         #print ("SQLHelper.addPlayerAchievementScore found the player, updating their achievement score")
         query = "update players set AchievementScore = ? where playerID = ?"
@@ -403,9 +403,9 @@ order by playerRank asc
     cursor.execute(query,data)
     rows = cursor.fetchall()
     if rows == None:
-        print("[Warning] SQLHelper.getTop5Players didn't find any players. Is there data in all tables?/")
+        DBG(" SQLHelper.getTop5Players didn't find any players. Is there data in all tables?/",2)
     else:
-        print ("SQLHelper.getTop5Players found all 5 players")
+        DBG ("SQLHelper.getTop5Players found all 5 players",1)
 
     conn.commit()
     conn.close()
@@ -423,7 +423,7 @@ def dumpParticipantsAndGamesToCSV():
         file.write("%s,%s,%i\n" % (row[0],row[1],row[2]))
     file.close()
     
-    print("Dumped %i rows to CSV dump - participation.csv" % (count))
+    DBG("Dumped %i rows to CSV dump - participation.csv" % (count))
     query = """select * From Games"""
     cursor.execute(query)
     count = 0 
@@ -431,9 +431,9 @@ def dumpParticipantsAndGamesToCSV():
     for row in cursor.fetchall():
         count = count + 1
         file.write("%s,%s,%s\n" % (row[0],row[1],row[2]))
-    file.close()
+    file.close() 
     conn.close()
-    print("Dumped %i rows to CSV dump - Games.csv" % (count))
+    DBG("Dumped %i rows to CSV dump - Games.csv" % (count))
 
 
 def importPlayersFromCSV(path):
@@ -444,7 +444,7 @@ def importPlayersFromCSV(path):
     sql = '''insert into Players (PlayerID,GamerTag,Joined,Missions,Level)
 	    values(?,?,?,?,?)'''
     for row in readCSV:
-        print(row)
+        DBG(row)
         cursor.execute(sql,(row[0],row[1],row[2],row[3],row[4]))
     conn.commit()
     conn.close()

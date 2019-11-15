@@ -9,7 +9,7 @@ import datetime
 #3 = Info
 #2 = Warning
 #1 = Error
-def DBG(STR,Level):
+def DBG(STR,Level=1):
     if Level < 0 or Level > 3:
         Level = 1
     if (Level == 3):

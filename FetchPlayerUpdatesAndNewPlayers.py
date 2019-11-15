@@ -148,7 +148,7 @@ def manualTargetSummary(rootID):
     if player == {}:
         DBG("ManualTargetSummary failed! Aborting",1)
         return
-    print("Manual update of player sumary complete")
+    DBG("Manual update of player sumary complete",1)
     addPlayer(rootID,player["centre"][0]["codename"],player["centre"][0]["joined"],player["centre"][0]["missions"],player["centre"][0]["skillLevelNum"])
 
 
