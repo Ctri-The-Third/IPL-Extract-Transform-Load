@@ -36,8 +36,10 @@ def findNewPlayers(siteName = None,jobID=None):
     params = {}
     params["siteName"] = siteName
     if jobID is None:
-        jobID = jobStart("Searching for new players at [%s]" % siteName,0,"FetchPlayerUpdatesAndNewPlayers.findNewPlayers",params)
-    
+        jobID = jobStart("  new players at [%s]" % siteName,0,"FetchPlayerUpdatesAndNewPlayers.findNewPlayers",params)
+    else:
+        jobHeartbeat(jobID,0)
+
     
     TickerIcon = ["|","/","-",'\\']
     sitePrefixforSQL = sitePrefix + "%"
