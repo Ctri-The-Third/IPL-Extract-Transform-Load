@@ -76,3 +76,18 @@ def addNewSite(obj):
 
         return "Successfully set start and end dates to [%s] and [%s]" % (config["StartDate"], config["EndDate"])
 
+
+def getSiteWithoutActivatingByID(id):
+    config = getConfig()
+
+    return config["configs"][id] 
+
+def findSiteIDFromName(name):
+    obj = getConfig()
+    counter = 0
+    for centre in obj["configs"]:
+        if centre["siteNameReal"] == name:
+            return counter
+        counter = counter + 1
+    
+    return -1

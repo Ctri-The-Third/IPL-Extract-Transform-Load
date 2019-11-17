@@ -15,7 +15,7 @@ import json
 from SQLHelper import jobStart,jobHeartbeat,jobEnd
 from psycopg2 import sql 
 
-def findNewPlayers():
+def findNewPlayers(siteName = None,jobID=None):
 
     
     startTime = datetime.datetime.now()
@@ -25,11 +25,18 @@ def findNewPlayers():
 
     conn = connectToSource()
     cursor = conn.cursor()
-    sitePrefix = cfg.getConfigString("ID Prefix")
-    siteName = cfg.getConfigString("SiteNameReal")
+    if siteName is not None:
+        targetID = cfg.findSiteIDFromName(siteName)
+        siteObj = cfg.getSiteWithoutActivatingByID(targetID)
+        sitePrefix = siteObj["ID Prefix"]
+        siteName = siteObj["SiteNameReal"]
+    else:
+        sitePrefix = cfg.getConfigString("ID Prefix")
+        siteName = cfg.getConfigString("SiteNameReal")
     params = {}
     params["siteName"] = siteName
-    jobID = jobStart("Searching for new players at [%s]" % siteName,0,"FetchPlayerUpdatesAndNewPlayers.findNewPlayers",json.dumps(params))
+    if jobID is None:
+        jobID = jobStart("Searching for new players at [%s]" % siteName,0,"FetchPlayerUpdatesAndNewPlayers.findNewPlayers",params)
     
     
     TickerIcon = ["|","/","-",'\\']
@@ -65,6 +72,7 @@ select max (ID) from IDs
         if heartbeatDelta > 30:
             jobHeartbeat(jobID,0)
             lastHeartbeat = datetime.datetime.now()
+            conn.commit()
         player =  fetchPlayer_root('',region,siteNumber,currentTarget)
         if 'centre' in player:
             

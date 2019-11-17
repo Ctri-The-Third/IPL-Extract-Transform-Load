@@ -70,7 +70,21 @@ def executeMonitor():
                     t.start()
                     t.name = result[3]
                     TRQ.q.put(t)
-                print(result)
+
+
+
+                elif result[3] == "FetchPlayerUpdatesAndNewPlayers.findNewPlayers":
+                    params = json.loads(result[8])
+                    t = threading.Thread(
+                        target=FetchPlayerUpdatesAndNewPlayers.findNewPlayers, 
+                        #args=(params["siteName"],), 
+                        kwargs={"jobID":result[2],"siteName":params["siteName"]}
+                        ) #
+                    t.start()
+                    t.name = result[3]
+                    TRQ.q.put(t)
+                
+                #print(result)
         time.sleep(1) #sleep for a second to allow termination checks
 
 def terminateMonitor():
