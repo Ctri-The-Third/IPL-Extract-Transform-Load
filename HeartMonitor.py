@@ -6,7 +6,7 @@ import FetchPlayerAndGames
 import FetchPlayerUpdatesAndNewPlayers
 import FetchAchievements
 import threading
-
+import threadRegistrationQueue as TRQ
 from  SQLconnector import connectToSource
 
  
@@ -44,6 +44,9 @@ def executeMonitor():
                         args=(params["scope"],), 
                         kwargs={"ID":result[2],"offset":result[7]}) #
                     t.start()
+                    t.name = result[3]
+                    TRQ.q.put(t)
+                    
                 
                 elif result[3] == "FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers":
                     t = threading.Thread(
@@ -51,9 +54,13 @@ def executeMonitor():
                         #args=(params["scope"],), 
                         kwargs={"JobID":result[2]}) #this method gets offset from the job ID
                     t.start()
+                    t.name = result[3]
+                    TRQ.q.put(t)
+
                     #execute known method.
-                #
-                
+
+
+
                 elif result[3] == "FetchAchievements.executeFetchAchievements":
                     params = json.loads(result[8])
                     t = threading.Thread(
@@ -61,6 +68,8 @@ def executeMonitor():
                         args=(params["scope"],), 
                         kwargs={"jobID":result[2],"offset":result[7]}) #
                     t.start()
+                    t.name = result[3]
+                    TRQ.q.put(t)
                 print(result)
         time.sleep(1) #sleep for a second to allow termination checks
 

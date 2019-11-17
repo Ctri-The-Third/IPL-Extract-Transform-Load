@@ -55,15 +55,15 @@ def fetchPlayer_root(token,region,site,code):
 
     r = requests.post(url = API_DetailsURL, data = data)
     
-    responseJSON = json.loads(r.text)
-    if 'centre'  in responseJSON and len(responseJSON['centre']) >= 1:
-        
-        #print("fetchPlayer_root: Found player %s-%s-%s, token %s" % (region,site,code,token))
-        return (responseJSON)
-    else:
-        #print("fetchPlayer_root: DIDN'T find player %s-%s-%s, token %s" % (region,site,code,token))
-        return ({})
-
+    try:
+        responseJSON = json.loads(r.text)
+        if not( 'centre'  in responseJSON and len(responseJSON['centre']) >= 1):
+            responseJSON = {}
+    except Exception as e:
+        responseJSON = {}
+    finally:
+        return responseJSON
+    
 def fetchPlayerAcheivement_root(token,region,site,code):
     API_AchievementsURL = 'http://v2.iplaylaserforce.com/achievements.php'
     

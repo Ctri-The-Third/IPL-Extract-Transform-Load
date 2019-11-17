@@ -185,82 +185,48 @@ def addAchievement(achName, Description, image, arenaName):
     #do something
     conn =  connectToSource()
     cursor = conn.cursor()
+
+    #print("SQLHelper.addAchievement: Didn't find [{0}], adding it".format(achName))
+    AchID = "%s%s" % (achName,arenaName)
+    AchID = hashlib.md5(AchID.encode("utf-8")).hexdigest()
     query = """
-    SELECT *
-    FROM AllAchievements
-    where arenaName = %s 
-    and achName = %s
+    INSERT into AllAchievements
+        (AchID, AchName, image, Description, ArenaName)
+    VALUES (%s,%s,%s,%s,%s)
+        ON CONFLICT (AchID) DO UPDATE
+        SET image = %s,
+        Description = %s
     """
-    results = cursor.execute(query,(arenaName,achName))
-    result = cursor.fetchone()
-
-    if result == None:
-        #print("SQLHelper.addAchievement: Didn't find [{0}], adding it".format(achName))
-        AchID = "%s%s" % (achName,arenaName)
-        AchID = hashlib.md5(AchID.encode("utf-8")).hexdigest()
-        query = """
-        INSERT into AllAchievements
-         (AchID, AchName, image, Description, ArenaName)
-        VALUES (%s,%s,%s,%s,%s)
-        
-        """
-        cursor.execute(query,(str(AchID),achName,image,Description,arenaName))
-        #print ("SQLHelper.addAchievement: Added it!")
-        conn.commit()
-        closeConnection()
-        return AchID
-    else:
-        
-        return result[4]
-
-
-    #else:
-        #print ("SQLHelper.addAchievement: found [{0}], no changes to it".format(achName))
-
-    #print(result)
+    cursor.execute(query,(str(AchID),achName,image,Description,arenaName,image,Description))
+    conn.commit()
+    closeConnection()
+    
 
 def addPlayerAchievement(AchID,playerID,newAchievement,achievedDate,progressA,progressB):
 #do something
     AchID = str(AchID)
     conn =  connectToSource()
     cursor = conn.cursor()
-    query = """
-    SELECT *
-    FROM PlayerAchievement
-    where AchID = %s 
-    and playerID = %s
-    """
-    results = cursor.execute(query,(AchID,playerID))
-    result = cursor.fetchone()
-    if achievedDate == "0000-00-00" :
+    if achievedDate == "0000-00-00":
         achievedDate = None
-    if result == None:
-        #print("SQLHelper.addPlayerAchievement: Player has just discvered this, adding it")
-        
-        query = """
-        insert into PlayerAchievement
-        (AchID,PlayerID,newAchievement,achievedDate,progressA,progressB)
-        VALUES (%s, %s, %s, %s, %s, %s)
-        
-
-        """
-        results = cursor.execute(query,(AchID,playerID,newAchievement,achievedDate,progressA,progressB))
-    else:
-        
-        #print("SQLHelper.addPlayerAchievement: found achievement progress, updating it")
-        query = """
-        UPDATE PlayerAchievement
+    query = """
+    insert into PlayerAchievement
+    (AchID,PlayerID,newAchievement,achievedDate,progressA,progressB)
+    VALUES (%s, %s, %s, %s, %s, %s)
+    ON CONFLICT (AchID, PlayerID) DO 
+        UPDATE 
         SET newAchievement = %s, 
         achievedDate = %s,
         progressA = %s,
         progressB = %s
 
-        WHERE AchID = %s 
-        AND PlayerID = %s
+    
 
-        """
-        results = cursor.execute(query,(newAchievement,achievedDate,progressA,progressB,AchID,playerID))
-        #print(image)
+    """
+    results = cursor.execute(query,(AchID,playerID,newAchievement,achievedDate,progressA,progressB,
+    newAchievement,achievedDate,progressA,progressB))
+
+
     conn.commit()
     closeConnection()
 
@@ -506,4 +472,15 @@ def jobHeartbeat(ID,progressIndex):
 
     conn.commit()
     closeConnection()
+
+def getActiveJobs():
+    SQL = """ with data as (select row_number() over (partition by healthstatus order by finished desc ) as row, * from public."jobsView")
+select * from data where finished is null or (finished is not null and row <= 3 and row > 0)
+order by finished desc, started asc"""
+    conn =connectToSource()
+    cursor = conn.cursor()
     
+    cursor.execute(SQL)
+    results = cursor.fetchall()
+    closeConnection()
+    return results
