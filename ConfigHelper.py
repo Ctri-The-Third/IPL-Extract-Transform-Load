@@ -86,7 +86,7 @@ def findSiteIDFromName(name):
     obj = getConfig()
     counter = 0
     for centre in obj["configs"]:
-        if centre["siteNameReal"] == name:
+        if centre["SiteNameReal"] == name:
             return counter
         counter = counter + 1
     
