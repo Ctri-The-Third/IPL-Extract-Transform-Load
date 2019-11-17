@@ -48,7 +48,13 @@ def drawHeader(CurrentWorkerStatus, threadcounter):
     print_at(2,48,CurrentWorkerStatus["CurrentAction"],1)
 
     print_at(3,0,"active threads:           [            ]      | " )
-    print_at(3,28,"%s threads"[:10] % threadcounter,2) 
+    if threadcounter < 4:
+        threadColour = 1
+    elif threadcount < 8:
+        threadColour = 2
+    else:
+        threadColour = 3
+    print_at(3,28,"%s threads"[:10] % threadcounter,threadColour) 
     print_at(3,48,"%s"%(CurrentWorkerStatus["ETA"]),1)
     
     #1print_at (3,0,outStr)

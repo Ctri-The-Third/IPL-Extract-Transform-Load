@@ -194,22 +194,22 @@ while (inputS != "exit" and inputS != "x" and stop != True) and not safeShutdown
             t.start() 
 
             t = threading.Thread(target=BuildMonthlyStarQualityToJSON.executeBuildMonthlyStars)
-            t.name = "6 - renderMonthlyStarScores"
+            t.name = "6 - Render Monthly Star scores"
             threads.append(t)
             t.start()
 
             t = threading.Thread(target=BuildAchievementScoresToJSON.executeAchievementBuild)
-            t.name = "6 - renderAchievementScores"
+            t.name = "6 - Render Achievement scores"
             threads.append(t)
             t.start()
 
             t = threading.Thread(target=BuildPlayerBlob.executeBuildPlayerBlobs)
-            t.name = "6 - rendBig5Blobs"
+            t.name = "6 - Render the big 5 players"
             threads.append(t)
             t.start()
 
             t = threading.Thread(target=BuildHeadToHeadsToJSON.buildHeadToHeads)
-            t.name = "6 - renderHead2Heads"
+            t.name = "6 - Render head-to-head battles"
             threads.append(t)
             t.start()
 
