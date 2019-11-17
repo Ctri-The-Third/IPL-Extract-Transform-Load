@@ -50,7 +50,7 @@ def drawHeader(CurrentWorkerStatus, threadcounter):
     print_at(3,0,"active threads:           [            ]      | " )
     if threadcounter < 4:
         threadColour = 1
-    elif threadcount < 8:
+    elif threadcounter < 8:
         threadColour = 2
     else:
         threadColour = 3
