@@ -63,3 +63,16 @@ def setNewDates(startDate,endDate):
 
         return "Successfully set start and end dates to [%s] and [%s]" % (config["StartDate"], config["EndDate"])
 
+def addNewSite(obj):
+
+    with open("AppConfig.json","r") as f:
+        config  = json.load(f)
+
+        config["configs"].append(obj)
+
+        f = open("AppConfig.json", "w+")
+        f.write(json.dumps(config,indent=2))
+        f.close()
+
+        return "Successfully set start and end dates to [%s] and [%s]" % (config["StartDate"], config["EndDate"])
+
