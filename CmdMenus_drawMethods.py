@@ -187,7 +187,7 @@ def drawJobsAndThreads(threads):
                 
                 if ageSuff != "∞":
                     ageStr = "%s"%(math.trunc(j[3]))
-                    ageStr = "%s"%(ageStr[3:],ageSuff) 
+                    ageStr = "%s"%(ageStr[0:3],ageSuff) 
                 else:
                     ageStr = "∞   "
                 print_at (6+tCounter+jCounter,0,"%s %s\t%s: %s\t%s" % (ageStr,health,j[4][3:],description,percent) )
