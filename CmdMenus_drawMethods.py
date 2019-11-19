@@ -150,7 +150,7 @@ def drawJobsAndThreads(threads):
     print_at (5,0,"/***** Threads! *****************************************************\\", PI=2)
     for t in threads:
         if t.isAlive():
-            print_at (5+tCounter,0,"%s: %s" % (tCounter, t.name,))
+            print_at (5+tCounter,0,"%s: %s" % (tCounter, t.name))
             tCounter = tCounter + 1
     jobs = getActiveJobs()
     jCounter = 1
@@ -165,9 +165,32 @@ def drawJobsAndThreads(threads):
                 description = ("%s"%(j[3])+" "*30)[:30]
                 if j[1] != "complete":
                     percent = ("%s%%" % (j[11])+" "*10)[:10]
+                    if j[3] > 1000:
+                        ageSuff = "K"
+                        j[3] = j[3] / 1000
+                        if j[3] > 1000:
+                            ageSuff = "M"
+                            j[3] = j[3] / 1000
+                                if j[3] > 1000:
+                                    ageSuff = "B"
+                                    j[3] = j[3] / 1000
+                                    if j[3] > 1000:
+                                        ageSuff = "∞"
+                                        j[3] = j[3] / 1000
+
+
+
+ 
                 else:
                     percent = "100.000%"
-                print_at (6+tCounter+jCounter,0,"%s\t%s\t%s" % (health,description,percent) )
+                    ageSuff = "∞"
+                
+                if ageSuff != "∞":
+                    ageStr = "%s"%(math.trunc(j[3]))
+                    ageStr = "%s"%(ageStr[3:],ageSuff) 
+                else:
+                    ageStr = "∞   "
+                print_at (6+tCounter+jCounter,0,"%s %s\t%s: %s\t%s" % (ageStr,health,j[4][3:],description,percent) )
                 jCounter = jCounter + 1 
         
         if tCounter != _lastTcounter or jCounter != _lastJcounter:

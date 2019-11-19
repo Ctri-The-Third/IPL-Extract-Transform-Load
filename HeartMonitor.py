@@ -54,7 +54,7 @@ def executeMonitor():
                         #args=(params["scope"],), 
                         kwargs={"JobID":result[2]}) #this method gets offset from the job ID
                     t.start()
-                    t.name = result[3]
+                    t.name = "%s:%s" % (result[2][3:],result[3])
                     TRQ.q.put(t)
 
                     #execute known method.
