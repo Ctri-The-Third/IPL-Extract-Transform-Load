@@ -171,12 +171,12 @@ def drawJobsAndThreads(threads):
                         if j[3] > 1000:
                             ageSuff = "M"
                             j[3] = j[3] / 1000
+                            if j[3] > 1000:
+                                ageSuff = "B"
+                                j[3] = j[3] / 1000
                                 if j[3] > 1000:
-                                    ageSuff = "B"
-                                    j[3] = j[3] / 1000
-                                    if j[3] > 1000:
-                                        ageSuff = "∞"
-                                        j[3] = j[3] / 1000
+                                    ageSuff = "∞"
+                                    j[3] = j[3] / 1000 
 
 
 
