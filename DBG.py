@@ -4,25 +4,23 @@ Severity 2 = Yellow / Warning
 Severity 3 = green / info"""
 
 import feedbackQueue
-import os
-import colorama
-from colorama import Fore
+import os 
 import datetime
 import threading
 
 
 #3 = Info
 #2 = Warning
-#1 = Error
+#1 = Error 
 def DBG(STR,Level=1):
     if Level < 0 or Level > 3:
         Level = 1
     if (Level == 3):
-        outStr = "%sDBG: [%s] %s" % (Fore.GREEN, STR, Fore.WHITE) 
+        outStr = "DBG: [%s] " % (STR) 
     if (Level == 2):
-        outStr = "%sDBG: [%s] %s" % (Fore.YELLOW, STR, Fore.WHITE) 
+        outStr = "DBG: [%s] " % (STR) 
     if (Level == 1):
-        outStr = "%sDBG: [%s] %s" % (Fore.RED, STR, Fore.WHITE) 
+        outStr = "DBG: [%s] " % (STR) 
 
     #print(outStr)
     if Level <= 2:

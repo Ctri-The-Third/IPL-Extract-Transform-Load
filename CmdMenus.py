@@ -1,7 +1,7 @@
 from DBG import DBG
 import os
 import threadRegistrationQueue as TRQ
-
+ 
 
 if os.name == "nt":
     from WinCmdMenus import * 
@@ -12,8 +12,7 @@ elif os.name == "posix":
 #Create LaserScraper Database
 #Run DBSetup.sql
 #queue
-#colorama
-#console
+#console 
 #pynput
 #curses
 

@@ -6,7 +6,7 @@ import json
 from SQLconnector import connectToSource, closeConnection
 import ConfigHelper as cfg 
 import hashlib
-
+import datetime
 
 def getInterestingPlayersRoster(includeChurned,startDate,period,siteName = None, offset = 0):
  
@@ -473,14 +473,23 @@ def jobHeartbeat(ID,progressIndex):
     conn.commit()
     closeConnection()
 
+_activeJobsCacheTime = None
+_activeJobsCacheResults = None
 def getActiveJobs():
-    SQL = """ with data as (select row_number() over (partition by healthstatus order by finished desc ) as row, * from public."jobsView")
-select * from data where finished is null or (finished is not null and row <= 3 and row > 0)
-order by finished desc, started asc"""
-    conn =connectToSource()
-    cursor = conn.cursor()
+    global _activeJobsCacheTime
+    global _activeJobsCacheResults
+    if (_activeJobsCacheTime is None or _activeJobsCacheTime - datetime.datetime.now()).seconds >= 10:
+        
+        SQL = """ with data as (select row_number() over (partition by healthstatus order by finished desc ) as row, * from public."jobsView")
+    select * from data where finished is null or (finished is not null and row <= 3 and row > 0)
+    order by finished desc, started asc"""
+        conn =connectToSource()
+        cursor = conn.cursor()
+        
+        cursor.execute(SQL)
+        results = cursor.fetchall()
+        closeConnection()
+        _activeJobsCacheResults = results
     
-    cursor.execute(SQL)
-    results = cursor.fetchall()
-    closeConnection()
-    return results
+    return _activeJobsCacheResults
+    

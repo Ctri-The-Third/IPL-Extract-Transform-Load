@@ -163,20 +163,21 @@ def drawJobsAndThreads(threads):
             for j in jobs:
                 health = ("%s" % (j[1],)+" "*10)[:10]
                 description = ("%s"%(j[3])+" "*30)[:30]
+                ageSuff = ''
                 if j[1] != "complete":
                     percent = ("%s%%" % (j[11])+" "*10)[:10]
-                    if j[3] > 1000:
+                    if j[2] > 1000:
                         ageSuff = "K"
-                        j[3] = j[3] / 1000
-                        if j[3] > 1000:
+                        j[2] = j[3] / 1000
+                        if j[2] > 1000:
                             ageSuff = "M"
-                            j[3] = j[3] / 1000
-                            if j[3] > 1000:
+                            j[2] = j[2] / 1000
+                            if j[2] > 1000:
                                 ageSuff = "B"
-                                j[3] = j[3] / 1000
-                                if j[3] > 1000:
+                                j[2] = j[2] / 1000
+                                if j[2] > 1000:
                                     ageSuff = "∞"
-                                    j[3] = j[3] / 1000 
+                                    j[2] = j[2] / 1000 
 
 
 
@@ -186,8 +187,9 @@ def drawJobsAndThreads(threads):
                     ageSuff = "∞"
                 
                 if ageSuff != "∞":
-                    ageStr = "%s"%(math.trunc(j[3]))
-                    ageStr = "%s"%(ageStr[0:3],ageSuff) 
+                    ageStr = "%s"%(math.trunc(j[2]))
+                    ageStr = "%s%s%s"%(ageStr[0:3],ageSuff, "    ")
+                    ageStr = ageStr[:4]
                 else:
                     ageStr = "∞   "
                 print_at (6+tCounter+jCounter,0,"%s %s\t%s: %s\t%s" % (ageStr,health,j[4][3:],description,percent) )
