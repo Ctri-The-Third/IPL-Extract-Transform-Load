@@ -192,7 +192,7 @@ def drawJobsAndThreads(threads):
                     ageStr = ageStr[:4]
                 else:
                     ageStr = "∞   "
-                print_at (6+tCounter+jCounter,0,"%s %s\t%s: %s\t%s" % (ageStr,health,j[4][3:],description,percent) )
+                print_at (6+tCounter+jCounter,0,"%s %s\t%s: %s\t%s" % (ageStr,health,j[4][:3],description,percent) )
                 jCounter = jCounter + 1 
         
         if tCounter != _lastTcounter or jCounter != _lastJcounter:
