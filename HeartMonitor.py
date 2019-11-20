@@ -31,7 +31,7 @@ def executeMonitor():
     while not isTerminated():
         seconds = seconds + 1
 
-        print("TIME: %s, remainder: %s" % (seconds,seconds % 30 ))
+        #print("TIME: %s, remainder: %s" % (seconds,seconds % 30 ))
         if seconds % 30 == 0: #every 30th second
             seconds = 0
             cursor.execute(SQL)
