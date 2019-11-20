@@ -18,6 +18,7 @@ def startMonitorThreads():
     return thread
 
 def executeMonitor():
+    time.sleep(5)
     conn = connectToSource()
     cursor = conn.cursor()
     SQL = """
