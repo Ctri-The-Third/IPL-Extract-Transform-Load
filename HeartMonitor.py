@@ -27,10 +27,12 @@ def executeMonitor():
             where finished is null and age > 120 
             order by lastheartbeat asc, started asc
  """
-    seconds = 0
+    seconds = 29
     while not isTerminated():
         seconds = seconds + 1
-        if seconds % 30 == 1: #every 30th second
+
+        print("TIME: %s, remainder: %s" % (seconds,seconds % 30 ))
+        if seconds % 30 == 0: #every 30th second
             seconds = 0
             cursor.execute(SQL)
             conn.commit()
