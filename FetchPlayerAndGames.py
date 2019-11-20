@@ -8,9 +8,10 @@ from colorama import Fore
 from FetchHelper import fetchPlayer_root
 from FetchHelper import fetchPlayerRecents_root
 from SQLHelper import addPlayer
-from SQLHelper import addGame
+from SQLHelper import addGame 
 from SQLHelper import addParticipation
 from SQLHelper import getInterestingPlayersRoster
+from SQLHelper import jobStart, jobHeartbeat, jobEnd
 import ConfigHelper as cfg
 import workerProgressQueue as wpq 
  
@@ -23,23 +24,41 @@ import workerProgressQueue as wpq
 #    '7-8-0839' 
 #}
 updatedPlayers = []
-def executeQueryGames(scope ): #Scope should be "full" or "partial"
-    
+
+def executeQueryGames(scope, interval = "Null", ArenaName = None, offset = None, ID = None): #Scope should be "full" or "partial"
+    params = {}
+    params["scope"] = scope
+    params["arenaName"] = cfg.getConfigString("SiteNameReal")
     if scope == "full": 
-        targetIDs = getInterestingPlayersRoster(True,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"))
+        targetIDs = getInterestingPlayersRoster(True,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),offset=offset)
+        if ID == None: #new job
+            ID = jobStart("Fetch games, all players",0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs))
     else: 
-        targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"))
+        targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),offset=offset,siteName = params["arenaName"])
+        if ID == None: #new job
+            ID = jobStart("Fetch games, [%s] active players " % (cfg.getConfigString("SiteNameShort")),0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs)) 
+            
+    queryPlayers(targetIDs,scope, siteName = params["arenaName"], jobID=ID, offset=offset)
 
-    queryPlayers(targetIDs,scope)
-
-def queryPlayers (targetIDs,scope):
+def queryPlayers (targetIDs,scope, siteName = None, jobID = None, offset = None):
     updatedPlayers = []
-    totalPlayerCount = len(targetIDs)
+    
     counter = 0
+    if offset is not None:
+        counter = offset
+    jobHeartbeat(jobID,counter)
+    
+    totalPlayerCount = len(targetIDs) + counter
     startTime = datetime.datetime.now()
+    lastHeartbeat = startTime
     global WorkerStatus
     for ID in targetIDs:
         ETA = "Calculating"
+        if  jobID != None:
+            heartbeatDelta = ((datetime.datetime.now() - lastHeartbeat).total_seconds()) 
+            if heartbeatDelta > 30 or counter % 5 == 0:
+                jobHeartbeat(jobID,counter)
+                lastHeartbeat = datetime.datetime.now()
         if counter >= 20:
             delta = ((datetime.datetime.now() - startTime).total_seconds() / counter) 
             delta = (totalPlayerCount - counter) * delta #seconds remaining
@@ -99,7 +118,7 @@ def queryPlayers (targetIDs,scope):
             DBGstring += "WARNING no data received for user."
             #print(DBGstring)
             
-            
+    jobEnd(jobID)        
 
 
     endTime = datetime.datetime.now()

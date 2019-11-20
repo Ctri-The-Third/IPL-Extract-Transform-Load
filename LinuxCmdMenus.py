@@ -34,7 +34,7 @@ def print_at(r,c,s,PI = 0):
     
     
 def clearScreen():
-    data = {"instr":"clear"}
+    data = {"instr":"clr"}
     LRT.q.put(data)
 
 def drawScreen():
@@ -42,7 +42,7 @@ def drawScreen():
 
 def endUI():
     print ("Exited menus")
-
+    LRT.end()
 
 def startInputThread():
     # included within render thread

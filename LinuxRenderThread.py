@@ -85,9 +85,11 @@ def _print_at(r,c,s,PI = 0):
     
 def _clearScreen():
     global _screen
-    os.system('clear')
-    _screen.redrawwin()
 
+    _screen.erase()
+
+    #_screen.redrawwin()
+    
 
  
 def _end():
@@ -99,9 +101,6 @@ def _end():
     curses.nocbreak()
 
 
-
-def _printat():
-    return
 
 def _drawScreen():
     

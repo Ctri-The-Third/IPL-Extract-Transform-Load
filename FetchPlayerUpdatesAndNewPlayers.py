@@ -6,51 +6,75 @@ import colorama
 import queue
 import time 
 from colorama import Fore, Back
-from SQLconnector import connectToSource
+from SQLconnector import connectToSource, closeConnection
 from SQLHelper import addPlayer
 from FetchHelper import fetchPlayer_root
 import workerProgressQueue as wpq
 import ConfigHelper as cfg 
+import json
+from SQLHelper import jobStart,jobHeartbeat,jobEnd
 from psycopg2 import sql 
 
-def findNewPlayers():
+def findNewPlayers(siteName = None,jobID=None):
+
+    
     startTime = datetime.datetime.now()
+    lastHeartbeat = startTime
     conn = connectToSource()
     cursor = conn.cursor()
 
     conn = connectToSource()
     cursor = conn.cursor()
-    sitePrefix = cfg.getConfigString("ID Prefix")
-    siteName = cfg.getConfigString("SiteNameReal")
+    if siteName is not None:
+        targetID = cfg.findSiteIDFromName(siteName)
+        siteObj = cfg.getSiteWithoutActivatingByID(targetID)
+        sitePrefix = siteObj["ID Prefix"]
+        siteName = siteObj["SiteNameReal"]
+    else:
+        sitePrefix = cfg.getConfigString("ID Prefix")
+        siteName = cfg.getConfigString("SiteNameReal")
+    params = {}
+    params["siteName"] = siteName
+    if jobID is None:
+        jobID = jobStart("  new players at [%s]" % siteName,0,"FetchPlayerUpdatesAndNewPlayers.findNewPlayers",params)
+    else:
+        jobHeartbeat(jobID,0)
+
+    
     TickerIcon = ["|","/","-",'\\']
-#
+    sitePrefixforSQL = sitePrefix + "%"
     query = sql.SQL("""
-        with counts as (select count(*) - ( count(*) / 5000 ) as offs from players pl)
-        select distinct  cast (split_part(pl.PlayerID,'-',3) as integer), offs
-        from players pl join Participation p on pl.PlayerID = p.PlayerID
-        join games g on p.GameUUID = g.GameUUID
-        full outer join counts on 1 = 1 
-        where g.ArenaName like %s
-        order by 1 desc 
-        limit 1 offset 10 
+with IDs as ( select 
+cast (split_part(pl.PlayerID,'-',3) as integer) as ID
+from players pl
+where playerID like %s
+order by 1 desc
+offset 5
+)
+select max (ID) from IDs
     """)
-    cursor.execute(query,(siteName,))
+    cursor.execute(query,(sitePrefixforSQL,))
     result = cursor.fetchone()
     if result == None or result[0] == None:
         MaxPlayer = 199 #LaserForce seems to start numbering players at 100
     else: 
         MaxPlayer = result[0]
-        #MaxPlayer = 38100 #LaserForce seems to start numbering players at 100
     region = sitePrefix.split("-")[0]
     siteNumber = sitePrefix.split("-")[1]
 
     
-    #MaxPlayer = 243 #OVERRIDE, remove before committing
     ticker = 0
     consecutiveMisses = 0
     currentTarget = MaxPlayer - 100 #we've had situations where the system adds user IDs behind the maximum. This is a stopgap dragnet to catch trailing players.
     AllowedMisses = 100
+
+    
     while consecutiveMisses <= AllowedMisses:
+        heartbeatDelta = (datetime.datetime.now() - lastHeartbeat).total_seconds()
+        if heartbeatDelta > 30:
+            jobHeartbeat(jobID,0)
+            lastHeartbeat = datetime.datetime.now()
+            conn.commit()
         player =  fetchPlayer_root('',region,siteNumber,currentTarget)
         if 'centre' in player:
             
@@ -68,32 +92,61 @@ def findNewPlayers():
         ticker = ticker + 1
         
     endTime = datetime.datetime.now()
+    jobEnd(jobID)
     f = open("Stats.txt","a+")
     
     f.write("searched for {0} players, operation completed after {1}. \t\n".format(currentTarget-MaxPlayer,endTime - startTime ))
     wpq.updateQ(1,1,"Seeking new... %s","Complete")
     f.close()
     conn.commit()
-    conn.close()
-def updateExistingPlayers():
+    
+    closeConnection()
+def updateExistingPlayers(JobID = None):
     startTime = datetime.datetime.now()
     conn = connectToSource()
     cursor = conn.cursor()
+    offset = 0
+    if JobID != None: 
+        query = """select ID, started,lastheartbeat,resumeindex, methodname from jobslist 
+where finished is null and ID = %s and methodname = 'FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers'
+order by started desc"""
+        cursor.execute(query, (JobID,))
+        results = cursor.fetchone()
+        if results[2] is not None:
+            startTime = results [2]
+        else:
+            startTime = results[1]
 
+        if results[3] is not None:
+            offset = results[3]
+        
 
     query = """with data as ( select row_number() over (order by Level desc, Missions desc) as ID, PlayerID, Missions, Level from Players)
 	select PlayerID from data
             where (ID >= 0)
 			order by ID asc 
+            offset %s 
             """
-    cursor.execute(query)
+    cursor.execute(query, (offset,))
     results = cursor.fetchall()
 
     totalTargetsToUpdate = len(results)
-    counter = 0
+    if JobID == None:
+        JobID = jobStart("Fetch summaries, all known players",0,"FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers",None,totalTargetsToUpdate)
+        startTime = datetime.datetime.now()
+
+    
     global WorkerStatus
-    for result in results:
+
         
+    lastHeartbeat = startTime
+    counter = offset
+    jobHeartbeat(JobID,counter)
+    for result in results:
+        heartbeatDelta = (datetime.datetime.now() - lastHeartbeat).total_seconds()
+        if heartbeatDelta > 30:
+            jobHeartbeat(JobID,counter)
+            lastHeartbeat = datetime.datetime.now()
         counter = counter + 1
         WorkerStatus = {}
         WorkerStatus["CurEntry"] = counter
@@ -136,7 +189,7 @@ def updateExistingPlayers():
 
         #print("Summary update for player %s-%s-%s, [%i/%i]" % (ID[0],ID[1],ID[2],counter,totalTargetsToUpdate))
         addPlayer(result[0],codeName,joined,missions,level)
-
+    jobEnd(JobID)
     endTime = datetime.datetime.now()
     f = open("Stats.txt","a+")
     f.write("Queried {0} players' aggregates, operation completed after {1}. \t\n".format(len(results),endTime - startTime ))

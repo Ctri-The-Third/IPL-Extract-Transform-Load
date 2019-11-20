@@ -1,6 +1,7 @@
 from DBG import DBG
 import os
-
+import threadRegistrationQueue as TRQ
+ 
 
 if os.name == "nt":
     from WinCmdMenus import * 
@@ -11,26 +12,21 @@ elif os.name == "posix":
 #Create LaserScraper Database
 #Run DBSetup.sql
 #queue
-#colorama
-#console
+#console 
 #pynput
 #curses
 
 
 import time
-import colorama
 import threading
 
 import queue
 #import Queue as queue #python2.7 handling? 
-
-
+ 
 from renderProgressBar import renderBar
-from colorama import Fore
-from colorama import Back
 import ConfigHelper as cfg 
 from ctypes import *
-
+from CmdMenus_drawMethods import *  
 from FetchPlayerAndGames import executeQueryGames
 from FetchPlayerUpdatesAndNewPlayers import updateExistingPlayers
 from FetchPlayerUpdatesAndNewPlayers import findNewPlayers
@@ -45,7 +41,7 @@ import feedbackQueue # shared module that contains a queue for giving output to 
 
 import FetchAchievements 
 import InputReader
-
+import HeartMonitor
 import BuildMonthlyScoresToJSON 
 import BuildMonthlyStarQualityToJSON
 import BuildAchievementScoresToJSON
@@ -54,7 +50,7 @@ import BuildHeadToHeadsToJSON
 import workerProgressQueue 
 # This application class serves as a wrapper for the initialization of curses
 # and also manages the actual forms of the application
-
+ 
 #PALLETE
 # 0 = White on black
 # 1 = Green on Black
@@ -65,133 +61,32 @@ import workerProgressQueue
 
 feedback = ["","","","","Initialised system..."]
 threads = []
+threadQueue = queue.Queue()
+t = threading.currentThread()
+threads.append(t)
+
 t = initUI()
 if t is not None:
+    t.name = "RenderThread"
     threads.append(t)
 
  
 
-def drawHeader():
-    arenaHealth = QueryArena.healthCheck(cfg.getConfigString("SiteNameReal"))
-    
-    print_at (0,0,"/***** LF Profiler **************************************************\ ",PI=2)
-
-         
-    
-    print_at(1,0,"Dates:  [            ] to [            ]      | " )
-    print_at(1,10,cfg.getConfigString("StartDate"),1)
-    print_at(1,28,cfg.getConfigString("EndDate"),1) 
-    renderBar((CurrentWorkerStatus["CurEntry"]/CurrentWorkerStatus["TotalEntries"]),1,48,4,1)
-    
-    
-    
-
-    print_at(2,0,"Target site:     [                     ]      |  ")
-    print_at(2,19,(cfg.getConfigString("SiteNameShort")+ " "*20)[0:20],arenaHealth+1)
-    print_at(2,48,CurrentWorkerStatus["CurrentAction"],1)
-    
-    
-    threadcounter = 1
-    for t in threads:
-        if t is not None and t.isAlive():
-            threadcounter = threadcounter + 1
-    print_at(3,0,"Currently active threads: [            ]      | " )
-    print_at(3,28,"%s threads"[:10] % threadcounter,2) 
-    print_at(3,48,"%s"%(CurrentWorkerStatus["ETA"]),1)
-    
-    #1print_at (3,0,outStr)
-    print_at (4,0,"") 
-
-def drawDateMenu():
-    os.system('CLS')
-    config = cfg.getConfig()
-    drawHeader()
- 
-    print_at (5,0, "/***** Start Date ***************************************************\ " ,PI=2 )
-    print_at (6,0,"In the form YYYY-MM-DD       ",PI=2)
-    print_at (7,0,"or 'x' to go back            ",PI=2)
-    print_at (8,0,"")
-    return input("Enter Start Date: ")
-def drawMainMenu():
-    #time.sleep(0.05)
-    emptyString = "                           "
-    inputS = ""
-    
-    
-
-    drawHeader()
-
-    print_at (5,0,"/***** Menu *********************************************************\ ",PI=2)
-    print_at (6,0,"[11 ] Select different site")
-    
-    print_at (7,0,"[12 ] Select different dates")
-    
-    print_at (8,0,"[4  ] Run status queries on current site")
-    print_at (8,1,"4",PI=1)
-    print_at (9,0,"[5  ] Run queries on specific player")
-    print_at (9,1,"5",PI=1)
-    print_at (10,0,"[6  ] Rebuild the JSON blobs")
-    print_at (10,1,"6",PI=2)
-    print_at (11,0,"[61 ] Update individual player")
-    print_at (11,1,"61",PI=1)
-    print_at (12,0,"[66 ] Run DB game search for active players at site")
-    print_at (12,1,"66",PI=1)
-    print_at (13,0,"[67 ] Run Achievement refresh for all recent players")
-    print_at (13,1,"67",PI=3)
-    print_at (14,0,"[661] Run DB game search for all inactivate players" )
-    print_at (14,1,"661",PI=3)
-    print_at (15,0,"[666] Run DB summary refresh for all players")
-    print_at (15,1,"666",PI=3)
-    print_at (16,0,"[667] Find new players for active site")
-    print_at (16,1,"667",PI=2)
-    
-    print_at (17,0,"" )
-    print_at (18,0,"[?] Help " )
-    print_at (19,0,"[x] Exit")
-    
-    
-    
-    if feedback.__len__() >= 5:
-        print_at (21,0,"/***** Previous commands *********************************************\ ",PI=2)
-        counter = 0 
-        for var in feedback[-5:]:
-            counter = counter + 1
-            var = var + " " * 70 
-            var = var[0:70] 
-            print_at(21+counter,0,var,PI=4)
-
-        
-def drawArenaMenu():
-    global config
-    counter = 5
-    print_at (5,0,"/***** Pick arena ***************************************************\ ", PI=2)
-    for arena in cfg.getConfigString("configs"):
-        counter = counter + 1 
-        print_at (counter,0,"[%s%i%s] %s" % (Fore.YELLOW,counter -5 ,Fore.WHITE,arena["SiteNameShort"]))
-    counter = counter + 1
-    print_at (counter,0,"[%sB%s] Return to main menu" % (Fore.YELLOW, Fore.WHITE))
-    
-
-
-def drawOutputPane():
-    counter = 0
-    print_at (5,0,"/***** Output ******************************************************\ ", PI=2)
-    for var in feedback[-15:]:
-        var = var + " " * 70 
-        var = var[0:100] 
-        counter = counter + 1
-        print_at(5+counter,0,var,PI=4)
-    if len(feedback) < 15:
-        for i in range(15 - len(feedback)):
-            print_at(5+counter+i+1,0," " * 70)
-
-
 preS = "" 
 inputS = ""
 
+def addThread(newThread):
+    global threadQueue
+    threadQueue.put(newThread)
+
 
 t = startInputThread() #screen goes black here. Why?
-threads.append(t) 
+if t is not None: 
+    t.name = "inputThread"
+    threads.append(t) 
+
+heartMonitor = HeartMonitor.startMonitorThreads()
+threads.append(heartMonitor)
 
     
 DBG("Startup - menu",3)
@@ -201,7 +96,9 @@ workerStatusQ = workerProgressQueue.getQ()
 
 #rendering is done generically, but the wrapper and refresh must be handled by the CmdMenus part.
 stop = False
-while inputS != "exit" and inputS != "x" and stop != True:
+_overrideFlag = False
+_lastInput = time.time()
+while (inputS != "exit" and inputS != "x" and stop != True) and not safeShutdownCheck(threads,_lastInput,_overrideFlag):
     time.sleep(0.33)
     print_at(0,0,"LOOP [%s]"% stop)
     inputS = ""
@@ -209,22 +106,34 @@ while inputS != "exit" and inputS != "x" and stop != True:
         feedback.append(feedbackQueue.q.get())
     while not InputReader.q.empty():
         inputS = InputReader.q.get()
+        _lastInput = time.time()
         feedback.append(inputS)
+    while not TRQ.q.empty():
+        threads.append(TRQ.q.get())
 
-
-        
+         
     
     if not workerStatusQ.empty():    
         CurrentWorkerStatus = workerStatusQ.get() #fetch the latest update
         workerStatusQ.queue.clear() #purge older updates
-    
-
+    threadCounter = 0
+    for t in threads:
+        if t.isAlive():
+            threadCounter = threadCounter + 1
     #print(CurrentWorkerStatus)
     #currently prioritise minor update over major update
     if waitingFunction != "":
-        if waitingFunction == "11":
+        
+        if waitingFunction == "t":
+            if inputS == 'a':
+                waitingFunction = ""
+
+            drawHeader(CurrentWorkerStatus,threadCounter)
+            drawJobsAndThreads(threads)
+        
+        elif waitingFunction == "11":
             
-            drawHeader()
+            drawHeader(CurrentWorkerStatus,threadCounter)
             drawArenaMenu()
             #print("\nEnter option...")
             if inputS != "":
@@ -238,16 +147,16 @@ while inputS != "exit" and inputS != "x" and stop != True:
 
         elif waitingFunction == "61" and inputS != '':
             
-            drawHeader()
-            drawOutputPane()
+            drawHeader(CurrentWorkerStatus,threadCounter)
+            drawOutputPane(feedback)
             FetchIndividual.fetchIndividualWithID(inputS)
             feedbackQueue.q.put("Enter A to continue...")
             waitingFunction = "outputPane"
             
         elif waitingFunction == "5":
             if inputS != '':
-                drawHeader()
-                drawOutputPane()
+                drawHeader(CurrentWorkerStatus,threadCounter)
+                drawOutputPane(feedback)
                 QueryIndividual.executeQueryIndividual(inputS)
                 feedbackQueue.q.put("Enter A to continue...")
                 waitingFunction = "outputPane"
@@ -256,16 +165,16 @@ while inputS != "exit" and inputS != "x" and stop != True:
                 waitingFunction = ""
                 clearScreen() #TODO replace this by having the Menu be drawn better.        
             else: 
-                drawHeader()
-                drawOutputPane()
+                drawHeader(CurrentWorkerStatus,threadCounter)
+                drawOutputPane(feedback)
 
     elif waitingFunction == "": #The user is in the root menu
-        drawMainMenu()
+        drawMainMenu(CurrentWorkerStatus,threadCounter,feedback,_overrideFlag)
         if inputS == "11":
             waitingFunction = "11"
             clearScreen()
         if inputS == "12": #needs reworking
-            startDate = drawDateMenu()
+            startDate = drawDateMenu(CurrentWorkerStatus,threadCounter)
             print_at (10,1,"LOCATION? ***** End Date         ***** ",PI=2)
             EndDate = input("Enter End Date:")
 
@@ -278,23 +187,28 @@ while inputS != "exit" and inputS != "x" and stop != True:
         elif inputS == "6":
             
             feedback.append("Building all blobs in parallel. Prepare for spam.")
-            t = threading.Thread(target=BuildMonthlyScoresToJSON.executeMonthlyScoresBuild())
+            t = threading.Thread(target=BuildMonthlyScoresToJSON.executeMonthlyScoresBuild)
+            t.name = "6 - Render Monthly Standard scores"
             threads.append(t)
             t.start() 
 
-            t = threading.Thread(target=BuildMonthlyStarQualityToJSON.executeBuildMonthlyStars())
+            t = threading.Thread(target=BuildMonthlyStarQualityToJSON.executeBuildMonthlyStars)
+            t.name = "6 - Render Monthly Star scores"
             threads.append(t)
             t.start()
 
-            t = threading.Thread(target=BuildAchievementScoresToJSON.executeAchievementBuild())
+            t = threading.Thread(target=BuildAchievementScoresToJSON.executeAchievementBuild)
+            t.name = "6 - Render Achievement scores"
             threads.append(t)
             t.start()
 
-            t = threading.Thread(target=BuildPlayerBlob.executeBuildPlayerBlobs())
+            t = threading.Thread(target=BuildPlayerBlob.executeBuildPlayerBlobs)
+            t.name = "6 - Render the big 5 players"
             threads.append(t)
             t.start()
 
-            t = threading.Thread(target=BuildHeadToHeadsToJSON.buildHeadToHeads())
+            t = threading.Thread(target=BuildHeadToHeadsToJSON.buildHeadToHeads)
+            t.name = "6 - Render head-to-head battles"
             threads.append(t)
             t.start()
 
@@ -309,32 +223,43 @@ while inputS != "exit" and inputS != "x" and stop != True:
         elif inputS == "66":
             feedback.append("Performing update of active local players in background...")
             t = threading.Thread(target=executeQueryGames, args=("partial",))
+            t.name = "66, active locals"
             threads.append(t)
             t.start()      
             inputS = ""
         elif inputS == "67":
-
             feedback.append("Performing background update of achievements for recent players...")
-            t = threading.Thread(target=executeFetchAchievements, args =("partial",))
+            t = threading.Thread(target=executeFetchAchievements, args =("recent",))
+            t.name = "67, ach <=7 days"
             threads.append(t)
             t.start()      
             inputS = ""
-
+        elif inputS == "677":
+            feedback.append("Performing background update of achievements for active players...")
+            t = threading.Thread(target=executeFetchAchievements, args =("partial",))
+            t.names = "677 - ach actives"
+            threads.append(t)
+            t.start()      
+            inputS = ""
         elif inputS == "661":
             feedback.append("Performing update of inactivate players in background...")
             t = threading.Thread(target=executeQueryGames, args=("full",))
+            t.name = "661 - games, all inactive "
             threads.append(t)
             t.start()      
             inputS = ""
         elif inputS == "666":
             feedback.append("Performing complete update in background...")
             t = threading.Thread(target=updateExistingPlayers)
+            t.name = "666, summary update all"
             threads.append(t)
+            t.name 
             t.start()
             inputS = ""
         elif inputS == "667":
             feedback.append("Seeking new players in background...")
             t = threading.Thread(target=findNewPlayers)
+            t.name = "667, new player search for someone"
             threads.append(t)
             t.start()
             inputS = ""
@@ -342,13 +267,20 @@ while inputS != "exit" and inputS != "x" and stop != True:
             feedback.append("Clearing console")
             clearScreen()
             waitingFunction = ""
+        elif inputS == "t":
+            feedback.append("Opening thread & jobs view")   
+            waitingFunction = "t"
+            clearScreen()
+        elif inputS == "s":
+            _overrideFlag = not _overrideFlag
+
     else:
         Nothing = True 
-        #drawHeader()
-        #drawOutputPane()
+        #drawHeader(CurrentWorkerStatus,threadCounter)
+        #drawOutputPane(feedback)
     drawScreen()
     
-
+HeartMonitor.terminateMonitor()
 endUI()
 
 

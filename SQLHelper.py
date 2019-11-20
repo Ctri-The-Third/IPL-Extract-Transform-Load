@@ -2,23 +2,27 @@ from psycopg2 import sql
 from DBG import DBG
 import uuid
 import csv 
-
-from SQLconnector import connectToSource
+import json
+from SQLconnector import connectToSource, closeConnection
 import ConfigHelper as cfg 
+import hashlib
+import datetime
 
-
-def getInterestingPlayersRoster(includeChurned,startDate,period):
-
+def getInterestingPlayersRoster(includeChurned,startDate,period,siteName = None, offset = 0):
+ 
     conn = connectToSource()
     cursor = conn.cursor()
+    
     if includeChurned == True:
         query = """
         
         select  * from InterestingPlayers
         order by Missions desc, SeenIn60Days Asc
-        
+        OFFSET %s;
         """
-        cursor.execute(query)
+
+        cursor.execute(query, (offset,))
+
     else:
         query = sql.SQL("""
     	with MostRecentPerArena as 
@@ -30,9 +34,14 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
 
     select  Missions, Level, PlayerID, MostRecent from MostRecentPerArena
     where mostRecent >  to_date(%s,'YYYY-MM-DD') - INTERVAL '1 day' * %s
-    order by Level desc, Missions desc, mostRecent Asc;
+    order by Level desc, Missions desc, mostRecent Asc
+    offset %s;
+
     """)
-        cursor.execute(query,(cfg.getConfigString("SiteNameReal"),startDate,period))
+        
+        if siteName == None: #If not set, use default
+            siteName = cfg.getConfigString("SiteNameReal")
+        cursor.execute(query,(siteName,startDate,period,offset))
     results = cursor.fetchall()
     playerList = []
     for result in results:
@@ -40,18 +49,19 @@ def getInterestingPlayersRoster(includeChurned,startDate,period):
         playerList.append(result[2])
 
     conn.commit()
-    conn.close()
+    closeConnection()
     return playerList
     
 
-def getPlayersWhoMightNeedAchievementUpdates(scope):
+def getPlayersWhoMightNeedAchievementUpdates(scope, offset = 0):
     conn = connectToSource()
     cursor = conn.cursor()
     query = """
     select distinct PlayerID from Participation
     where insertedTimestamp > current_date - INTERVAL '7 days'
+    offset %s
     """
-    cursor.execute(query)
+    cursor.execute(query,(offset,))
     results = cursor.fetchall()
     playerList = []
     for result in results:
@@ -60,7 +70,7 @@ def getPlayersWhoMightNeedAchievementUpdates(scope):
 
     conn.commit()
     
-    conn.close()
+    closeConnection()
     return playerList
     
 
@@ -93,7 +103,7 @@ def addPlayer(playerID,GamerTag,Joined,missions,level):
         
         DBG("  DBG: SQLHelper.AddPlayer - Added new player %s" % playerID,3)
         conn.commit()
-        conn.close()
+        closeConnection()
         return 1 
     elif  result[3] != missions:
         query = sql.SQL("""update Players
@@ -104,13 +114,13 @@ def addPlayer(playerID,GamerTag,Joined,missions,level):
         
         DBG("  DBG: SQLHelper.AddPlayer - Updated player's missions [%s] to [%s]" % (result[3],missions),3)
         conn.commit()
-        conn.close()
+        closeConnection()
         return 2
     else: 
         
         #print("  DBG: SQLHelper.AddPlayer - No change to missions, no change.")
         conn.commit()
-        conn.close()
+        closeConnection()
         return 0
         
 
@@ -138,7 +148,7 @@ def addGame(timestamp, arena, gametype):
         cursor.execute(query,(timestamp,arena,gametype,gameUUID))
         #print ("SQLconnector.insertGame: Insert game check added a game! : %s" % result)
         conn.commit()
-        conn.close()
+        closeConnection()
         return gameUUID
     else: 
         # print ("SQLconnector: Insert game check found an exiting game! : %s" % result)
@@ -168,90 +178,57 @@ def addParticipation(gameUUID, playerID, score):
         #print ("SQLconnector.addParticipation: We already know this player played this game! : %s" % gameUUID)
 
     
-    conn.close()
+    closeConnection()
     return ''
 
 def addAchievement(achName, Description, image, arenaName):
     #do something
     conn =  connectToSource()
     cursor = conn.cursor()
+
+    #print("SQLHelper.addAchievement: Didn't find [{0}], adding it".format(achName))
+    AchID = "%s%s" % (achName,arenaName)
+    AchID = hashlib.md5(AchID.encode("utf-8")).hexdigest()
     query = """
-    SELECT *
-    FROM AllAchievements
-    where arenaName = %s 
-    and achName = %s
+    INSERT into AllAchievements
+        (AchID, AchName, image, Description, ArenaName)
+    VALUES (%s,%s,%s,%s,%s)
+        ON CONFLICT (AchID) DO UPDATE
+        SET image = %s,
+        Description = %s
     """
-    results = cursor.execute(query,(arenaName,achName))
-    result = cursor.fetchone()
-
-    if result == None:
-        #print("SQLHelper.addAchievement: Didn't find [{0}], adding it".format(achName))
-        AchID = uuid.uuid4()
-        query = """
-        INSERT into AllAchievements
-         (AchID, AchName, image, Description, ArenaName)
-        VALUES (%s,%s,%s,%s,%s)
-        
-        """
-        cursor.execute(query,(str(AchID),achName,image,Description,arenaName))
-        #print ("SQLHelper.addAchievement: Added it!")
-        conn.commit()
-        conn.close()
-        return AchID
-    else:
-        
-        return result[4]
-
-
-    #else:
-        #print ("SQLHelper.addAchievement: found [{0}], no changes to it".format(achName))
-
-    #print(result)
+    cursor.execute(query,(str(AchID),achName,image,Description,arenaName,image,Description))
+    conn.commit()
+    closeConnection()
+    
 
 def addPlayerAchievement(AchID,playerID,newAchievement,achievedDate,progressA,progressB):
 #do something
     AchID = str(AchID)
     conn =  connectToSource()
     cursor = conn.cursor()
-    query = """
-    SELECT *
-    FROM PlayerAchievement
-    where AchID = %s 
-    and playerID = %s
-    """
-    results = cursor.execute(query,(AchID,playerID))
-    result = cursor.fetchone()
-    if achievedDate == "0000-00-00" :
+    if achievedDate == "0000-00-00":
         achievedDate = None
-    if result == None:
-        #print("SQLHelper.addPlayerAchievement: Player has just discvered this, adding it")
-        
-        query = """
-        insert into PlayerAchievement
-        (AchID,PlayerID,newAchievement,achievedDate,progressA,progressB)
-        VALUES (%s, %s, %s, %s, %s, %s)
-        
-
-        """
-        results = cursor.execute(query,(AchID,playerID,newAchievement,achievedDate,progressA,progressB))
-    else:
-        
-        #print("SQLHelper.addPlayerAchievement: found achievement progress, updating it")
-        query = """
-        UPDATE PlayerAchievement
+    query = """
+    insert into PlayerAchievement
+    (AchID,PlayerID,newAchievement,achievedDate,progressA,progressB)
+    VALUES (%s, %s, %s, %s, %s, %s)
+    ON CONFLICT (AchID, PlayerID) DO 
+        UPDATE 
         SET newAchievement = %s, 
         achievedDate = %s,
         progressA = %s,
         progressB = %s
 
-        WHERE AchID = %s 
-        AND PlayerID = %s
+    
 
-        """
-        results = cursor.execute(query,(newAchievement,achievedDate,progressA,progressB,AchID,playerID))
-        #print(image)
+    """
+    results = cursor.execute(query,(AchID,playerID,newAchievement,achievedDate,progressA,progressB,
+    newAchievement,achievedDate,progressA,progressB))
+
+
     conn.commit()
-    conn.close()
+    closeConnection()
 
 def addPlayerAchievementScore (playerID, score):
     conn = connectToSource()
@@ -268,9 +245,10 @@ def addPlayerAchievementScore (playerID, score):
         cursor.execute(query,(score,playerID))
 
     conn.commit()
-    conn.close()
+    closeConnection()
 
 def getTop5PlayersRoster(startDate,endDate,ArenaName):
+    
     conn = connectToSource()
     cursor = conn.cursor()
     query = """with PlayersInGame as (
@@ -399,7 +377,7 @@ order by playerRank asc
         ,ArenaName
         ,startDate,endDate,ArenaName
         ,startDate,endDate,ArenaName
-        ,startDate,endDate,ArenaName, ArenaName)
+        ,startDate,endDate,ArenaName,ArenaName)
     cursor.execute(query,data)
     rows = cursor.fetchall()
     if rows == None:
@@ -408,7 +386,7 @@ order by playerRank asc
         DBG ("SQLHelper.getTop5Players found all 5 players",3)
 
     conn.commit()
-    conn.close()
+    closeConnection()
     return rows
 
 def dumpParticipantsAndGamesToCSV():
@@ -431,9 +409,9 @@ def dumpParticipantsAndGamesToCSV():
     for row in cursor.fetchall():
         count = count + 1
         file.write("%s,%s,%s\n" % (row[0],row[1],row[2]))
-    file.close() 
-    conn.close()
-    DBG("Dumped %i rows to CSV dump - Games.csv" % (count))
+    file.close()
+    closeConnection()
+    print("Dumped %i rows to CSV dump - Games.csv" % (count))
 
 
 def importPlayersFromCSV(path):
@@ -447,7 +425,73 @@ def importPlayersFromCSV(path):
         DBG(row)
         cursor.execute(sql,(row[0],row[1],row[2],row[3],row[4]))
     conn.commit()
-    conn.close()
+    closeConnection()
 
 
 
+def jobStart(description,resumeIndex,methodName, methodParams, completeIndex = None, delay = 0):
+
+    ID = str(uuid.uuid4())
+    SQL  = """INSERT into jobsList ("desc","id","started","methodname","methodparams","completeindex") values 
+    (%s,%s,now() + interval '%s minutes',%s,%s,%s)"""
+    conn=connectToSource()
+    cursor = conn.cursor()
+
+    cursor.execute(SQL,(description,ID,delay,methodName,json.dumps(methodParams),completeIndex))
+
+    conn.commit()
+    closeConnection()
+
+    return ID
+
+def jobEnd(ID):
+    SQL = """UPDATE jobsList 
+    SET finished = now(),
+    resumeindex = NULL
+    where id = %s """
+    
+    conn=connectToSource()
+    cursor = conn.cursor()
+
+    cursor.execute(SQL,(ID,))
+
+    conn.commit()
+    closeConnection()
+
+
+def jobHeartbeat(ID,progressIndex):
+    SQL = """UPDATE jobsList 
+    SET lastHeartbeat = now(),
+    resumeIndex = %s
+    where ID = %s """
+    
+    conn=connectToSource()
+    cursor = conn.cursor()
+
+    cursor.execute(SQL,(progressIndex,ID))
+
+    conn.commit()
+    closeConnection()
+
+_activeJobsCacheTime = None
+_activeJobsCacheResults = None
+def getActiveJobs():
+    global _activeJobsCacheTime
+    global _activeJobsCacheResults
+    
+    if _activeJobsCacheTime is None or (datetime.datetime.now()- _activeJobsCacheTime).seconds >= 5:
+        if _activeJobsCacheTime is not None:
+            delta = (datetime.datetime.now() - _activeJobsCacheTime)
+        SQL = """ with data as (select row_number() over (partition by healthstatus order by finished desc ) as row, * from public."jobsView")
+    select * from data where finished is null or (finished is not null and row <= 3 and row > 0)
+    order by finished desc, started asc"""
+        conn =connectToSource()
+        cursor = conn.cursor()
+        
+        cursor.execute(SQL)
+        results = cursor.fetchall()
+        closeConnection()
+        _activeJobsCacheResults = results
+        _activeJobsCacheTime = datetime.datetime.now()
+    return _activeJobsCacheResults
+    

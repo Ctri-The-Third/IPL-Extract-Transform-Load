@@ -2,6 +2,7 @@ import json
 
 from SQLconnector import connectToSource
 import ConfigHelper as cfg
+from DBG import DBG
 
 
 def executeMonthlyScoresBuild():
@@ -53,7 +54,7 @@ order by averageScore desc;
       }],
       }
   for result in cursor.fetchall():
-      print (result)
+      #print (result)
       changeInScore = None
       if result[4] is not None: changeInScore = "↑%s" % result[4]  if result[4] > 0 else "↓%s" % abs(result[4])
 
@@ -63,5 +64,5 @@ order by averageScore desc;
   f.write(json.dumps(JSON,indent=4))
   f = open("JSONBlobs\\%sMonthlyScore.json" % (cfg.getConfigString("ID Prefix")), "w+")
   f.write(json.dumps(JSON,indent=4))
-  print ("Monthly average score blobs written!")
+  DBG ("Monthly average score blobs written!",3)
 
