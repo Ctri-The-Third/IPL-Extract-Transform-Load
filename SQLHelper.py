@@ -74,55 +74,51 @@ def getPlayersWhoMightNeedAchievementUpdates(scope, offset = 0):
     return playerList
     
 
-def addPlayer(playerID,GamerTag,Joined,missions,level):
+def addPlayer(playerID,GamerTag,Joined,missions):
 
     conn = connectToSource()
     cursor = conn.cursor()
 
-    query = sql.SQL("""select * from Players 
-    where playerID = %s """)
-    #query = f"select * from Players where playerID = '{playerID}'"
 
-    cursor.execute (query,(playerID,))
+    query =  sql.SQL("""insert into Players 
+    (PlayerID,GamerTag,Joined,Missions)
+    VALUES
+    (%s,%s,%s,%s)
+    ON CONFLICT (PlayerID) DO UPDATE
+    SET Missions = %s
+    """)
     
-    result = cursor.fetchone()
-    
-    
-    if result == None:
-        query =  sql.SQL("""insert into Players 
-        (PlayerID,GamerTag,Joined,Missions,Level)
-        VALUES
-        (%s,%s,%s,%s,%s);""")
-        
-        data = (playerID,GamerTag,Joined,missions,level)
-        try:
-            cursor.execute(query,data)
-        except:
-            DBG("Failed to INSERT player %s" % playerID,1)
-        
-        
+    data = (playerID,GamerTag,Joined,missions,missions)
+    try:
+        cursor.execute(query,data)
         DBG("  DBG: SQLHelper.AddPlayer - Added new player %s" % playerID,3)
-        conn.commit()
-        closeConnection()
-        return 1 
-    elif  result[3] != missions:
-        query = sql.SQL("""update Players
-        SET Missions = %s,
-        Level = %s
-        WHERE PlayerID = %s""")
-        cursor.execute(query,(missions,level,playerID))
-        
-        DBG("  DBG: SQLHelper.AddPlayer - Updated player's missions [%s] to [%s]" % (result[3],missions),3)
-        conn.commit()
-        closeConnection()
-        return 2
-    else: 
-        
-        #print("  DBG: SQLHelper.AddPlayer - No change to missions, no change.")
-        conn.commit()
-        closeConnection()
-        return 0
-        
+    
+    except:
+        DBG("Failed to UPSERT player %s" % playerID,1)
+    
+    
+    conn.commit()
+    closeConnection()
+    return  
+
+    
+def addPlayerArena(playerID,ArenaName,localMissions, localLevel,localAvgScore):
+
+    conn = connectToSource()
+    cursor = conn.cursor()
+
+    sql = '''INSERT INTO public.playerarenasummary(
+            arenaname, avgstndrdscore, missionsplayedhere, levelhere, playerid)
+    VALUES (%s, %s, %s, %s, %s);
+ON CONFLICT (arenaname,playerid) DO UPDATE
+	avgstndrdscore = %s,
+	missionsplayedhere = %s,
+	levelhere = %s'''
+
+    conn.commit()
+    closeConnection()
+    return
+    
 
 
 def addGame(timestamp, arena, gametype):
@@ -494,4 +490,3 @@ def getActiveJobs():
         _activeJobsCacheResults = results
         _activeJobsCacheTime = datetime.datetime.now()
     return _activeJobsCacheResults
-    
