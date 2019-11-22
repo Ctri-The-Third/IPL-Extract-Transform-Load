@@ -159,8 +159,8 @@ limit 10
 	if row == None:
 		DBG("BuildPlayerBlob info query returned Null. Aborting. [%s]" % (targetID),1)
 		return
-	print(row)
-	print ("Players.PlayerID, GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed,  AverageRank")
+	#print(row)
+	#print ("Players.PlayerID, GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed,  AverageRank")
 	SkillLevelName = ["Recruit","Gunner","Trooper","Captain","Star Lord","Laser Master","Level 7","Level 8","Laser Elite"]
 
 	JSONobject = {}
@@ -177,8 +177,8 @@ limit 10
 	rows = cursor.fetchall()
 	if len(rows) > 0:
 		row = rows[0]
-		print(row)
-		print ("g.PlayerID, g.GameTimestamp, victoryPos,   victorName,  victorScore, g.GameName, victorStarQuality,  vanquishedID, vanquishedName , vanquishedPos")
+		#print(row)
+		#print ("g.PlayerID, g.GameTimestamp, victoryPos,   victorName,  victorScore, g.GameName, victorStarQuality,  vanquishedID, vanquishedName , vanquishedPos")
 		ordinalranks = ["0th","1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th"]
 		JSONobject["GGName"] = row[5]
 		JSONobject["GGRank"] = ordinalranks[row[2]]
@@ -196,7 +196,7 @@ limit 10
 	if row == None:
 		DBG("BuildPlayerBlob GoldenAchievementQuery query returned Null. Aborting. [%s]" % (targetID),1)
 		return
-	print (row)
+	#print (row)
 
 	JSONobject["GAName"] = row[1]
 	JSONobject["GADesc"] = row[2]
@@ -213,9 +213,9 @@ limit 10
 def executeBuildPlayerBlobs():
 	cachedconfig = cfg.getConfig()
 	targetIDs = getTop5PlayersRoster(cachedconfig["StartDate"],cachedconfig["EndDate"],cachedconfig["SiteNameReal"])
-	print(targetIDs)
+	DBG("Big 5 players = %s" % (targetIDs,),1)
 
-	print ("Player profile blobs written!")
+	#print ("Player profile blobs written!")
 	JSONobject = {}
 	if len(targetIDs) >= 1: 
 		JSONobject["GoldenPlayer"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[0][0])
@@ -242,3 +242,4 @@ def executeBuildPlayerBlobs():
 	f.write(json.dumps(JSONobject,indent=4))
 	f.close()
 
+ 

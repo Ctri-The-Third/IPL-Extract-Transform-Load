@@ -203,7 +203,7 @@ def addAchievement(achName, Description, image, arenaName):
     cursor.execute(query,(str(AchID),achName,image,Description,arenaName,image,Description))
     conn.commit()
     closeConnection()
-    
+    return AchID
 
 def addPlayerAchievement(AchID,playerID,newAchievement,achievedDate,progressA,progressB):
 #do something

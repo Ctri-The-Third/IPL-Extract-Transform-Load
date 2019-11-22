@@ -84,7 +84,7 @@ select max (ID) from IDs
             skillLevelNum = player["centre"][0]["skillLevelNum"]
             addPlayer("%s%i" % (sitePrefix,currentTarget),codeName,dateJoined,missionsPlayed)
             
-            _parseCentresAndAdd(player["centre"],'%s-%s-%s' % (region,siteNumber,))
+            _parseCentresAndAdd(player["centre"],'%s-%s-%s' % (region,siteNumber,currentTarget))
             consecutiveMisses = 0
         else: 
             DBG("DBG: FetchPlayerUpdatesAndNewPlayers.findNewPlayers - Missed a player 7-X-%s" % (currentTarget),3)
@@ -217,6 +217,7 @@ def _parseCentresAndAdd(centres, playerID):
             for summary in centre['summary']:
                 if summary[0] == 'Standard':
                     summaryValue = summary[3]
+                    break
         except Exception as e:
-            DBG("ERROR: FetchPlayerUpdatesAndNewPlayers._parseCentresAndAdd failed to find average score for player #-#-%s" % (currentTarget,))
+            DBG("ERROR: FetchPlayerUpdatesAndNewPlayers._parseCentresAndAdd failed to find average score for player %s" % (playerID,))
         addPlayerArena(playerID,centre['name'],centre['missions'],centre["skillLevelNum"],summaryValue)
