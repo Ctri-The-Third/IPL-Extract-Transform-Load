@@ -103,9 +103,10 @@ def queryPlayers (targetIDs,scope, siteName = None, jobID = None, offset = None)
                 level = max(level,int(i["skillLevelNum"]))
             joined = min(datetime_list)
             codeName = str(summaryJson["centre"][0]["codename"])
-            playerNeedsUpdated = addPlayer(ID,codeName,joined,missions,level)
+            playerNeedsUpdated = addPlayer(ID,codeName,joined,missions)
+
             
-            if playerNeedsUpdated != 0 or scope == "full":
+            if playerNeedsUpdated == True or scope == "full":
                 updatedPlayers.append(ID)
                 missionsJson = fetchPlayerRecents_root('',region,site,IDPart)
                 if missionsJson != None:

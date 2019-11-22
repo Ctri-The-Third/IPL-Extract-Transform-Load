@@ -219,4 +219,4 @@ def _parseCentresAndAdd(centres, playerID):
                     summaryValue = summary[3]
         except Exception as e:
             DBG("ERROR: FetchPlayerUpdatesAndNewPlayers._parseCentresAndAdd failed to find average score for player #-#-%s" % (currentTarget,))
-        addPlayerArena(playerID,centre['name'],centre['missions'],skillLevelNum,summaryValue)
+        addPlayerArena(playerID,centre['name'],centre['missions'],centre["skillLevelNum"],summaryValue)

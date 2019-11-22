@@ -78,8 +78,15 @@ def addPlayer(playerID,GamerTag,Joined,missions):
 
     conn = connectToSource()
     cursor = conn.cursor()
-
-
+    query = sql.SQL("""select missions from players where playerID = %s""")
+    playerneedsUpdate = False
+    try:
+        results = cursor.fetchone()
+        if results[0] != missions:
+            playerneedsUpdate = True
+    except Exception as e:
+        playerneedsUpdate = True
+        pass
     query =  sql.SQL("""insert into Players 
     (PlayerID,GamerTag,Joined,Missions)
     VALUES
@@ -99,7 +106,7 @@ def addPlayer(playerID,GamerTag,Joined,missions):
     
     conn.commit()
     closeConnection()
-    return  
+    return  playerneedsUpdate
 
     
 def addPlayerArena(playerID,ArenaName,localMissions, localLevel,localAvgScore):
@@ -108,13 +115,13 @@ def addPlayerArena(playerID,ArenaName,localMissions, localLevel,localAvgScore):
     cursor = conn.cursor()
 
     sql = '''INSERT INTO public.playerarenasummary(
-            arenaname, avgstndrdscore, missionsplayedhere, levelhere, playerid)
-    VALUES (%s, %s, %s, %s, %s);
+            arenaname, localAvgStdScore, localMissions, localLevel, playerid)
+    VALUES (%s, %s, %s, %s, %s)
 ON CONFLICT (arenaname,playerid) DO UPDATE
-	avgstndrdscore = %s,
-	missionsplayedhere = %s,
-	levelhere = %s'''
-
+	SET localAvgStdScore = %s,
+	localMissions = %s,
+	localLevel = %s'''
+    cursor.execute(sql,(ArenaName,localAvgScore,localMissions,localLevel,playerID,localAvgScore,localMissions,localLevel))
     conn.commit()
     closeConnection()
     return
