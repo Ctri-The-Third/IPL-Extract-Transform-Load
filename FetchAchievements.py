@@ -129,7 +129,7 @@ order by started desc"""
                         DBG("updated player progress for NEW achievement: [%s][%s]" % (achievement["name"],centre['name']),3)
                     
                 totalAchievemnts = totalAchievemnts + len(centre["achievements"])
-            print ("Updated %i achievements for player %s. [%i/%i]" % (totalAchievemnts,ID,playerCounter,totalToUpdate))
+            #print ("Updated %i achievements for player %s. [%i/%i]" % (totalAchievemnts,ID,playerCounter,totalToUpdate))
         playerCounter = playerCounter + 1
     jobEnd(jobID)
         

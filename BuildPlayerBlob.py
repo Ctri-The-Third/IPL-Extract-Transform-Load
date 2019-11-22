@@ -4,6 +4,7 @@ import importlib
 import os
 from SQLconnector import connectToSource
 from SQLHelper import getTop5PlayersRoster
+from FetchIndividual import fetchIndividualWithID
 import ConfigHelper as cfg
 from DBG import DBG
 
@@ -218,14 +219,19 @@ def executeBuildPlayerBlobs():
 	#print ("Player profile blobs written!")
 	JSONobject = {}
 	if len(targetIDs) >= 1: 
+		fetchIndividualWithID(targetIDs[0][0])
 		JSONobject["GoldenPlayer"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[0][0])
 	if len(targetIDs) >= 2:
+		fetchIndividualWithID(targetIDs[1][0])
 		JSONobject["SilverPlayer"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[1][0])
 	if len(targetIDs) >= 3:
+		fetchIndividualWithID(targetIDs[2][0])
 		JSONobject["BronzePlayer"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[2][0])
 	if len(targetIDs) >= 4:
+		fetchIndividualWithID(targetIDs[3][0])
 		JSONobject["OtherPlayer1"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[3][0])
 	if len(targetIDs) >= 5:
+		fetchIndividualWithID(targetIDs[4][0])
 		JSONobject["OtherPlayer2"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[4][0])
 	if len(targetIDs) < 5:
 		DBGstring = "Big 5 returned %i: " % (len(targetIDs))
