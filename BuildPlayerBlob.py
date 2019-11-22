@@ -1,7 +1,7 @@
 
 import json
 import importlib
-
+import os
 from SQLconnector import connectToSource
 from SQLHelper import getTop5PlayersRoster
 import ConfigHelper as cfg
@@ -233,11 +233,12 @@ def executeBuildPlayerBlobs():
 			DBGstring = DBGstring + "[%i %s]," % (target[2],target[3])
 		DBG(DBGstring,2)
 
-
-	f = open("JSONBlobs\\playerBlob.json", "w+")
-	f.write(json.dumps(JSONobject))
-	f.close()
-	f = open("JSONBlobs\\%splayerBlob.json" % (cachedconfig["ID Prefix"]), "w+")
-	f.write(json.dumps(JSONobject))
+	filepart = "playerBlob"
+	if os.name == "nt":
+		divider = "\\" 
+	elif os.name == "posix":
+		divider = "/"
+	f = open("JSONBlobs%s%s%s.json" % (divider, cfg.getConfigString("ID Prefix"),filepart), "w+")
+	f.write(json.dumps(JSONobject,indent=4))
 	f.close()
 
