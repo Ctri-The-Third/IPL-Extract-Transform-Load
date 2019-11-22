@@ -1,3 +1,5 @@
+
+import os
 import json
 
 from SQLconnector import connectToSource
@@ -59,10 +61,14 @@ order by averageScore desc;
       if result[4] is not None: changeInScore = "↑%s" % result[4]  if result[4] > 0 else "↓%s" % abs(result[4])
 
       JSON['Player'].append({'Name' : result[1], 'AverageScore' : result[2], 'MissionsPlayed' : result[3], "ChangeInScore": changeInScore})
-
-  f = open("JSONBlobs\\MonthlyScoreLatest.json", "w+")
+  filepart = "MonthlyScore"
+  if os.name == "nt":
+      divider = "\\" 
+  elif os.name == "posix":
+      divider = "/"
+  f = open("JSONBlobs%s%sLatest.json" % (divider,filepart), "w+")
   f.write(json.dumps(JSON,indent=4))
-  f = open("JSONBlobs\\%sMonthlyScore.json" % (cfg.getConfigString("ID Prefix")), "w+")
+  f = open("JSONBlobs%s%s%s.json" % (divider, cfg.getConfigString("ID Prefix"),filepart), "w+")
   f.write(json.dumps(JSON,indent=4))
   DBG ("Monthly average score blobs written!",3)
 

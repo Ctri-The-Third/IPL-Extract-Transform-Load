@@ -81,9 +81,11 @@ def executeBuildMonthlyStars():
 		'ChangeInPlayers' : ChangeInPlayers,
 		'ChangeInSQPerGame' : ChangeInStars,
 		})
-
-	f = open("JSONBlobs\\StarQualityLatest.json", "w+")
-	f.write(json.dumps(JSON,indent=4))
-	f = open("JSONBlobs\\%sStarQuality.json" % cachedconfig["ID Prefix"], "w+")
-	f.write(json.dumps(JSON,indent=4))
+    filepart = "StarQuality"
+    if os.name == "nt":
+        divider = "\\" 
+    elif os.name == "posix":
+        divider = "/"
+    f = open("JSONBlobs%s%s%s.json" % (divider, cfg.getConfigString("ID Prefix"),filepart), "w+")
+    f.write(json.dumps(JSON,indent=4))
 	DBG ("Star Quality blobs written!",3)
