@@ -7,7 +7,7 @@ import queue
 import time 
 from colorama import Fore, Back
 from SQLconnector import connectToSource, closeConnection
-from SQLHelper import addPlayer, addPlayerArena
+from SQLHelper import addPlayer, addPlayerArena, addArenaRank
 from FetchHelper import fetchPlayer_root
 import workerProgressQueue as wpq
 import ConfigHelper as cfg 
@@ -200,6 +200,9 @@ order by started desc"""
 
 def manualTargetSummary(rootID):
     ID = rootID.split('-')
+    if len(ID) < 3:
+        DBG("ERROR, malform user ID, could not split. Aborting",2)
+        return
     player = fetchPlayer_root('',ID[0],ID[1],ID[2])
     if player == {}:
         DBG("ManualTargetSummary failed! Aborting",1)
@@ -207,6 +210,19 @@ def manualTargetSummary(rootID):
     DBG("Manual update of player sumary complete",1)
     addPlayer(rootID,player["centre"][0]["codename"],player["centre"][0]["joined"],player["centre"][0]["missions"])
     _parseCentresAndAdd(player["centre"],rootID)
+    return player
+
+def manualTargetSummaryAndIncludeRank(rootID):
+    player = manualTargetSummary(rootID)
+    bigObj = []
+    for centre in player['centre']:
+        #obj['ArenaName'],obj['rankNumber'],obj['rankName']
+        obj = {}
+        obj['rankNumber'] = centre['skillLevelNum']
+        obj['rankName'] = centre['skillLevelName']
+        obj['ArenaName'] = centre['name']
+        bigObj.append(obj)
+    addArenaRank(bigObj)
 
 
  
@@ -221,3 +237,4 @@ def _parseCentresAndAdd(centres, playerID):
         except Exception as e:
             DBG("ERROR: FetchPlayerUpdatesAndNewPlayers._parseCentresAndAdd failed to find average score for player %s" % (playerID,))
         addPlayerArena(playerID,centre['name'],centre['missions'],centre["skillLevelNum"],summaryValue)
+        

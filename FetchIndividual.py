@@ -1,7 +1,7 @@
 
 import re
 from SQLconnector import connectToSource
-from FetchPlayerUpdatesAndNewPlayers import manualTargetSummary
+from FetchPlayerUpdatesAndNewPlayers import manualTargetSummary, manualTargetSummaryAndIncludeRank
 from FetchPlayerAndGames import manualTargetForGames
 from FetchAchievements import manualTargetAchievements
 import feedbackQueue
@@ -25,7 +25,7 @@ def fetchIndividualWithID(id):
         #print(results)
         feedbackQueue.q.put("Found player, updating")
         id = results[0]
-        manualTargetSummary(id)
+        manualTargetSummaryAndIncludeRank(id)
         manualTargetForGames(id)
         manualTargetAchievements(id)
         

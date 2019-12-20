@@ -125,8 +125,21 @@ ON CONFLICT (arenaname,playerid) DO UPDATE
     conn.commit()
     closeConnection()
     return
-    
 
+def addArenaRank(bigObj):
+    conn = connectToSource()
+    cursor = conn.cursor()
+    for obj in bigObj:
+        sql = '''insert into 
+    ArenaRanksLookup (ArenaName,rankNumber,rankName)
+    VALUES (%s,%s,%s)
+    ON CONFLICT (arenaName, rankNumber) DO UPDATE
+    SET rankName = %s
+        '''
+        cursor.execute(sql,(obj['ArenaName'],obj['rankNumber'],obj['rankName'],obj['rankName']))
+    conn.commit()
+    closeConnection()
+    return
 
 def addGame(timestamp, arena, gametype):
     # returns UUID of existing game if already exists, otherwise creates

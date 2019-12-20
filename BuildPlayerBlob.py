@@ -12,7 +12,6 @@ from DBG import DBG
 def buildPlayerBlob (startDate,endDate,targetID):
 	cachedconfig = cfg.getConfig()
 	infoQuery = """
-
 		with PlayersInGame as (
 		SELECT 
 		Count (Players.GamerTag) as playersInGame, 
@@ -67,17 +66,28 @@ def buildPlayerBlob (startDate,endDate,targetID):
 
 
 
-	select Players.PlayerID, GamerTag,players.Level, Missions, round(cast(AverageOpponents as numeric),2) as AverageOpponents, gamesPlayed, round(cast(AverageRank as numeric),2) as AverageRank, 
-	round(cast((AverageOpponents *  1/(AverageRank/AverageOpponents)) as numeric),2) as AvgQualityPerGame,
-	round(cast((AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents)) as numeric),2) as TotalQualityScore,
-	totalAchievements.AchievementsCompleted, totalAchievements.PlayerID as TaPID
-	from Players 
+	select Players.PlayerID, GamerTag,players.Level, Missions, round(cast(AverageOpponents as numeric),2) as AverageOpponents, gamesPlayed
+	, round(cast(AverageRank as numeric),2) as AverageRank
+	, round(cast((AverageOpponents *  1/(AverageRank/AverageOpponents)) as numeric),2) as AvgQualityPerGame
+	, round(cast((AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents)) as numeric),2) as TotalQualityScore
+	, totalAchievements.AchievementsCompleted
+	, totalAchievements.PlayerID as TaPID
+	, ph.arenaName
+    , pas.locallevel
+    , arl.rankName
+    from Players 
 	join totalGamesPlayed on totalGamesPlayed.PlayerID = Players.PlayerID
 	join averageOpponents on averageOpponents.PlayerID = Players.PlayerID
 	join AverageRanks on AverageRanks.PlayerID = Players.PlayerID
 	join totalAchievements on totalAchievements.PlayerID = Players.PlayerID
-
-	where Players.playerID = %s
+    join public."playerHomes" ph 
+     on Players.PlayerID = ph.PlayerID 
+     and ph.month = %s 
+     and ph.arenarow = 1
+    join PlayerArenaSummary pas on pas.playerID = ph.PlayerID and pas.ArenaName = ph.ArenaName
+	join ArenaRanksLookup arl on arl.ArenaName = pas.ArenaName and arl.ranknumber = pas.localLevel
+    
+	where Players.playerID = %s 
 	"""
 	  
 
@@ -152,9 +162,10 @@ limit 10
 	endDate = cachedconfig["EndDate"]
 	startDate = cachedconfig["StartDate"]
 	targetArena = cachedconfig["SiteNameReal"]
-	
-	
-	result = cursor.execute(infoQuery,(startDate, endDate, targetArena, startDate, endDate, targetArena,  startDate, endDate, targetArena, targetArena, targetID))
+	currentMonth = cachedconfig["StartDate"][:7]
+
+	result = cursor.execute(infoQuery,(startDate, endDate, targetArena, startDate, endDate, targetArena,  startDate, endDate, targetArena, targetArena, currentMonth, targetID))
+
 	row = cursor.fetchone()
 
 	if row == None:
@@ -166,8 +177,8 @@ limit 10
 
 	JSONobject = {}
 	JSONobject["PlayerName"] = row[1]
-	JSONobject["HomeArenaTrunc"] = cachedconfig["SiteNameShort"]
-	JSONobject["SkillLevelName"] = SkillLevelName[row[2]]
+	JSONobject["HomeArenaTrunc"] = row[10]
+	JSONobject["SkillLevelName"] = row[10]
 	JSONobject["MonthlyGamesPlayed"] = row[5]
 	JSONobject["AllGamesPlayed"] = row[3]
 	JSONobject["StarQuality"] = "%s" % row[7]

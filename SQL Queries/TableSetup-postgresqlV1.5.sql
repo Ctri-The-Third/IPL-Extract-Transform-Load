@@ -14,8 +14,8 @@ CREATE TABLE PlayerArenaSummary(
 
 CREATE TABLE ArenaRanksLookup (
 	ArenaName varchar(50) not null,
-	rankNumber int not null
-	rankName varchar(50) not null
+	rankNumber int not null,
+	rankName varchar(50) not null,
 	CONSTRAINT PK_ArenaRanksLookup PRIMARY KEY
 	(
 		ArenaName, rankNumber
@@ -37,4 +37,4 @@ CREATE OR REPLACE VIEW public."playerHomes"
     group by 1,3,4
     order by 1 desc,3,2 desc )
   select row_number() over (partition by month, playerID order by gameCount desc) as arenaRow, * from data
-  order by month desc, playerID desc, gameCount desc"""
+  order by month desc, playerID desc, gameCount desc
