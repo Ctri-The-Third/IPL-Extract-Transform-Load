@@ -2,7 +2,7 @@ import json
 import re
 from DBG import DBG
 
-configPath = "/home/ctri/github/LF-Profiler/AppConfig.json"
+configPath = "AppConfig.json"
 config = {}
 def getConfig(): 
     global configPath
