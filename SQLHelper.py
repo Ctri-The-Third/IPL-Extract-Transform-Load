@@ -22,6 +22,21 @@ def getInterestingPlayersRoster(includeChurned,startDate,period,siteName = None,
         """
 
         cursor.execute(query, (offset,))
+    elif siteName is not None:
+        query = sql.SQL("""
+    	with MostRecentPerArena as 
+	(select max(g.GameTimestamp) as mostRecent, p.playerID, missions, level
+	from Games g join Participation p on g.GameUUID = p.GameUUID 
+	join players pl on p.PlayerID = pl.playerID 
+	group by p.PlayerID,Missions,level)
+
+    select  Missions, Level, PlayerID, MostRecent from MostRecentPerArena
+    where mostRecent >  to_date(%s,'YYYY-MM-DD') - INTERVAL '1 day' * %s
+    order by Level desc, Missions desc, mostRecent Asc
+    offset %s;
+
+    """)
+        cursor.execute(query,(startDate,period,offset))
 
     else:
         query = sql.SQL("""

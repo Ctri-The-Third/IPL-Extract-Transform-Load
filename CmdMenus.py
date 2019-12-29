@@ -222,7 +222,7 @@ while (inputS != "exit" and inputS != "x" and stop != True) and not safeShutdown
             feedback.append("Enter User ID or GamerTag to search")
         elif inputS == "66":
             feedback.append("Performing update of active local players in background...")
-            t = threading.Thread(target=executeQueryGames, args=("partial",))
+            t = threading.Thread(target=executeQueryGames, args=("activePlayers",))
             t.name = "66, active locals"
             threads.append(t)
             t.start()      

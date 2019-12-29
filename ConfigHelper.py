@@ -2,13 +2,13 @@ import json
 import re
 from DBG import DBG
 
+configPath = "/home/ctri/github/LF-Profiler/AppConfig.json"
 config = {}
 def getConfig(): 
-
+    global configPath
     global config
-    with open("AppConfig.json","r") as f:
+    with open(configPath,"r") as f:
         config  = json.load(f)
-        
     return config
 
 def getConfigString(string):
@@ -22,7 +22,8 @@ def getConfigString(string):
 
 
 def setActive(index):
-    with open("AppConfig.json","r") as f:
+    global configPath
+    with open(configPath,"r") as f:
         config  = json.load(f)
 
         foundConfigs = "configs" in config
@@ -36,15 +37,15 @@ def setActive(index):
         config["SiteNameShort"] = config["configs"][index]["SiteNameShort"]
         config["ID Prefix"] = config["configs"][index]["ID Prefix"]
 
-        f = open("AppConfig.json", "w+")
+        f = open(configPath, "w+")
         f.write(json.dumps(config,indent=2))
         f.close()
         getConfig()
         return "Successfully set primary arena to [%s]" % (config["SiteNameReal"])
 
 def setNewDates(startDate,endDate):
-
-    with open("AppConfig.json","r") as f:
+    global configPath
+    with open(configPath,"r") as f:
         config  = json.load(f)
 
         x = re.search("([0-9]){4}-([0-9]){2}-([0-9]){2}",startDate)
@@ -57,7 +58,7 @@ def setNewDates(startDate,endDate):
         config["StartDate"] = startDate
         config["EndDate"] = endDate
 
-        f = open("AppConfig.json", "w+")
+        f = open(configPath, "w+")
         f.write(json.dumps(config,indent=2))
         f.close()
 
@@ -65,12 +66,12 @@ def setNewDates(startDate,endDate):
 
 def addNewSite(obj):
 
-    with open("AppConfig.json","r") as f:
+    with open(configPath,"r") as f:
         config  = json.load(f)
 
         config["configs"].append(obj)
 
-        f = open("AppConfig.json", "w+")
+        f = open(configPath, "w+")
         f.write(json.dumps(config,indent=2))
         f.close()
 
