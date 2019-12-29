@@ -177,8 +177,8 @@ limit 10
 
 	JSONobject = {}
 	JSONobject["PlayerName"] = row[1]
-	JSONobject["HomeArenaTrunc"] = row[10]
-	JSONobject["SkillLevelName"] = row[10]
+	JSONobject["HomeArenaTrunc"] = row[11]
+	JSONobject["SkillLevelName"] = row[13]
 	JSONobject["MonthlyGamesPlayed"] = row[5]
 	JSONobject["AllGamesPlayed"] = row[3]
 	JSONobject["StarQuality"] = "%s" % row[7]
