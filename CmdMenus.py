@@ -279,7 +279,8 @@ while (inputS != "exit" and inputS != "x" and stop != True) and not safeShutdown
         #drawHeader(CurrentWorkerStatus,threadCounter)
         #drawOutputPane(feedback)
     drawScreen()
-    
+for t in threads:
+    t._stop() #hard kill all threads. 
 HeartMonitor.terminateMonitor()
 endUI()
 
