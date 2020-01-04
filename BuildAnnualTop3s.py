@@ -1,6 +1,8 @@
 from SQLconnector import connectToSource
 import ConfigHelper
 import json
+import os
+from DBG import DBG
 conn = connectToSource()
 cursor = conn.cursor()
 
@@ -204,3 +206,12 @@ print(json.dumps(months,indent=4))
 #gamesplayed, averagerank, avgqual
 #totalqual, avgscore, achievementscore
 #gamemonth
+
+filepart = "AnnualTop3s" 
+if os.name == "nt":
+	divider = "\\" 
+elif os.name == "posix":
+	divider = "/"
+f = open("JSONBlobs%s%s%s.json" % (divider, cfg["ID Prefix"],filepart), "w+")
+f.write(json.dumps(months,indent=4))
+DBG ("Annual top3s complete!",3)
