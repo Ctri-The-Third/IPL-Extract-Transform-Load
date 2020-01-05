@@ -1,6 +1,8 @@
 from SQLconnector import connectToSource
 import ConfigHelper
 import json
+import os
+from DBG import DBG
 conn = connectToSource()
 cursor = conn.cursor()
 
@@ -140,7 +142,7 @@ playerMissions as (
 )
 select 
      count (case when gamesPlayedInPeriod > 0 then 1 else null end) as totalPlayingPlayers
-   , count (case when firstGame >= %s then 1 else null end) as newPlayers
+   , count (case when firstGame >= to_date(%s,'YYYY-MM-DD') then 1 else null end) as newPlayers
    , count (case when ((lastGame < to_date(%s,'YYYY-MM-DD') - INTERVAL '%s days' ) and lastGame >= '2019-06-01' ) then 1 else null end ) as churnedPlayers 
 from playerMetrics pm1 join playerMissions pm2 on pm1.playerID = pm2.playerID
 
@@ -166,3 +168,13 @@ playerCounts = {'activePlayers' : results[0][0], 'newPlayers':results[0][1], 'ch
 outputObject['playerCounts'] = playerCounts
 
 print(json.dumps(outputObject,indent=4))
+
+
+filepart = "AnnualMetrics" 
+if os.name == "nt":
+	divider = "\\" 
+elif os.name == "posix":
+	divider = "/"
+f = open("JSONBlobs%s%s%s.json" % (divider, cfg["ID Prefix"],filepart), "w+")
+f.write(json.dumps(outputObject,indent=4))
+DBG ("Annual metrics complete!",3)
