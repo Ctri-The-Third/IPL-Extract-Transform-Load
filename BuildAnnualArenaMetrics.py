@@ -126,8 +126,6 @@ def executeBuild():
 
     referrals = {"newPlayers" : results[0][0], "welcomers" : results[1][0]}
     outputObject['referrals'] = referrals
-    for result in results:
-        #print (result)
 
     #new and old players
     #print ("  == New and Departed players")
@@ -158,7 +156,7 @@ def executeBuild():
     from playerMetrics pm1 join playerMissions pm2 on pm1.playerID = pm2.playerID
     """
 
-
+ 
     parameters = (
         cfg['SiteNameReal'], startYear, endYear
         , startYear,endYear, cfg['ChurnDuration']

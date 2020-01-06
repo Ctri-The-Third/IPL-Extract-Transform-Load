@@ -27,7 +27,7 @@ import queue
 from renderProgressBar import renderBar
 import ConfigHelper as cfg 
 from ctypes import *
-from CmdMenus_drawMethods import *  
+from CmdMenus_drawMethods import *
 from FetchPlayerAndGames import executeQueryGames
 from FetchPlayerUpdatesAndNewPlayers import updateExistingPlayers
 from FetchPlayerUpdatesAndNewPlayers import findNewPlayers
@@ -48,7 +48,7 @@ import BuildMonthlyStarQualityToJSON
 import BuildAchievementScoresToJSON
 import BuildPlayerBlob
 import BuildHeadToHeadsToJSON 
-import BuildAnnualArenaMetrics
+import BuildAnnualArenaMetrics 
 import BuildAnnualTop3s
 import workerProgressQueue 
 # This application class serves as a wrapper for the initialization of curses
@@ -215,7 +215,7 @@ while (inputS != "exit" and inputS != "x" and stop != True) and not safeShutdown
             threads.append(t)
             t.start()
 
-            t = threading.Thread(target = BuildAnnualArenaMetrics.execute) 
+            t = threading.Thread(target = BuildAnnualArenaMetrics.executeBuild) 
             t.name = "6 - Render annual metrics"
             threads.append(t)
             t.start()
