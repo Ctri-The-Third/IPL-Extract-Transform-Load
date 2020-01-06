@@ -2,9 +2,9 @@
   "SiteNameReal": "Funstation Ltd, Edinburgh, Scotland",
   "SiteNameShort": "Funstation Edinburgh",
   "ID Prefix": "7-9-",
-  "StartDate": "2019-06-01",
-  "EndDate": "2020-01-01",
-  "LastMonthStart": "2019-09-01",
+  "StartDate": "2020-01-01",
+  "EndDate": "2020-02-01",
+  "LastMonthStart": "2019-12-01",
   "ChurnDuration": 60,
   "configs": [
     {

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from DBG import DBG
 import os
 import threadRegistrationQueue as TRQ
@@ -35,7 +36,7 @@ import FetchPlayerAndGames
 import FetchPlayerUpdatesAndNewPlayers
 import FetchIndividual 
 import QueryIndividual
-import QueryArena
+import QueryArena 
 
 import feedbackQueue # shared module that contains a queue for giving output to the UI
 
@@ -47,6 +48,8 @@ import BuildMonthlyStarQualityToJSON
 import BuildAchievementScoresToJSON
 import BuildPlayerBlob
 import BuildHeadToHeadsToJSON 
+import BuildAnnualArenaMetrics
+import BuildAnnualTop3s
 import workerProgressQueue 
 # This application class serves as a wrapper for the initialization of curses
 # and also manages the actual forms of the application
@@ -212,7 +215,17 @@ while (inputS != "exit" and inputS != "x" and stop != True) and not safeShutdown
             threads.append(t)
             t.start()
 
-            feedback.append("Blobs written")
+            t = threading.Thread(target = BuildAnnualArenaMetrics.execute) 
+            t.name = "6 - Render annual metrics"
+            threads.append(t)
+            t.start()
+
+            t = threading.Thread(target = BuildAnnualTop3s.execute) 
+            t.name = "6 - Render annual top3s"
+            threads.append(t)
+            t.start()
+            
+            feedback.append("Blobs started")
             
             
 
