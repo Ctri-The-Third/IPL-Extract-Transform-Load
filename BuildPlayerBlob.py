@@ -1,9 +1,10 @@
 
 import json
 import importlib
-
+import os
 from SQLconnector import connectToSource
 from SQLHelper import getTop5PlayersRoster
+from FetchIndividual import fetchIndividualWithID
 import ConfigHelper as cfg
 from DBG import DBG
 
@@ -11,7 +12,6 @@ from DBG import DBG
 def buildPlayerBlob (startDate,endDate,targetID):
 	cachedconfig = cfg.getConfig()
 	infoQuery = """
-
 		with PlayersInGame as (
 		SELECT 
 		Count (Players.GamerTag) as playersInGame, 
@@ -66,17 +66,28 @@ def buildPlayerBlob (startDate,endDate,targetID):
 
 
 
-	select Players.PlayerID, GamerTag,players.Level, Missions, round(cast(AverageOpponents as numeric),2) as AverageOpponents, gamesPlayed, round(cast(AverageRank as numeric),2) as AverageRank, 
-	round(cast((AverageOpponents *  1/(AverageRank/AverageOpponents)) as numeric),2) as AvgQualityPerGame,
-	round(cast((AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents)) as numeric),2) as TotalQualityScore,
-	totalAchievements.AchievementsCompleted, totalAchievements.PlayerID as TaPID
-	from Players 
+	select Players.PlayerID, GamerTag,players.Level, Missions, round(cast(AverageOpponents as numeric),2) as AverageOpponents, gamesPlayed
+	, round(cast(AverageRank as numeric),2) as AverageRank
+	, round(cast((AverageOpponents *  1/(AverageRank/AverageOpponents)) as numeric),2) as AvgQualityPerGame
+	, round(cast((AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents)) as numeric),2) as TotalQualityScore
+	, totalAchievements.AchievementsCompleted
+	, totalAchievements.PlayerID as TaPID
+	, ph.arenaName
+    , pas.locallevel
+    , arl.rankName
+    from Players 
 	join totalGamesPlayed on totalGamesPlayed.PlayerID = Players.PlayerID
 	join averageOpponents on averageOpponents.PlayerID = Players.PlayerID
 	join AverageRanks on AverageRanks.PlayerID = Players.PlayerID
 	join totalAchievements on totalAchievements.PlayerID = Players.PlayerID
-
-	where Players.playerID = %s
+    join public."playerHomes" ph 
+     on Players.PlayerID = ph.PlayerID 
+     and ph.month = %s 
+     and ph.arenarow = 1
+    join PlayerArenaSummary pas on pas.playerID = ph.PlayerID and pas.ArenaName = ph.ArenaName
+	join ArenaRanksLookup arl on arl.ArenaName = pas.ArenaName and arl.ranknumber = pas.localLevel
+    
+	where Players.playerID = %s 
 	"""
 	  
 
@@ -151,22 +162,23 @@ limit 10
 	endDate = cachedconfig["EndDate"]
 	startDate = cachedconfig["StartDate"]
 	targetArena = cachedconfig["SiteNameReal"]
-	
-	
-	result = cursor.execute(infoQuery,(startDate, endDate, targetArena, startDate, endDate, targetArena,  startDate, endDate, targetArena, targetArena, targetID))
+	currentMonth = cachedconfig["StartDate"][:7]
+
+	result = cursor.execute(infoQuery,(startDate, endDate, targetArena, startDate, endDate, targetArena,  startDate, endDate, targetArena, targetArena, currentMonth, targetID))
+
 	row = cursor.fetchone()
 
 	if row == None:
 		DBG("BuildPlayerBlob info query returned Null. Aborting. [%s]" % (targetID),1)
 		return
-	print(row)
-	print ("Players.PlayerID, GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed,  AverageRank")
+	#print(row)
+	#print ("Players.PlayerID, GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed,  AverageRank")
 	SkillLevelName = ["Recruit","Gunner","Trooper","Captain","Star Lord","Laser Master","Level 7","Level 8","Laser Elite"]
 
 	JSONobject = {}
 	JSONobject["PlayerName"] = row[1]
-	JSONobject["HomeArenaTrunc"] = cachedconfig["SiteNameShort"]
-	JSONobject["SkillLevelName"] = SkillLevelName[row[2]]
+	JSONobject["HomeArenaTrunc"] = row[11]
+	JSONobject["SkillLevelName"] = row[13]
 	JSONobject["MonthlyGamesPlayed"] = row[5]
 	JSONobject["AllGamesPlayed"] = row[3]
 	JSONobject["StarQuality"] = "%s" % row[7]
@@ -177,8 +189,8 @@ limit 10
 	rows = cursor.fetchall()
 	if len(rows) > 0:
 		row = rows[0]
-		print(row)
-		print ("g.PlayerID, g.GameTimestamp, victoryPos,   victorName,  victorScore, g.GameName, victorStarQuality,  vanquishedID, vanquishedName , vanquishedPos")
+		#print(row)
+		#print ("g.PlayerID, g.GameTimestamp, victoryPos,   victorName,  victorScore, g.GameName, victorStarQuality,  vanquishedID, vanquishedName , vanquishedPos")
 		ordinalranks = ["0th","1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th"]
 		JSONobject["GGName"] = row[5]
 		JSONobject["GGRank"] = ordinalranks[row[2]]
@@ -196,7 +208,7 @@ limit 10
 	if row == None:
 		DBG("BuildPlayerBlob GoldenAchievementQuery query returned Null. Aborting. [%s]" % (targetID),1)
 		return
-	print (row)
+	#print (row)
 
 	JSONobject["GAName"] = row[1]
 	JSONobject["GADesc"] = row[2]
@@ -213,19 +225,24 @@ limit 10
 def executeBuildPlayerBlobs():
 	cachedconfig = cfg.getConfig()
 	targetIDs = getTop5PlayersRoster(cachedconfig["StartDate"],cachedconfig["EndDate"],cachedconfig["SiteNameReal"])
-	print(targetIDs)
+	DBG("Big 5 players = %s" % (targetIDs,),1)
 
-	print ("Player profile blobs written!")
+	#print ("Player profile blobs written!")
 	JSONobject = {}
 	if len(targetIDs) >= 1: 
+		fetchIndividualWithID(targetIDs[0][0])
 		JSONobject["GoldenPlayer"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[0][0])
 	if len(targetIDs) >= 2:
+		fetchIndividualWithID(targetIDs[1][0])
 		JSONobject["SilverPlayer"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[1][0])
 	if len(targetIDs) >= 3:
+		fetchIndividualWithID(targetIDs[2][0])
 		JSONobject["BronzePlayer"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[2][0])
 	if len(targetIDs) >= 4:
+		fetchIndividualWithID(targetIDs[3][0])
 		JSONobject["OtherPlayer1"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[3][0])
 	if len(targetIDs) >= 5:
+		fetchIndividualWithID(targetIDs[4][0])
 		JSONobject["OtherPlayer2"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[4][0])
 	if len(targetIDs) < 5:
 		DBGstring = "Big 5 returned %i: " % (len(targetIDs))
@@ -233,11 +250,13 @@ def executeBuildPlayerBlobs():
 			DBGstring = DBGstring + "[%i %s]," % (target[2],target[3])
 		DBG(DBGstring,2)
 
-
-	f = open("JSONBlobs\\playerBlob.json", "w+")
-	f.write(json.dumps(JSONobject))
+	filepart = "playerBlob"
+	if os.name == "nt":
+		divider = "\\" 
+	elif os.name == "posix":
+		divider = "/"
+	f = open("JSONBlobs%s%s%s.json" % (divider, cfg.getConfigString("ID Prefix"),filepart), "w+")
+	f.write(json.dumps(JSONobject,indent=4))
 	f.close()
-	f = open("JSONBlobs\\%splayerBlob.json" % (cachedconfig["ID Prefix"]), "w+")
-	f.write(json.dumps(JSONobject))
-	f.close()
 
+ 

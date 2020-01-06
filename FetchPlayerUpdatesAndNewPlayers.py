@@ -7,7 +7,7 @@ import queue
 import time 
 from colorama import Fore, Back
 from SQLconnector import connectToSource, closeConnection
-from SQLHelper import addPlayer
+from SQLHelper import addPlayer, addPlayerArena, addArenaRank
 from FetchHelper import fetchPlayer_root
 import workerProgressQueue as wpq
 import ConfigHelper as cfg 
@@ -82,7 +82,9 @@ select max (ID) from IDs
             dateJoined = player["centre"][0]["joined"]
             missionsPlayed = player["centre"][0]["missions"]
             skillLevelNum = player["centre"][0]["skillLevelNum"]
-            addPlayer("%s%i" % (sitePrefix,currentTarget),codeName,dateJoined,missionsPlayed,skillLevelNum)
+            addPlayer("%s%i" % (sitePrefix,currentTarget),codeName,dateJoined,missionsPlayed)
+            
+            _parseCentresAndAdd(player["centre"],'%s-%s-%s' % (region,siteNumber,currentTarget))
             consecutiveMisses = 0
         else: 
             DBG("DBG: FetchPlayerUpdatesAndNewPlayers.findNewPlayers - Missed a player 7-X-%s" % (currentTarget),3)
@@ -188,7 +190,8 @@ order by started desc"""
 
 
         #print("Summary update for player %s-%s-%s, [%i/%i]" % (ID[0],ID[1],ID[2],counter,totalTargetsToUpdate))
-        addPlayer(result[0],codeName,joined,missions,level)
+        addPlayer(result[0],codeName,joined,missions) 
+        _parseCentresAndAdd(player["centre"],result[0])
     jobEnd(JobID)
     endTime = datetime.datetime.now()
     f = open("Stats.txt","a+")
@@ -197,13 +200,41 @@ order by started desc"""
 
 def manualTargetSummary(rootID):
     ID = rootID.split('-')
+    if len(ID) < 3:
+        DBG("ERROR, malform user ID, could not split. Aborting",2)
+        return
     player = fetchPlayer_root('',ID[0],ID[1],ID[2])
     if player == {}:
         DBG("ManualTargetSummary failed! Aborting",1)
         return
     DBG("Manual update of player sumary complete",1)
-    addPlayer(rootID,player["centre"][0]["codename"],player["centre"][0]["joined"],player["centre"][0]["missions"],player["centre"][0]["skillLevelNum"])
+    addPlayer(rootID,player["centre"][0]["codename"],player["centre"][0]["joined"],player["centre"][0]["missions"])
+    _parseCentresAndAdd(player["centre"],rootID)
+    return player
 
+def manualTargetSummaryAndIncludeRank(rootID):
+    player = manualTargetSummary(rootID)
+    bigObj = []
+    for centre in player['centre']:
+        #obj['ArenaName'],obj['rankNumber'],obj['rankName']
+        obj = {}
+        obj['rankNumber'] = centre['skillLevelNum']
+        obj['rankName'] = centre['skillLevelName']
+        obj['ArenaName'] = centre['name']
+        bigObj.append(obj)
+    addArenaRank(bigObj)
 
 
  
+def _parseCentresAndAdd(centres, playerID):
+    for centre in centres:
+        summaryValue = 0
+        try:
+            for summary in centre['summary']:
+                if summary[0] == 'Standard':
+                    summaryValue = summary[3]
+                    break
+        except Exception as e:
+            DBG("ERROR: FetchPlayerUpdatesAndNewPlayers._parseCentresAndAdd failed to find average score for player %s" % (playerID,))
+        addPlayerArena(playerID,centre['name'],centre['missions'],centre["skillLevelNum"],summaryValue)
+        

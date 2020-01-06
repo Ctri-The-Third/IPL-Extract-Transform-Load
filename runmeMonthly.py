@@ -1,21 +1,11 @@
-from FetchPlayerAndGames import executeQueryGames
-from FetchAchievements import executeFetchAchievements
+from SQLHelper import jobStart, getInterestingPlayersRoster
+import ConfigHelper as cfg 
 
-from BuildMonthlyScoresToJSON import executeMonthlyScoresBuild
-from BuildMonthlyStarQualityToJSON import executeBuildMonthlyStars
-from BuildAchievementScoresToJSON import executeAchievementBuild
-from BuildPlayerBlob import executeBuildPlayerBlobs
-from BuildHeadToHeadsToJSON import buildHeadToHeads
-from FetchPlayerUpdatesAndNewPlayers import updateExistingPlayers
-from FetchPlayerUpdatesAndNewPlayers import findNewPlayers
-from FetchPlayerAndGames import executeQueryGames
-updateExistingPlayers()
-findNewPlayers()
+print("Scheduling Detailed sweep and achievements. MANUAL RUN SUMMARIES AND FIND-NEW")
+params = {}
+params["scope"] = "full"
+targetIDs = getInterestingPlayersRoster(True,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"))
+jobStart("Fetch games, all players",0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs),delay=780)
 
-executeQueryGames("full") 
-executeFetchAchievements("full")
-executeMonthlyScoresBuild()
-executeBuildMonthlyStars()
-executeAchievementBuild()
-executeBuildPlayerBlobs()
-buildHeadToHeads()
+targetIDs = getInterestingPlayersRoster(True,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"))
+jobID=jobStart("Fetch achievements, inactive players",0,"FetchAchievements.executeFetchAchievements",params, len(targetIDs),delay=780+120)

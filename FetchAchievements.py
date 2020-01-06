@@ -124,12 +124,12 @@ order by started desc"""
                             DBG("updated player progress for known achievement %s vs %s" % (achievement["achievedDate"],totest),3)
             
                     else:   #new achievement!     
-                        uuid = addAchievement(achievement["name"],achievement["description"],achievement["image"], centre['name'])
-                        addPlayerAchievement(uuid,ID,achievement["newAchievement"],achievement["achievedDate"],achievement["progressA"],achievement["progressB"])
+                        newAchMD5 = addAchievement(achievement["name"],achievement["description"],achievement["image"], centre['name'])
+                        addPlayerAchievement(newAchMD5,ID,achievement["newAchievement"],achievement["achievedDate"],achievement["progressA"],achievement["progressB"])
                         DBG("updated player progress for NEW achievement: [%s][%s]" % (achievement["name"],centre['name']),3)
                     
                 totalAchievemnts = totalAchievemnts + len(centre["achievements"])
-            print ("Updated %i achievements for player %s. [%i/%i]" % (totalAchievemnts,ID,playerCounter,totalToUpdate))
+            #print ("Updated %i achievements for player %s. [%i/%i]" % (totalAchievemnts,ID,playerCounter,totalToUpdate))
         playerCounter = playerCounter + 1
     jobEnd(jobID)
         

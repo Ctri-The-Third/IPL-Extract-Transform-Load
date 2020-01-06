@@ -1,7 +1,7 @@
 
 import re
 from SQLconnector import connectToSource
-from FetchPlayerUpdatesAndNewPlayers import manualTargetSummary
+from FetchPlayerUpdatesAndNewPlayers import manualTargetSummary, manualTargetSummaryAndIncludeRank
 from FetchPlayerAndGames import manualTargetForGames
 from FetchAchievements import manualTargetAchievements
 import feedbackQueue
@@ -13,7 +13,7 @@ def fetchIndividualWithID(id):
     conn = connectToSource()
     cursor = conn.cursor()
 
-    SQL = """select PlayerID from Players where PlayerID = %s or PlayerID =%s%s or GamerTag like %s order by missions desc limit 1"""
+    SQL = """select PlayerID from Players where PlayerID = %s or PlayerID =%s%s or GamerTag ilike %s order by missions desc limit 1"""
     prefix = cfg.getConfigString("ID Prefix")
     data = (id,prefix,id,'%%%s%%' % (id))
     print (SQL % data)
@@ -25,7 +25,7 @@ def fetchIndividualWithID(id):
         #print(results)
         feedbackQueue.q.put("Found player, updating")
         id = results[0]
-        manualTargetSummary(id)
+        manualTargetSummaryAndIncludeRank(id)
         manualTargetForGames(id)
         manualTargetAchievements(id)
         

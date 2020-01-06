@@ -33,7 +33,11 @@ def executeQueryGames(scope, interval = "Null", ArenaName = None, offset = None,
         targetIDs = getInterestingPlayersRoster(True,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),offset=offset)
         if ID == None: #new job
             ID = jobStart("Fetch games, all players",0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs))
-    else: 
+    elif scope == "activePlayers":
+        targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),offset=offset,siteName =  None)
+        if ID == None: #new job
+            ID = jobStart("Fetch games, All arenas active players " ,0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs)) 
+    else: #local
         targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),offset=offset,siteName = params["arenaName"])
         if ID == None: #new job
             ID = jobStart("Fetch games, [%s] active players " % (cfg.getConfigString("SiteNameShort")),0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs)) 
@@ -103,9 +107,10 @@ def queryPlayers (targetIDs,scope, siteName = None, jobID = None, offset = None)
                 level = max(level,int(i["skillLevelNum"]))
             joined = min(datetime_list)
             codeName = str(summaryJson["centre"][0]["codename"])
-            playerNeedsUpdated = addPlayer(ID,codeName,joined,missions,level)
+            playerNeedsUpdated = addPlayer(ID,codeName,joined,missions)
+
             
-            if playerNeedsUpdated != 0 or scope == "full":
+            if playerNeedsUpdated == True or scope == "full":
                 updatedPlayers.append(ID)
                 missionsJson = fetchPlayerRecents_root('',region,site,IDPart)
                 if missionsJson != None:
