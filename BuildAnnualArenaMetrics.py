@@ -20,7 +20,7 @@ def executeBuild():
 
 
     #topGames
-    print ("  == Which games were played")
+    #print ("  == Which games were played")
 
     SQL = """
     select count(*), gamename from games g 
@@ -53,7 +53,7 @@ def executeBuild():
         gamesPlayed.append(game)
     outputObject['gamesPlayed'] = gamesPlayed
     #referrals
-    print ("  == Referrals and Welcomers")
+    #print ("  == Referrals and Welcomers")
 
     SQL = """
 
@@ -127,10 +127,10 @@ def executeBuild():
     referrals = {"newPlayers" : results[0][0], "welcomers" : results[1][0]}
     outputObject['referrals'] = referrals
     for result in results:
-        print (result)
+        #print (result)
 
     #new and old players
-    print ("  == New and Departed players")
+    #print ("  == New and Departed players")
 
     SQL = """
     with playerMetrics as (
@@ -171,13 +171,13 @@ def executeBuild():
     SQLdesc = cursor.description
     descCount = 0
     for desc in SQLdesc:
-        print("%s %s" % (descCount,desc[0]))
+        #print("%s %s" % (descCount,desc[0]))
         descCount = descCount + 1
 
     playerCounts = {'activePlayers' : results[0][0], 'newPlayers':results[0][1], 'churnedPlayers':results[0][2]}
     outputObject['playerCounts'] = playerCounts
 
-    print(json.dumps(outputObject,indent=4))
+    #print(json.dumps(outputObject,indent=4))
 
 
     filepart = "AnnualMetrics" 
