@@ -48,7 +48,7 @@ def executeBuild():
 
     gamesPlayed = []
     for result in results:
-        print (result)
+        #print (result)
         game = {'gameName' : result[1], 'timesPlayed' : result[0] }
         gamesPlayed.append(game)
     outputObject['gamesPlayed'] = gamesPlayed
@@ -152,14 +152,14 @@ def executeBuild():
     select 
         count (case when gamesPlayedInPeriod > 0 then 1 else null end) as totalPlayingPlayers
     , count (case when firstGame >= to_date(%s,'YYYY-MM-DD') then 1 else null end) as newPlayers
-    , count (case when ((lastGame < to_date(%s,'YYYY-MM-DD') - INTERVAL '%s days' ) and lastGame >= '2019-06-01' ) then 1 else null end ) as churnedPlayers 
+    , count (case when ((lastGame < to_date(%s,'YYYY-MM-DD') - INTERVAL '%s days' ) and lastGame >= %s ) then 1 else null end ) as churnedPlayers 
     from playerMetrics pm1 join playerMissions pm2 on pm1.playerID = pm2.playerID
     """
 
  
     parameters = (
         cfg['SiteNameReal'], startYear, endYear
-        , startYear,endYear, cfg['ChurnDuration']
+        , startYear,endYear, cfg['ChurnDuration'], startYear
         )
     conn = connectToSource()
     cursor = conn.cursor()
@@ -183,6 +183,6 @@ def executeBuild():
         divider = "\\" 
     elif os.name == "posix":
         divider = "/"
-    f = open("JSONBlobs%s%s%s-%s.json" % (divider, cfg["ID Prefix"],filepart,startYear), "w+")
+    f = open("JSONBlobs%s%s%s-%s.json" % (divider, cfg["ID Prefix"],filepart,startYear[0:4]), "w+")
     f.write(json.dumps(outputObject,indent=4))
     DBG ("Annual metrics complete!",3)

@@ -249,7 +249,7 @@ def executeBuildPlayerBlobs():
 		for target in targetIDs:
 			DBGstring = DBGstring + "[%i %s]," % (target[2],target[3])
 		DBG(DBGstring,2)
-
+	JSONobject["SiteNameShort"] = cachedconfig["SiteNameShort"]
 	filepart = "playerBlob"
 	if os.name == "nt":
 		divider = "\\" 

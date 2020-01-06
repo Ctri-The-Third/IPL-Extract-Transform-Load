@@ -210,10 +210,10 @@ while (inputS != "exit" and inputS != "x" and stop != True) and not safeShutdown
             threads.append(t)
             t.start()
 
-            t = threading.Thread(target=BuildHeadToHeadsToJSON.buildHeadToHeads)
-            t.name = "6 - Render head-to-head battles"
-            threads.append(t)
-            t.start()
+            #t = threading.Thread(target=BuildHeadToHeadsToJSON.buildHeadToHeads)
+            #t.name = "6 - Render head-to-head battles"
+            #threads.append(t)
+            #t.start()
 
             t = threading.Thread(target = BuildAnnualArenaMetrics.executeBuild) 
             t.name = "6 - Render annual metrics"

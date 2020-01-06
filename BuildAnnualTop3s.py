@@ -164,7 +164,7 @@ def execute():
 
     startYear = "%s-01-01" % startYear
     endYear = "%s-01-01" % endYear
-
+    #startYear = '2019-08-01'
     parameters = (
         startYear, endYear, cfg['SiteNameReal']
         , cfg['SiteNameReal']
@@ -218,6 +218,6 @@ def execute():
         divider = "\\" 
     elif os.name == "posix":
         divider = "/"
-    f = open("JSONBlobs%s%s%s-%s.json" % (divider, cfg["ID Prefix"],filepart,startYear), "w+")
+    f = open("JSONBlobs%s%s%s-%s.json" % (divider, cfg["ID Prefix"],filepart,startYear[0:4]), "w+")
     f.write(json.dumps(months,indent=4))
     DBG ("Annual top3s complete!",3)
