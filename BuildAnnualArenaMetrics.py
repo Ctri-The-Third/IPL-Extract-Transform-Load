@@ -3,9 +3,9 @@ import ConfigHelper
 import json
 import os
 from DBG import DBG
+ 
 
-
-def execute():
+def executeBuild():
     conn = connectToSource()
     cursor = conn.cursor()
 
@@ -98,12 +98,16 @@ def execute():
         join games g  on p.gameuuid = g.gameuuid
         join firstGames fg on pl.playerID = fg.playerID
         join gamesWithNewPlayers gwnp on gwnp.gametimestamp = g.gametimestamp and gwnp.arenaname = g.arenaname
-            where newplayers > 0 and existingPlayers > def execute(): playerRole from referredPlayers
-            where referalrole = 'REFERRED!'
+        where newplayers > 0 and existingPlayers > 0 
+        order by g.gametimestamp desc
+    )
+
+        select count(distinct gamerTag), 'new player' as playerRole from referredPlayers
+	        where referalrole = 'REFERRED!'
         union 
         select count (distinct gamerTag), 'veteran' from referredPlayers
             where referalrole = 'referee'
-        """
+    """
 
 
     parameters = (
@@ -145,15 +149,13 @@ def execute():
         select playerID, count(*) as gamesPlayedInPeriod from participation p  join games g on p.gameuuid = g.gameuuid
         where gametimestamp >= %s --startDate
         and gametimestamp < %s --endDate
-        group by 1
+        group by 1  
     )
     select 
         count (case when gamesPlayedInPeriod > 0 then 1 else null end) as totalPlayingPlayers
     , count (case when firstGame >= to_date(%s,'YYYY-MM-DD') then 1 else null end) as newPlayers
     , count (case when ((lastGame < to_date(%s,'YYYY-MM-DD') - INTERVAL '%s days' ) and lastGame >= '2019-06-01' ) then 1 else null end ) as churnedPlayers 
     from playerMetrics pm1 join playerMissions pm2 on pm1.playerID = pm2.playerID
-
-
     """
 
 
