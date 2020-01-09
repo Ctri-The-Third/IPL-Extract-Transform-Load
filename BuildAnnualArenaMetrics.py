@@ -3,9 +3,9 @@ import ConfigHelper
 import json
 import os
 from DBG import DBG
+ 
 
-
-def execute():
+def executeBuild():
     conn = connectToSource()
     cursor = conn.cursor()
 
@@ -20,7 +20,7 @@ def execute():
 
 
     #topGames
-    print ("  == Which games were played")
+    #print ("  == Which games were played")
 
     SQL = """
     select count(*), gamename from games g 
@@ -48,12 +48,12 @@ def execute():
 
     gamesPlayed = []
     for result in results:
-        print (result)
+        #print (result)
         game = {'gameName' : result[1], 'timesPlayed' : result[0] }
         gamesPlayed.append(game)
     outputObject['gamesPlayed'] = gamesPlayed
     #referrals
-    print ("  == Referrals and Welcomers")
+    #print ("  == Referrals and Welcomers")
 
     SQL = """
 
@@ -98,12 +98,16 @@ def execute():
         join games g  on p.gameuuid = g.gameuuid
         join firstGames fg on pl.playerID = fg.playerID
         join gamesWithNewPlayers gwnp on gwnp.gametimestamp = g.gametimestamp and gwnp.arenaname = g.arenaname
-            where newplayers > 0 and existingPlayers > def execute(): playerRole from referredPlayers
-            where referalrole = 'REFERRED!'
+        where newplayers > 0 and existingPlayers > 0 
+        order by g.gametimestamp desc
+    )
+
+        select count(distinct gamerTag), 'new player' as playerRole from referredPlayers
+	        where referalrole = 'REFERRED!'
         union 
         select count (distinct gamerTag), 'veteran' from referredPlayers
             where referalrole = 'referee'
-        """
+    """
 
 
     parameters = (
@@ -122,11 +126,9 @@ def execute():
 
     referrals = {"newPlayers" : results[0][0], "welcomers" : results[1][0]}
     outputObject['referrals'] = referrals
-    for result in results:
-        print (result)
 
     #new and old players
-    print ("  == New and Departed players")
+    #print ("  == New and Departed players")
 
     SQL = """
     with playerMetrics as (
@@ -145,21 +147,19 @@ def execute():
         select playerID, count(*) as gamesPlayedInPeriod from participation p  join games g on p.gameuuid = g.gameuuid
         where gametimestamp >= %s --startDate
         and gametimestamp < %s --endDate
-        group by 1
+        group by 1  
     )
     select 
         count (case when gamesPlayedInPeriod > 0 then 1 else null end) as totalPlayingPlayers
     , count (case when firstGame >= to_date(%s,'YYYY-MM-DD') then 1 else null end) as newPlayers
-    , count (case when ((lastGame < to_date(%s,'YYYY-MM-DD') - INTERVAL '%s days' ) and lastGame >= '2019-06-01' ) then 1 else null end ) as churnedPlayers 
+    , count (case when ((lastGame < to_date(%s,'YYYY-MM-DD') - INTERVAL '%s days' ) and lastGame >= %s ) then 1 else null end ) as churnedPlayers 
     from playerMetrics pm1 join playerMissions pm2 on pm1.playerID = pm2.playerID
-
-
     """
 
-
+ 
     parameters = (
         cfg['SiteNameReal'], startYear, endYear
-        , startYear,endYear, cfg['ChurnDuration']
+        , startYear,endYear, cfg['ChurnDuration'], startYear
         )
     conn = connectToSource()
     cursor = conn.cursor()
@@ -169,13 +169,13 @@ def execute():
     SQLdesc = cursor.description
     descCount = 0
     for desc in SQLdesc:
-        print("%s %s" % (descCount,desc[0]))
+        #print("%s %s" % (descCount,desc[0]))
         descCount = descCount + 1
 
     playerCounts = {'activePlayers' : results[0][0], 'newPlayers':results[0][1], 'churnedPlayers':results[0][2]}
     outputObject['playerCounts'] = playerCounts
 
-    print(json.dumps(outputObject,indent=4))
+    #print(json.dumps(outputObject,indent=4))
 
 
     filepart = "AnnualMetrics" 
@@ -183,6 +183,6 @@ def execute():
         divider = "\\" 
     elif os.name == "posix":
         divider = "/"
-    f = open("JSONBlobs%s%s%s-%s.json" % (divider, cfg["ID Prefix"],filepart,startYear), "w+")
+    f = open("JSONBlobs%s%s%s-%s.json" % (divider, cfg["ID Prefix"],filepart,startYear[0:4]), "w+")
     f.write(json.dumps(outputObject,indent=4))
     DBG ("Annual metrics complete!",3)

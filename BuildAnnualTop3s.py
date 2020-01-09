@@ -164,7 +164,7 @@ def execute():
 
     startYear = "%s-01-01" % startYear
     endYear = "%s-01-01" % endYear
-
+    #startYear = '2019-08-01'
     parameters = (
         startYear, endYear, cfg['SiteNameReal']
         , cfg['SiteNameReal']
@@ -180,7 +180,7 @@ def execute():
     SQLdesc = cursor.description
     descCount = 0
     for desc in SQLdesc:
-        print("%s %s" % (descCount,desc[0]))
+        #print("%s %s" % (descCount,desc[0]))
         descCount = descCount + 1
 
     currentMonth = ""
@@ -189,7 +189,7 @@ def execute():
         
         if result [2] != currentMonth:
             currentMonth = result[2]
-            print("== New month = [%s]" % (currentMonth,))
+            #print("== New month = [%s]" % (currentMonth,))
             month = {}
             months.append(month)
             month["month"] = result[2]
@@ -204,9 +204,9 @@ def execute():
         players.append(player)
         playerName = "%s%s" % (result[4]," "*15)
         playerName = playerName[0:10]
-        print("%s %s, %s games played \t %s stars per game (avg) " % (result[1],playerName , result[6], result[8]) )
+        #print("%s %s, %s games played \t %s stars per game (avg) " % (result[1],playerName , result[6], result[8]) )
 
-    print(json.dumps(months,indent=4))
+    #print(json.dumps(months,indent=4))
     #playerID, rank, month, 
     #ID, gamertag, avgopponents
     #gamesplayed, averagerank, avgqual
@@ -218,6 +218,6 @@ def execute():
         divider = "\\" 
     elif os.name == "posix":
         divider = "/"
-    f = open("JSONBlobs%s%s%s-%s.json" % (divider, cfg["ID Prefix"],filepart,startYear), "w+")
+    f = open("JSONBlobs%s%s%s-%s.json" % (divider, cfg["ID Prefix"],filepart,startYear[0:4]), "w+")
     f.write(json.dumps(months,indent=4))
     DBG ("Annual top3s complete!",3)
