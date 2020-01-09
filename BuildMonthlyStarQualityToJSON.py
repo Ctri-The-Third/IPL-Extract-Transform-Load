@@ -47,6 +47,7 @@ def executeBuildMonthlyStars():
 	order by AverageStarQuality desc
 	
 	'''
+
 	conn = connectToSource()
 	cursor = conn.cursor()
 
@@ -61,7 +62,26 @@ def executeBuildMonthlyStars():
 		#    'MissionsPlayed' : -1,
 		}],
 		}
-	for result in cursor.fetchall():
+	breakdownSQL = """
+		with data as (
+			select pl.PlayerID, pl.GamerTag, GameName, GameTimestamp, p.score, 
+			ROW_NUMBER() over (partition by GameTimestamp order by GameTimestamp desc, score desc)  as rank, 
+			count(p.PlayerID) over (partition by GameTimestamp order by GameTimestamp desc) as playerCount,
+			TO_CHAR(GameTimestamp,'YYYY-MM') as GameMonth
+			from Participation p join Games g on p.GameUUID = g.GameUUID 
+			join Players pl on p.PlayerID = pl.PlayerID
+			where g.ArenaName = %s
+		)
+		select gamename, rank, playerCount 
+		, round(cast((cast(playerCount as float) * cast(playerCount as float)) / cast(rank as float) as numeric),2) as stars
+		from data 
+		where GameMonth = %s
+		and playerID ilike %s
+		order by gametimestamp desc 
+	"""
+	SQResults = cursor.fetchall()
+	counter = 0 
+	for result in SQResults:
 		#print (result)
 		ChangeInRank  = None
 		ChangeInPlayers = None 
@@ -70,8 +90,9 @@ def executeBuildMonthlyStars():
 		if result[8] is not None: ChangeInPlayers = "↑%s" % result[8]  if result[8] > 0 else "↓%s" % abs(result[8])
 		if result[9] is not None: ChangeInStars = "↑%s" % result[9]  if result[9] > 0 else "↓%s" % abs(result[9])
 
-		JSON['Player'].append(
-		{'Name' : result[1], 
+		SQObject = {
+		'JSID' : counter, 
+		'Name' : result[1], 
 		'StarQualityPerGame' : "%s" % result[2], 
 		'TotalStarQuality' : "%s" % result[3],
 		'AverageOpponents' : "%s" % result[4], 
@@ -80,7 +101,23 @@ def executeBuildMonthlyStars():
 		'ChangeInRank' : ChangeInRank,
 		'ChangeInPlayers' : ChangeInPlayers,
 		'ChangeInSQPerGame' : ChangeInStars,
-		})
+		'breakdown' : []
+		}
+
+		cursor.execute(breakdownSQL,(arenaName,curMonth,result[0]))
+		breakdownResults = cursor.fetchall()
+		for breakdownEntry in breakdownResults:
+			SQBreakdown = {
+			"gameName":breakdownEntry[0],
+			"rank":breakdownEntry[1],
+			"totalPlayers" : breakdownEntry[2],
+			"starsForGame" : "%s" % breakdownEntry[3]
+			}
+			SQObject['breakdown'].append(SQBreakdown)
+
+		JSON['Player'].append(SQObject)
+		counter = counter + 1
+
 	filepart = "StarQuality" 
 	if os.name == "nt":
 		divider = "\\" 
