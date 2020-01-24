@@ -24,18 +24,27 @@ def getInterestingPlayersRoster(includeChurned,startDate,period,siteName = None,
         cursor.execute(query, (offset,))
     elif siteName is not None:
         query = sql.SQL("""
-    	with MostRecentPerArena as 
-	(select max(g.GameTimestamp) as mostRecent, p.playerID, missions, level
-	from Games g join Participation p on g.GameUUID = p.GameUUID 
-	join players pl on p.PlayerID = pl.playerID 
-	group by p.PlayerID,Missions,level)
+        with MostRecentPerArena as 
+        (
+            select max(g.GameTimestamp) as mostRecent, p.playerID, missions, level
+            from Games g join Participation p on g.GameUUID = p.GameUUID 
+            join players pl on p.PlayerID = pl.playerID 
+            group by p.PlayerID,Missions,level
+        ),
+        playerMaxLevel as
+        (
+            select max (locallevel) maxLevel, playerID 
+            from playerarenasummary pas
+            group by playerID
+        )
 
-    select  Missions, Level, PlayerID, MostRecent from MostRecentPerArena
-    where mostRecent >  to_date(%s,'YYYY-MM-DD') - INTERVAL '1 day' * %s
-    order by Level desc, Missions desc, mostRecent Asc
-    offset %s;
+            select  Missions, maxLevel, pml.PlayerID, MostRecent 
+            from MostRecentPerArena mrpa join playerMaxLevel pml on pml.playerID = mrpa.playerID
+            where mostRecent >  to_date(%s,'YYYY-MM-DD') - INTERVAL '1 day' * %s
+            order by Level desc, Missions desc, mostRecent Asc
+            offset %s;
 
-    """)
+            """)
         cursor.execute(query,(startDate,period,offset))
 
     else:
@@ -90,7 +99,7 @@ def getPlayersWhoMightNeedAchievementUpdates(scope, offset = 0):
     
 
 def addPlayer(playerID,GamerTag,Joined,missions):
-
+    
     conn = connectToSource()
     cursor = conn.cursor()
     query = sql.SQL("""select missions from players where playerID = %s""")
@@ -103,7 +112,8 @@ def addPlayer(playerID,GamerTag,Joined,missions):
         playerneedsUpdate = True
         pass
     query =  sql.SQL("""insert into Players 
-    (PlayerID,GamerTag,Joined,Missions)
+    (PlayerID,GamerTag,Joined,Missions
+    )
     VALUES
     (%s,%s,%s,%s)
     ON CONFLICT (PlayerID) DO UPDATE
