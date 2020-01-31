@@ -393,14 +393,13 @@ Achievers as (
 ),
 BestAchiever as(
 
-	SELECT Players.PlayerID
+	SELECT Ach.PlayerID
 	--GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed, round(AverageRank,2) as AverageRank, 
 	--round((AverageOpponents *  1/(AverageRank/AverageOpponents)),2) as AvgQualityPerGame,
 	--round((AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents)),2) as TotalQualityScore, averageScore, AchievementScore
-	from Players
-	join totalGamesPlayed on totalGamesPlayed.PlayerID = Players.PlayerID
-	where players.PlayerID not in (select PlayerID from GoldenTop3) and Players.PlayerID not in (select PlayerID from BestScorer)
-	order by Players.AchievementScore desc
+	from Achievers ach
+    where PlayerID not in (select PlayerID from GoldenTop3) and PlayerID not in (select PlayerID from BestScorer)
+	order by achievements desc
 	limit 1
 )
 

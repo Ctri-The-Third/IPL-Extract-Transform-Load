@@ -153,6 +153,20 @@ order by playersEarned asc, firstAchieved asc
 limit 10
 	"""
  
+	fallbackInfoQuery = """ with achs as (select count(*) as achCount
+			  from playerAchievement pa join allachievements aa on aa.achID = pa.achID
+			  where playerID = %s and arenaname = %s
+			 and achieveddate is not null)
+select 
+pl.playerID, Gamertag, '' , pl.missions, '', 0 --monthly missions played
+, '', 0.00, '', achCount, '', arl.arenaname, ranknumber, rankname
+from players pl join achs on true
+join playerarenasummary pas on 
+	pas.arenaname = %s
+	and pl.playerID = pas.playerID
+join arenarankslookup arl on pas.arenaname = arl.arenaname and locallevel = ranknumber
+where pl.playerID = %s
+	 """
 	conn = connectToSource()
 	cursor = conn.cursor()
 	DBG("BuildPlayerBlob.buildPlayerBlob start[%s], end[%s], target[%s], arena[%s]" % (cachedconfig["StartDate"],cachedconfig["EndDate"],targetID,cachedconfig["SiteNameReal"]),3)
@@ -169,11 +183,14 @@ limit 10
 	row = cursor.fetchone()
 
 	if row == None:
-		DBG("BuildPlayerBlob info query returned Null. Aborting. [%s]" % (targetID),1)
-		return
+		DBG("BuildPlayerBlob info query returned Null. Did they play any games? SWITCHING TO FALLBACK. [%s]" % (targetID),1)
+		result = cursor.execute(fallbackInfoQuery,(targetID, targetArena,targetArena,targetID))	
+		row = cursor.fetchone() 		
+		if row == None: 
+			DBG("Fallback infoquery failed. This should not happen, something is wack somewhere. ")
+			return
 	#print(row)
 	#print ("Players.PlayerID, GamerTag, round(AverageOpponents,2) as AverageOpponents, gamesPlayed,  AverageRank")
-	SkillLevelName = ["Recruit","Gunner","Trooper","Captain","Star Lord","Laser Master","Level 7","Level 8","Laser Elite"]
 
 	JSONobject = {}
 	JSONobject["PlayerName"] = row[1]
