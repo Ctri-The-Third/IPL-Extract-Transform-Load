@@ -32,6 +32,7 @@ from FetchPlayerAndGames import executeQueryGames
 from FetchPlayerUpdatesAndNewPlayers import updateExistingPlayers
 from FetchPlayerUpdatesAndNewPlayers import findNewPlayers
 from FetchAchievements import executeFetchAchievements
+import BuildAllForAllArenasSequentially
 import FetchPlayerAndGames
 import FetchPlayerUpdatesAndNewPlayers
 import FetchIndividual 
@@ -189,44 +190,12 @@ while (inputS != "exit" and inputS != "x" and stop != True) and not safeShutdown
             waitingFunction = "5"
         elif inputS == "6":
             
-            feedback.append("Building all blobs in parallel. Prepare for spam.")
-            t = threading.Thread(target=BuildMonthlyScoresToJSON.executeMonthlyScoresBuild)
-            t.name = "6 - Render Monthly Standard scores"
+            feedback.append("Building all blobs in series.")
+            t = threading.Thread(target=BuildAllForAllArenasSequentially.buildAllForAllArenasSequentially)
+            t.name = "6 - Render all things."
             threads.append(t)
             t.start() 
 
-            t = threading.Thread(target=BuildMonthlyStarQualityToJSON.executeBuildMonthlyStars)
-            t.name = "6 - Render Monthly Star scores"
-            threads.append(t)
-            t.start()
-
-            t = threading.Thread(target=BuildAchievementScoresToJSON.executeAchievementBuild)
-            t.name = "6 - Render Achievement scores"
-            threads.append(t)
-            t.start()
-
-            t = threading.Thread(target=BuildPlayerBlob.executeBuildPlayerBlobs)
-            t.name = "6 - Render the big 5 players"
-            threads.append(t)
-            t.start()
-
-            #t = threading.Thread(target=BuildHeadToHeadsToJSON.buildHeadToHeads)
-            #t.name = "6 - Render head-to-head battles"
-            #threads.append(t)
-            #t.start()
-
-            t = threading.Thread(target = BuildAnnualArenaMetrics.executeBuild) 
-            t.name = "6 - Render annual metrics"
-            threads.append(t)
-            t.start()
-
-            t = threading.Thread(target = BuildAnnualTop3s.execute) 
-            t.name = "6 - Render annual top3s"
-            threads.append(t)
-            t.start()
-            
-            feedback.append("Blobs started")
-            
             
 
         elif inputS == "61":
