@@ -20,3 +20,5 @@ CREATE OR REPLACE VIEW public."interestingplayers"
       LEFT JOIN mostrecentgame ON players.playerid::text = mostrecentgame.playerid::text
     Left Join maxLevels pas ON players.playerid::text = pas.playerid::text
     WHERE players.missions > 15 OR pas.level >= 4;
+
+ALTER TABLE AllAchievements ALTER COLUMN AchName TYPE varchar(100);
