@@ -43,7 +43,37 @@ def executeQueryGames(scope, interval = "Null", ArenaName = None, offset = None,
             ID = jobStart("Fetch games, [%s] active players " % (cfg.getConfigString("SiteNameShort")),0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs)) 
             
     queryPlayers(targetIDs,scope, siteName = params["arenaName"], jobID=ID, offset=offset)
+def queryIndividual(ID, scope = None):
+        
+    region = ID.split("-")[0]
+    site =  ID.split("-")[1]
+    IDPart = ID.split("-")[2]
+    
+    summaryJson = fetchPlayer_root('',region,site,IDPart)
+    if summaryJson is not None:
+        #print(DBGstring)
+        datetime_list = []
+        missions = 0
+        level = 0
+        for i in summaryJson["centre"]:
+            datetime_list.append (str(i["joined"]))
+            missions += int(i["missions"])
+            level = max(level,int(i["skillLevelNum"]))
+        joined = min(datetime_list)
+        codeName = str(summaryJson["centre"][0]["codename"])
+        playerNeedsUpdated = addPlayer(ID,codeName,joined,missions)
 
+        
+        if playerNeedsUpdated == True or scope == "full":
+            updatedPlayers.append(ID)
+            missionsJson = fetchPlayerRecents_root('',region,site,IDPart)
+            if missionsJson != None:
+                for mission in missionsJson["mission"]:
+                
+                    missionUUID = addGame(mission[0],mission[1],mission[2])
+                    "FetchPlayerAndGames: %s, %s " % (missionUUID, mission)
+                    addParticipation(missionUUID,ID,mission[3])
+    
 def queryPlayers (targetIDs,scope, siteName = None, jobID = None, offset = None):
     updatedPlayers = []
     
@@ -84,44 +114,11 @@ def queryPlayers (targetIDs,scope, siteName = None, jobID = None, offset = None)
         else:
             ETA = "Calculating"
 
-        counter = counter + 1 
-        
-        region = ID.split("-")[0]
-        site =  ID.split("-")[1]
-        IDPart = ID.split("-")[2]
         
         DBGstring = "Seeking games for %s-%s-%s, [%i / %i] : " % (region,site,IDPart,counter,totalPlayerCount)
         wpq.updateQ(counter,totalPlayerCount, "games for %s-%s-%s" % (region,site,IDPart),ETA)
-        
-        
-        
-        summaryJson = fetchPlayer_root('',region,site,IDPart)
-        if summaryJson is not None:
-            #print(DBGstring)
-            datetime_list = []
-            missions = 0
-            level = 0
-            for i in summaryJson["centre"]:
-                datetime_list.append (str(i["joined"]))
-                missions += int(i["missions"])
-                level = max(level,int(i["skillLevelNum"]))
-            joined = min(datetime_list)
-            codeName = str(summaryJson["centre"][0]["codename"])
-            playerNeedsUpdated = addPlayer(ID,codeName,joined,missions)
-
-            
-            if playerNeedsUpdated == True or scope == "full":
-                updatedPlayers.append(ID)
-                missionsJson = fetchPlayerRecents_root('',region,site,IDPart)
-                if missionsJson != None:
-                    for mission in missionsJson["mission"]:
-                 
-                        missionUUID = addGame(mission[0],mission[1],mission[2])
-                        "FetchPlayerAndGames: %s, %s " % (missionUUID, mission)
-                        addParticipation(missionUUID,ID,mission[3])
-        else:
-            DBGstring += "WARNING no data received for user."
-            #print(DBGstring)
+        counter = counter + 1 
+        queryIndividual(ID,scope)
             
     jobEnd(jobID)        
 
@@ -132,6 +129,6 @@ def queryPlayers (targetIDs,scope, siteName = None, jobID = None, offset = None)
     f.close()
 
 def manualTargetForGames(targetID):
-    queryPlayers([targetID],"full")
+    queryIndividual(targetID,"full")
  
 
