@@ -115,8 +115,8 @@ def queryPlayers (targetIDs,scope, siteName = None, jobID = None, offset = None)
             ETA = "Calculating"
 
         
-        DBGstring = "Seeking games for %s-%s-%s, [%i / %i] : " % (region,site,IDPart,counter,totalPlayerCount)
-        wpq.updateQ(counter,totalPlayerCount, "games for %s-%s-%s" % (region,site,IDPart),ETA)
+        #DBGstring = "Seeking games for %s, [%i / %i] : " % (ID,counter,totalPlayerCount)
+        wpq.updateQ(counter,totalPlayerCount, "games for %s" % (ID),ETA)
         counter = counter + 1 
         queryIndividual(ID,scope)
             
