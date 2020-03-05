@@ -72,22 +72,22 @@ def execute():
     months = []
     for result in results:
         
-        if result [2] != currentMonth:
-            currentMonth = result[2]
+        if result [3] != currentMonth:
+            currentMonth = result[3]
             #print("== New month = [%s]" % (currentMonth,))
             month = {}
             months.append(month)
-            month["month"] = result[2]
+            month["month"] = result[3]
             players = []
             month["players"] = players
             
         #print(result)
         player = {}
-        player["playerName"] = result[4]
+        player["playerName"] = result[5]
         player["gamePlayed"] = result[8]
         player["averageStars"] = "%s" % (result[6])
         players.append(player)
-        playerName = "%s%s" % (result[4]," "*15)
+        playerName = "%s%s" % (result[5]," "*15)
         playerName = playerName[0:10]
         #print("%s %s, %s games played \t %s stars per game (avg) " % (result[1],playerName , result[6], result[8]) )
 
