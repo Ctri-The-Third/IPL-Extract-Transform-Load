@@ -13,9 +13,9 @@ def execute():
      with starQuality as
  (
 	select playerID, gamertag
-	,avg(starsforgame) as avgQualityPerGame 
+	,round(avg(starsforgame),2) as avgQualityPerGame 
 	,gamemonth
-	,count(*) as gamesPlayed 
+	,count(*)::int as gamesPlayed 
 	from public."participationWithStars"
 	where gameTimestamp >= %s
 	and gameTimestamp < %s
@@ -56,11 +56,7 @@ def execute():
     #startYear = '2019-08-01'
     parameters = (
         startYear, endYear, cfg['SiteNameReal']
-        , cfg['SiteNameReal']
-        , startYear, endYear, cfg['SiteNameReal']
-        , startYear, endYear, cfg['SiteNameReal']
-        , startYear, endYear, cfg['SiteNameReal']
-        , cfg['SiteNameReal'])
+        )
     conn = connectToSource()
     cursor = conn.cursor()
 
@@ -88,8 +84,8 @@ def execute():
         #print(result)
         player = {}
         player["playerName"] = result[4]
-        player["gamePlayed"] = result[6]
-        player["averageStars"] = "%s" % (result[8])
+        player["gamePlayed"] = result[8]
+        player["averageStars"] = "%s" % (result[6])
         players.append(player)
         playerName = "%s%s" % (result[4]," "*15)
         playerName = playerName[0:10]
