@@ -25,6 +25,7 @@ ALTER TABLE AllAchievements ALTER COLUMN AchName TYPE varchar(100);
 
 
 -- View: public."participationWithStars"
+DROP VIEW public."participationWithStars";
 
 CREATE OR REPLACE VIEW public."participationWithStars" AS 
  WITH data AS (
@@ -50,7 +51,7 @@ CREATE OR REPLACE VIEW public."participationWithStars" AS
             data.rank,
             data.playercount,
             data.gamemonth,
-            data.playercount * data.playercount / data.rank AS starsforgame
+            round(data.playercount::numeric * data.playercount::numeric / data.rank::numeric,2) AS starsforgame
            FROM data
         )
  SELECT datawithstars.playerid,
