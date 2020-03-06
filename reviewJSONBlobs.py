@@ -66,5 +66,5 @@ for target in targets:
             outStr = outStr + (("%s"%(starObj["Player"][counter]["gamesPlayed"])+" "*7)[0:7])
             print (outStr)
         except:
-            print("ERROR: Unable to processes SQ, player %s for %s ")
+            print("ERROR: Unable to processes SQ, player %s for %s " % (counter,target))
     input("Press enter to continue")
