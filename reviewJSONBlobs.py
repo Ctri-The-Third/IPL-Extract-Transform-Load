@@ -67,3 +67,4 @@ for target in targets:
             print (outStr)
         except:
             print("ERROR: Unable to processes SQ, player %s for %s ")
+    input("Press enter to continue")
