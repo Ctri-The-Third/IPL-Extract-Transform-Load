@@ -23,25 +23,28 @@ else:
         targets.append(config["ID Prefix"])
 
 for target in targets:
-    #top5
-    outStr = (("\n--Results of Player Blob %s --"%target)+"-"*40)[0:40]
-    print(outStr)
+    try:
+        #top5
+        outStr = (("\n--Results of Player Blob %s --"%target)+"-"*40)[0:40]
+        print(outStr)
 
-    top5File = open("JSONBlobs/%splayerBlob.json" % target)
-    top5obj = json.load(top5File)
-    #print (top5obj)
-    definitions = ['GoldenPlayer','SilverPlayer','BronzePlayer','OtherPlayer1','OtherPlayer2']
-    for definition in definitions:
-        try:
-            print ("%s\t%s games, \t%s stars, %s of %s" % (
-        (top5obj[definition]['PlayerName']+" "*15)[0:15] ,
-        top5obj[definition]['MonthlyGamesPlayed'] ,
-        top5obj[definition]['StarQuality'] ,
-        top5obj[definition]['SkillLevelName'] ,
-        top5obj[definition]['HomeArenaTrunc'][0:15] ))
-        
-        except:
-            print ("ERROR: Validation of %s failed" % definition)
+        top5File = open("JSONBlobs/%splayerBlob.json" % target)
+        top5obj = json.load(top5File)
+        #print (top5obj)
+        definitions = ['GoldenPlayer','SilverPlayer','BronzePlayer','OtherPlayer1','OtherPlayer2']
+        for definition in definitions:
+            try:
+                print ("%s\t%s games, \t%s stars, %s of %s" % (
+            (top5obj[definition]['PlayerName']+" "*15)[0:15] ,
+            top5obj[definition]['MonthlyGamesPlayed'] ,
+            top5obj[definition]['StarQuality'] ,
+            top5obj[definition]['SkillLevelName'] ,
+            top5obj[definition]['HomeArenaTrunc'][0:15] ))
+            
+            except:
+                print ("ERROR: Validation of %s failed" % definition)
+    except:
+        print ("ERROR: missing %s for big 5 in %s" %(definition,target))
     top5File.close()
 
 
@@ -56,9 +59,11 @@ for target in targets:
     #print(json.dumps(starObj,indent=4))
     counter = 0
     while counter < 10:
-        counter = counter + 1
-        outStr = ((starObj["Player"][counter]["Name"]+" "*20)[0:20])
-        outStr = outStr + ((starObj["Player"][counter]["StarQualityPerGame"]+" "*7)[0:7])
-        outStr = outStr + (("%s"%(starObj["Player"][counter]["gamesPlayed"])+" "*7)[0:7])
-        print (outStr)
-        
+        try:
+            counter = counter + 1
+            outStr = ((starObj["Player"][counter]["Name"]+" "*20)[0:20])
+            outStr = outStr + ((starObj["Player"][counter]["StarQualityPerGame"]+" "*7)[0:7])
+            outStr = outStr + (("%s"%(starObj["Player"][counter]["gamesPlayed"])+" "*7)[0:7])
+            print (outStr)
+        except:
+            print("ERROR: Unable to processes SQ, player %s for %s ")
