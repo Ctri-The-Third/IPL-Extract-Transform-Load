@@ -377,44 +377,6 @@ order by playerRank asc
     closeConnection()
     return rows
 
-def dumpParticipantsAndGamesToCSV():
-    conn = connectToSource()
-    cursor = conn.cursor()
-    query = """select * From Participation"""
-    cursor.execute(query)
-    count = 0 
-    file = open("CSV dump - participation","w+")
-    for row in cursor.fetchall():
-        count = count + 1
-        file.write("%s,%s,%i\n" % (row[0],row[1],row[2]))
-    file.close()
-    
-    DBG("Dumped %i rows to CSV dump - participation.csv" % (count))
-    query = """select * From Games"""
-    cursor.execute(query)
-    count = 0 
-    file = open("CSV dump - Games","w+")
-    for row in cursor.fetchall():
-        count = count + 1
-        file.write("%s,%s,%s\n" % (row[0],row[1],row[2]))
-    file.close()
-    closeConnection()
-    print("Dumped %i rows to CSV dump - Games.csv" % (count))
-
-
-def importPlayersFromCSV(path):
-    conn=connectToSource()
-    cursor = conn.cursor()
-    file = open (path,"r")
-    readCSV = csv.reader(file, delimiter=',')
-    sql = '''insert into Players (PlayerID,GamerTag,Joined,Missions,Level)
-	    values(?,?,?,?,?)'''
-    for row in readCSV:
-        DBG(row)
-        cursor.execute(sql,(row[0],row[1],row[2],row[3],row[4]))
-    conn.commit()
-    closeConnection()
-
 
 
 def jobStart(description,resumeIndex,methodName, methodParams, completeIndex = None, delay = 0):

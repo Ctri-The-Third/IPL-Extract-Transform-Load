@@ -218,13 +218,13 @@ def executeBuildPlayerBlobs():
 	#print ("Player profile blobs written!")
 	JSONobject = {}
 	if len(targetIDs) >= 1: 
-		fetchIndividualWithID(targetIDs[0][0])
+		#fetchIndividualWithID(targetIDs[0][0])
 		JSONobject["GoldenPlayer"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[0][0])
 	if len(targetIDs) >= 2:
-		fetchIndividualWithID(targetIDs[1][0])
+		#fetchIndividualWithID(targetIDs[1][0])
 		JSONobject["SilverPlayer"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[1][0])
 	if len(targetIDs) >= 3:
-		fetchIndividualWithID(targetIDs[2][0])
+		#fetchIndividualWithID(targetIDs[2][0])
 		JSONobject["BronzePlayer"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[2][0])
 	if len(targetIDs) >= 4:
 		fetchIndividualWithID(targetIDs[3][0])
