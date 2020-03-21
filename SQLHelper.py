@@ -292,60 +292,13 @@ def getTop5PlayersRoster(startDate,endDate,ArenaName):
     
     conn = connectToSource()
     cursor = conn.cursor()
-    query = """with PlayersInGame as (
-	SELECT 
-	Count (Players.GamerTag) as playersInGame, 
-	Games.GameUUID as gameID
-	FROM Games 
-	join Participation on participation.GameUUID = Games.GameUUID
-	join Players on Participation.PlayerID = Players.PlayerID
-	where GameTimestamp >= %s
-	and GameTimeStamp < %s
-	and games.ArenaName = %s
-	group by Games.GameUUID ),
-averageOpponents as 
-(
-	select avg(cast(playersInGame as float)) as AverageOpponents,  players.PlayerID from Participation 
-	join PlayersInGame on Participation.GameUUID = PlayersInGame.gameID
-	join Games on Games.GameUUID = PlayersInGame.gameID
-	join Players on Participation.PlayerID = players.PlayerID
-	where games.ArenaName = %s
-	group by  players.PlayerID		
-),
-totalGamesPlayed as 
-(
-	select count(*) as gamesPlayed,  Participation.PlayerID
-	from Participation 
-	join Games on Games.GameUUID = Participation.GameUUID
-	where GameTimestamp >= %s
-	and GameTimeStamp < %s
-	and games.ArenaName = %s
-	group by Participation.PlayerID
-),
-Ranks as 
-(
-	select GameTimestamp, GameName, Players.PlayerID, GamerTag, Score, 
-		ROW_NUMBER() over (partition by GameTimestamp order by score desc) as gamePosition
-	from Games 
-	join Participation on Games.GameUUID = Participation.GameUUID
-	join Players on Participation.PlayerID = Players.PlayerID
-	where GameTimestamp >= %s
-	and GameTimeStamp < %s
-	and games.ArenaName = %s
-),
-AverageRanks as 
-( select PlayerID, AVG(cast(gamePosition as float)) as AverageRank from Ranks
-	group by PlayerID), 
-AverageScores as (
+    query = """with AverageScores as (
 SELECT 
 	Players.PlayerID, 	
 	avg(Score) as averageScore	
 	FROM Participation
 	inner join Players on Participation.PlayerID = Players.PlayerID
 	inner join Games on Participation.GameUUID = Games.GameUUID
-	join totalGamesPlayed on totalGamesPlayed.PlayerID = Players.PlayerID
-	join averageOpponents on averageOpponents.PlayerID = Players.PlayerID
-	join AverageRanks on AverageRanks.PlayerID = Players.PlayerID
 	where GameTimestamp >= %s
 	and GameTimeStamp < %s
 	and games.ArenaName = %s
@@ -358,16 +311,12 @@ SELECT
  ),
 StarQuality as
 (
-	SELECT  Players.PlayerID, GamerTag
-	, round(cast(AverageOpponents as numeric),2) as AverageOpponents, gamesPlayed
-	, round(cast(AverageRank as numeric),2) as AverageRank
-	, round(cast(AverageOpponents *  1/(AverageRank/AverageOpponents) as numeric),2) as AvgQualityPerGame
-	, round(cast(AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents) as numeric),2) as TotalQualityScore, averageScore, AchievementScore
-	from Players
-	join totalGamesPlayed on totalGamesPlayed.PlayerID = Players.PlayerID
-	join averageOpponents on averageOpponents.PlayerID = Players.PlayerID
-	join AverageRanks on AverageRanks.PlayerID = Players.PlayerID
-	left join AverageScores on AverageScores.PlayerID = Players.PlayerID
+	SELECT playerID, gamerTag, avg(starsforgame) as avgQualityPerGame, count(*) as gamesPlayed
+	from public."participationWithStars"
+	where GameTimestamp >= %s
+	and GameTimeStamp < %s
+	and ArenaName = %s
+	group by 1,2
 ),
 GoldenTop3 as 
 (
@@ -414,10 +363,9 @@ join Players pl on pl.PlayerID = p.PlayerID
 order by playerRank asc
 """
     data = (startDate,endDate,ArenaName
+        ,startDate,endDate,ArenaName
         ,ArenaName
-        ,startDate,endDate,ArenaName
-        ,startDate,endDate,ArenaName
-        ,startDate,endDate,ArenaName,ArenaName)
+        )
     cursor.execute(query,data)
     rows = cursor.fetchall()
     if rows == None:
@@ -428,44 +376,6 @@ order by playerRank asc
     conn.commit()
     closeConnection()
     return rows
-
-def dumpParticipantsAndGamesToCSV():
-    conn = connectToSource()
-    cursor = conn.cursor()
-    query = """select * From Participation"""
-    cursor.execute(query)
-    count = 0 
-    file = open("CSV dump - participation","w+")
-    for row in cursor.fetchall():
-        count = count + 1
-        file.write("%s,%s,%i\n" % (row[0],row[1],row[2]))
-    file.close()
-    
-    DBG("Dumped %i rows to CSV dump - participation.csv" % (count))
-    query = """select * From Games"""
-    cursor.execute(query)
-    count = 0 
-    file = open("CSV dump - Games","w+")
-    for row in cursor.fetchall():
-        count = count + 1
-        file.write("%s,%s,%s\n" % (row[0],row[1],row[2]))
-    file.close()
-    closeConnection()
-    print("Dumped %i rows to CSV dump - Games.csv" % (count))
-
-
-def importPlayersFromCSV(path):
-    conn=connectToSource()
-    cursor = conn.cursor()
-    file = open (path,"r")
-    readCSV = csv.reader(file, delimiter=',')
-    sql = '''insert into Players (PlayerID,GamerTag,Joined,Missions,Level)
-	    values(?,?,?,?,?)'''
-    for row in readCSV:
-        DBG(row)
-        cursor.execute(sql,(row[0],row[1],row[2],row[3],row[4]))
-    conn.commit()
-    closeConnection()
 
 
 
