@@ -1,4 +1,18 @@
 
+CREATE TABLE public.jobsblocking
+(
+    jobid text COLLATE pg_catalog."default" NOT NULL,
+    blockingid text COLLATE pg_catalog."default" NOT NULL
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public.jobsblocking
+    OWNER to "LaserScraper";
+
+
 CREATE OR REPLACE VIEW public."jobsView" AS
  WITH data AS (
          SELECT date_part('epoch'::text, now() - COALESCE(jobslist.lastheartbeat, jobslist.started)::timestamp with time zone) AS age,
