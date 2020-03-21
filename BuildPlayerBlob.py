@@ -12,82 +12,53 @@ from SQLHelper import jobHeartbeat
 def buildPlayerBlob (startDate,endDate,targetID):
 	cachedconfig = cfg.getConfig()
 	infoQuery = """
-		with PlayersInGame as (
-		SELECT 
-		Count (Players.GamerTag) as playersInGame, 
-		Games.GameUUID as gameID
-		FROM Games
-		join Participation on participation.GameUUID = Games.GameUUID
-		join Players on Participation.PlayerID = Players.PlayerID
-		where GameTimestamp >= %s
-		and GameTimeStamp < %s 
-		and Games.ArenaName = %s
-		group by Games.GameUUID ),
-	averageOpponents as 
-	(
-		select avg(cast(playersInGame as float)) as AverageOpponents,  players.PlayerID from Participation 
-		join PlayersInGame on Participation.GameUUID = PlayersInGame.gameID
-		join Games on Games.GameUUID = PlayersInGame.gameID
-		join Players on Participation.PlayerID = players.PlayerID
-		group by  players.PlayerID
-
+	
+	with StarQuality as (
+		select playerID
+		, avg(rank) as AverageRank
+		, avg(playercount) as AverageOpponents
+		, round(avg(starsforgame),2) as AvgQualityPerGame
+		, round(sum(starsforgame),2) as TotalQualityScore
+		, count(*) as gamesPlayed
+		from public."participationWithStars"
+		where gametimestamp >= %s
+		and gametimestamp < %s
+		and arenaName = %s
+		and playerID = %s
+		group by playerID
 	),
-	totalGamesPlayed as 
-	(
-		select count(*) as gamesPlayed,  Participation.PlayerID
-		from Participation 
-		join Games on Games.GameUUID = Participation.GameUUID
-		where GameTimestamp >= %s
-		and GameTimeStamp < %s 
-		and ArenaName = %s
-		group by Participation.PlayerID
-	),
-	Ranks as 
-	(
-		select GameTimestamp, GameName, Players.PlayerID, GamerTag, Score, 
-			ROW_NUMBER() over (partition by GameTimestamp order by score desc) as gamePosition
-		from Games 
-		join Participation on Games.GameUUID = Participation.GameUUID
-		join Players on Participation.PlayerID = Players.PlayerID
-		where GameTimestamp >= %s
-		and GameTimeStamp < %s
-		and ArenaName = %s
-	),
-	AverageRanks as 
-	( select PlayerID, AVG(cast(gamePosition AS FLOAT)) as AverageRank from Ranks
-		group by PlayerID),
 
 	totalAchievements as  (
 	select  sum ( case when achievedDate is null then 0 when achievedDate is not null then 1 end) as AchievementsCompleted, PlayerID 
 	from PlayerAchievement pa join AllAchievements aa on pa.AchID = aa.AchID
-	where aa.ArenaName = %s or aa.ArenaName = 'Global Achievements'
+	where aa.ArenaName =  %s
+	 or aa.ArenaName = 'Global Achievements'
 	group by PlayerID 
 	)
 
 
 
 	select Players.PlayerID, GamerTag,players.Level, Missions, round(cast(AverageOpponents as numeric),2) as AverageOpponents, gamesPlayed
-	, round(cast(AverageRank as numeric),2) as AverageRank
-	, round(cast((AverageOpponents *  1/(AverageRank/AverageOpponents)) as numeric),2) as AvgQualityPerGame
-	, round(cast((AverageOpponents * gamesPlayed * 1/(AverageRank/AverageOpponents)) as numeric),2) as TotalQualityScore
-	, totalAchievements.AchievementsCompleted
-	, totalAchievements.PlayerID as TaPID
+	, AverageRank
+	, AvgQualityPerGame
+	, TotalQualityScore
+	, ta.AchievementsCompleted
+	, ta.PlayerID as TaPID
 	, ph.arenaName
     , pas.locallevel
     , arl.rankName
+    
     from Players 
-	join totalGamesPlayed on totalGamesPlayed.PlayerID = Players.PlayerID
-	join averageOpponents on averageOpponents.PlayerID = Players.PlayerID
-	join AverageRanks on AverageRanks.PlayerID = Players.PlayerID
-	join totalAchievements on totalAchievements.PlayerID = Players.PlayerID
+	join StarQuality sq on sq.playerID = players.playerID
+	join totalAchievements ta on ta.playerID = players.playerID
     join public."playerHomes" ph 
      on Players.PlayerID = ph.PlayerID 
      and ph.month = %s 
      and ph.arenarow = 1
     join PlayerArenaSummary pas on pas.playerID = ph.PlayerID and pas.ArenaName = ph.ArenaName
-	join ArenaRanksLookup arl on arl.ArenaName = pas.ArenaName and arl.ranknumber = pas.localLevel
+    join ArenaRanksLookup arl on arl.ArenaName = pas.ArenaName and arl.ranknumber = pas.localLevel
     
-	where Players.playerID = %s 
+    where Players.playerID = %s
 	"""
 	  
 
@@ -178,8 +149,7 @@ where pl.playerID = %s
 	targetArena = cachedconfig["SiteNameReal"]
 	currentMonth = cachedconfig["StartDate"][:7]
 
-	result = cursor.execute(infoQuery,(startDate, endDate, targetArena, startDate, endDate, targetArena,  startDate, endDate, targetArena, targetArena, currentMonth, targetID))
-
+	result = cursor.execute(infoQuery,(startDate, endDate, targetArena, targetID, targetArena, currentMonth, targetID))
 	row = cursor.fetchone()
 
 	if row == None:
@@ -250,19 +220,19 @@ def executeBuildPlayerBlobs(jobID = None, counter = None):
 	#print ("Player profile blobs written!")
 	JSONobject = {}
 	if len(targetIDs) >= 1: 
-		fetchIndividualWithID(targetIDs[0][0])
+		#fetchIndividualWithID(targetIDs[0][0])
 		JSONobject["GoldenPlayer"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[0][0])
 		if jobID is not None and counter is not None:
 			jobHeartbeat(jobID,counter)
 
 	if len(targetIDs) >= 2:
-		fetchIndividualWithID(targetIDs[1][0])
+		#fetchIndividualWithID(targetIDs[1][0])
 		JSONobject["SilverPlayer"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[1][0])
 		if jobID is not None and counter is not None:
 			jobHeartbeat(jobID,counter)
 
 	if len(targetIDs) >= 3:
-		fetchIndividualWithID(targetIDs[2][0])
+		#fetchIndividualWithID(targetIDs[2][0])
 		JSONobject["BronzePlayer"] = buildPlayerBlob(cachedconfig["StartDate"],cachedconfig["EndDate"],targetIDs[2][0])
 		if jobID is not None and counter is not None:
 			jobHeartbeat(jobID,counter)
