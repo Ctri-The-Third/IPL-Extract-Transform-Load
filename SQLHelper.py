@@ -96,7 +96,22 @@ def getPlayersWhoMightNeedAchievementUpdates(scope, offset = 0):
     
     closeConnection()
     return playerList
-    
+def getPlayers(offset = 0):
+    conn = connectToSource()
+    cursor = conn.cursor()
+
+    query = """with data as ( select row_number() over (order by Level desc, Missions desc) as ID, PlayerID, Missions, Level from Players)
+	select PlayerID from data
+            where (ID >= 0)
+			order by ID asc 
+            offset %s 
+            """
+    cursor.execute(query, (offset,))
+    results = cursor.fetchall()    
+
+    conn.commit() 
+    closeConnection()
+    return results
 
 def addPlayer(playerID,GamerTag,Joined,missions):
     
@@ -512,6 +527,17 @@ def jobHeartbeat(ID,progressIndex):
 
     conn.commit()
     closeConnection()
+def jobBlock(jobWhichBlocks,jobWhichIsBlocked):
+    SQL = """INSERT INTO jobsblocking
+    (jobid, blockingid) 
+    values (%s,%s)"""
+    conn=connectToSource()
+    cursor = conn.cursor()
+
+    cursor.execute(SQL,(jobWhichBlocks,jobWhichIsBlocked))
+
+    conn.commit()
+    closeConnection()
 
 _activeJobsCacheTime = None
 _activeJobsCacheResults = None
@@ -525,6 +551,9 @@ def getActiveJobs():
         SQL = """ with data as (select row_number() over (partition by healthstatus order by finished desc ) as row, * from public."jobsView")
     select * from data where finished is null or (finished is not null and row <= 3 and row > 0)
     order by finished desc, started asc"""
+
+
+    
         conn =connectToSource()
         cursor = conn.cursor()
         
