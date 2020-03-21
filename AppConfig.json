@@ -1,7 +1,7 @@
 {
-  "SiteNameReal": "Funstation Ltd, Edinburgh, Scotland",
-  "SiteNameShort": "Funstation Edinburgh",
-  "ID Prefix": "7-9-",
+  "SiteNameReal": "Laserforce Peterborough",
+  "SiteNameShort": "Laserforce Peterborough",
+  "ID Prefix": "7-2-",
   "StartDate": "2020-01-01",
   "EndDate": "2020-02-01",
   "LastMonthStart": "2019-12-01",
@@ -28,12 +28,11 @@
       "ID Prefix": "7-8-"
     }
   ],
-  "DBConnectionString":{
-    "host":"localhost",
-    "port":5432,
-    "database":"LaserScraper",
-    "username":"LaserScraper",
-    "password":"LaserScraper"
+  "DBConnectionString": {
+    "host": "localhost",
+    "port": 5432,
+    "database": "LaserScraper",
+    "username": "LaserScraper",
+    "password": "LaserScraper"
   }
-  
 }

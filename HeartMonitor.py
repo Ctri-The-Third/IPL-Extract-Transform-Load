@@ -22,9 +22,10 @@ def executeMonitor():
     conn = connectToSource()
     cursor = conn.cursor()
     SQL = """
-            select age,"desc",ID,methodname,started,finished,lastheartbeat,resumeindex, methodParams, healthstatus,percenttocompletion 
+            select age,"desc",ID,methodname,started,finished,lastheartbeat,resumeindex, methodParams, healthstatus,percenttocompletion, countofblocking
             from public."jobsView"
-            where finished is null and age > 120 
+            where
+                healthstatus = 'dead'
             order by lastheartbeat asc, started asc
  """
     seconds = 29
