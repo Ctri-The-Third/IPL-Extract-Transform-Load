@@ -12,40 +12,35 @@ def executeBuildMonthlyStars():
 	endDate = cachedconfig["EndDate"]
 	arenaName = cachedconfig["SiteNameReal"]
 	SQL = '''
-	with data as (
-		select pl.PlayerID, pl.GamerTag, GameName, GameTimestamp, p.score, 
-		ROW_NUMBER() over (partition by GameTimestamp order by GameTimestamp desc, score desc)  as rank, 
-		count(p.PlayerID) over (partition by GameTimestamp order by GameTimestamp desc) as playerCount,
-		TO_CHAR(GameTimestamp,'YYYY-MM') as GameMonth
-		from Participation p join Games g on p.GameUUID = g.GameUUID 
-		join Players pl on p.PlayerID = pl.PlayerID
-		where g.ArenaName = %s
-	), 
-	ranksAndCountsAndStars as (
-		select PlayerID, GamerTag, count(*) as gamesPlayed
-		, avg(cast(rank as float)) as AverageRank
-		, avg(cast(playerCount as float)) as AveragePlayerCount
-		, GameMonth  --average(rank) over (partition by GameTimestamp
-		,avg(cast(playerCount as float)) *  (avg(cast(playerCount as float8))/avg (cast(rank as float))) as AverageStarQuality
-		from data
-		where GameMonth in (%s,%s) 
-		group by PlayerID, GamerTag, GameMonth
-	)
+with subsetOfData as 
+(
+	select playerID
+	, gamerTag
+	, gamemonth
+	, avg(playercount) as AveragePlayerCount
+	, count(*) as GamesPlayed
+	, avg(Starsforgame) as AverageStarQuality
+	, sum(Starsforgame) as TotalStarQuality
+	, avg(rank) as AverageRank 
+	from public."participationWithStars"
+	where arenaName = %s --
+	and GameMonth in (%s,%s) --	
+	group by 1,2,3
+)
 
-	select r1.PlayerID, r1.GamerTag,
-	round (cast(r1.AverageStarQuality as numeric),2) as AverageStarQuality, 
-	round (cast(r1.AverageStarQuality * r1.gamesPlayed as numeric),2) as TotalStarQuality,
-	round (cast(r1.AveragePlayerCount as numeric),2) as AveragePlayerCount, 
-	round (cast(r1.AverageRank as numeric),2) as AverageRank, 
-	r1.gamesPlayed as GamesPlayed,
-	round (cast(r2.AverageRank - r1.AverageRank as numeric),2) as changeInRank, 
-	round (cast(r1.AveragePlayerCount-r2.AveragePlayerCount as numeric),2) as changeInPlayers,
-	round (cast(r1.AverageStarQuality - r2.AverageStarQuality as numeric),2) as changeInStars
-	from ranksAndCountsAndStars r1 left join ranksAndCountsAndStars r2 
-	on r1.PlayerID = r2.PlayerID and r1.GameMonth != r2.GameMonth
-	where r1.GameMonth = %s
-	order by AverageStarQuality desc
-	
+select r1.PlayerID, r1.GamerTag,
+round (cast(r1.AverageStarQuality as numeric),2) as AverageStarQuality, 
+round (cast(r1.AverageStarQuality * r1.gamesPlayed as numeric),2) as TotalStarQuality,
+round (cast(r1.AveragePlayerCount as numeric),2) as AveragePlayerCount, 
+round (cast(r1.AverageRank as numeric),2) as AverageRank, 
+r1.gamesPlayed as GamesPlayed,
+round (cast(r2.AverageRank - r1.AverageRank as numeric),2) as changeInRank, 
+round (cast(r1.AveragePlayerCount-r2.AveragePlayerCount as numeric),2) as changeInPlayers,
+round (cast(r1.AverageStarQuality - r2.AverageStarQuality as numeric),2) as changeInStars
+from subsetOfData r1 left join subsetOfData  r2 
+on r1.PlayerID = r2.PlayerID and r1.GameMonth != r2.GameMonth
+where r1.GameMonth = %s --
+order by AverageStarQuality desc
 	'''
 
 	conn = connectToSource()
