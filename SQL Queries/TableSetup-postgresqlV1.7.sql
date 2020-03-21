@@ -21,10 +21,11 @@ CREATE OR REPLACE VIEW public."jobsView" AS
         CASE
             WHEN data.countofblocking::double precision > 0::double precision THEN 'blocked'::text
             WHEN data.age < 0::double precision THEN 'pending'::text
-            WHEN data.age < 30::double precision THEN 'alive'::text
-            WHEN data.age < 120::double precision THEN 'unhealthy'::text
+            WHEN data.age < 30::double precision and data.finished IS NULL THEN 'alive'::text
+            WHEN data.age < 120::double precision and data.finished IS NULL THEN 'unhealthy'::text
             WHEN data.age > 120::double precision AND data.finished IS NULL THEN 'dead'::text
             WHEN data.age > 120::double precision AND data.finished IS NOT NULL THEN 'complete'::text
+            WHEN data.finished IS NOT NULL THEN 'completing'::text
             ELSE NULL::text
         END AS healthstatus,
     data.age,
@@ -43,3 +44,4 @@ CREATE OR REPLACE VIEW public."jobsView" AS
     data.countofblocking
    FROM data
   ORDER BY data.started DESC;
+

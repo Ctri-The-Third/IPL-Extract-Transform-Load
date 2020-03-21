@@ -7,6 +7,7 @@ import FetchPlayerUpdatesAndNewPlayers
 import FetchAchievements
 import threading
 import threadRegistrationQueue as TRQ
+import BuildAllForAllArenasSequentially
 from  SQLconnector import connectToSource
 
  
@@ -87,7 +88,17 @@ def executeMonitor():
                     t.start()
                     t.name = "%s:%s" % (result[2][0:3],result[3])
                     TRQ.q.put(t)
-                
+
+                elif result[3] == "buildAllForAllArenasSequentially.buildAllForAllArenasSequentially":
+                    
+                    t = threading.Thread (
+                        target=BuildAllForAllArenasSequentially.buildAllForAllArenasSequentially,
+                        kwargs={"jobID":result[2],"startIndex":result[7]}
+                    )
+                    t.start()
+                    t.name = "%s:%s" % (result[2][0:3],result[3])
+                    TRQ.q.put(t)
+
                 #print(result)
         time.sleep(1) #sleep for a second to allow termination checks
 

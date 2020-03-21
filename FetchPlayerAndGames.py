@@ -129,6 +129,6 @@ def queryPlayers (targetIDs,scope, siteName = None, jobID = None, offset = None)
     f.close()
 
 def manualTargetForGames(targetID):
-    queryIndividual(targetID,"full")
+    queryIndividual(targetID,"individual")
  
 
