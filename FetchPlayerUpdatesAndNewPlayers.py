@@ -7,7 +7,7 @@ import queue
 import time 
 from colorama import Fore, Back
 from SQLconnector import connectToSource, closeConnection
-from SQLHelper import addPlayer, addPlayerArena, addArenaRank
+from SQLHelper import addPlayer, addPlayerArena, addArenaRank, getPlayers
 from FetchHelper import fetchPlayer_root
 import workerProgressQueue as wpq
 import ConfigHelper as cfg 
@@ -103,6 +103,7 @@ select max (ID) from IDs
     conn.commit()
     
     closeConnection()
+#summaries! :) 
 def updateExistingPlayers(JobID = None):
     startTime = datetime.datetime.now()
     conn = connectToSource()
@@ -123,14 +124,7 @@ order by started desc"""
             offset = results[3]
         
 
-    query = """with data as ( select row_number() over (order by Level desc, Missions desc) as ID, PlayerID, Missions, Level from Players)
-	select PlayerID from data
-            where (ID >= 0)
-			order by ID asc 
-            offset %s 
-            """
-    cursor.execute(query, (offset,))
-    results = cursor.fetchall()
+    results = getPlayers(offset=offset)
 
     totalTargetsToUpdate = len(results)
     if JobID == None:
