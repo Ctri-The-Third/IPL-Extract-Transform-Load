@@ -205,7 +205,7 @@ while (inputS != "exit" and inputS != "x" and stop != True) and not safeShutdown
             feedback.append("Enter User ID or GamerTag to search")
         elif inputS == "66": 
             
-            feedback.append("Performing weekly update...")
+            feedback.append("Queuing tasks. Will being in <30 seconds...")
             periodicFunctions.queueWeekly()
             inputS = ""
         elif inputS == "67":
