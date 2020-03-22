@@ -24,9 +24,8 @@ def buildAllForAllArenasSequentially(jobID = None, startIndex = None):
                         cfgH.setActive(counter)
                         BuildMonthlyScoresToJSON.executeMonthlyScoresBuild()
                         jobHeartbeat(jobID,counter)
-
                         BuildMonthlyStarQualityToJSON.executeBuildMonthlyStars()
-
+                        jobHeartbeat(jobID,counter)
                         BuildAchievementScoresToJSON.executeAchievementBuild()
                         BuildPlayerBlob.executeBuildPlayerBlobs(jobID = jobID, counter = counter)
                         #BuildHeadToHeadsToJSON.buildHeadToHeads() 
