@@ -8,6 +8,7 @@ import FetchAchievements
 import threading
 import threadRegistrationQueue as TRQ
 import BuildAllForAllArenasSequentially
+import ConfigHelper
 from  SQLconnector import connectToSource
 
  
@@ -42,45 +43,59 @@ def executeMonitor():
             #print ("---")
             for result in cursor.fetchall():
                 if result[3] == "FetchPlayerAndGames.executeQueryGames":
-                    params = json.loads(result[8])
-                    if result[7] is not None:
-                        print("Debug insertion")
-                    t = threading.Thread(
-                        target=FetchPlayerAndGames.executeQueryGames, 
-                        args=(params["scope"],), 
-                        kwargs={"ID":result[2],"offset":result[7]}) #
-                    t.name = "%s:%s" % (result[2][0:3],result[1])
-                    if checkThread(activeThreads,t.name):
-                        t.start()
-                        activeThreads.append(t)
-                        TRQ.q.put(t)
+                    MaxThreads = ConfigHelper.getConfigString("MaxWorkerThreads")
+                    threadName = "%s:%s" % (result[2][0:3],result[1])
+                    if checkThread(activeThreads,threadName) == 0 :
+                    
+                        params = json.loads(result[8])
+                        FetchPlayerAndGames.QueryGamesLoad(params["scope"],offset=result[7],ID=result[2])
+                        counter = 0 
+                        while checkThread(activeThreads,threadName) < MaxThreads:
+                            counter = counter + 1 
+                            offset = 0
+                            if result[7] != None:
+                                offset = result[7]
+                            print("Debug insertion")
+                            t = threading.Thread(
+                                target=FetchPlayerAndGames.QueryGamesLoop, 
+                                args={result[2]}, 
+                                kwargs={"counter":offset +  counter}) #
+                            t.name = threadName
+                            t.start()
+                            activeThreads.append(t)
+                            TRQ.q.put(t)
 
                     
                 
                 elif result[3] == "FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers":
-                    t = threading.Thread(
-                        target=FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers, 
-                        #args=(params["scope"],), 
-                        kwargs={"JobID":result[2]}) #this method gets offset from the job ID
-                    t.name = "%s:%s" % (result[2][0:3],result[1])
-                    if checkThread(activeThreads,t.name):
+                    MaxThreads = ConfigHelper.getConfigString("MaxWorkerThreads")
+                    threadName = "%s:%s" % (result[2][0:3],result[1])
+                    if checkThread(activeThreads,threadName) == 0:
+                        FetchPlayerUpdatesAndNewPlayers.updateExistingPlayersLoad(JobID=result[2])
+                    while checkThread(activeThreads,threadName) < MaxThreads:
+                        t = threading.Thread(
+                            target=FetchPlayerUpdatesAndNewPlayers.updateExistingPlayersLoop, 
+                            kwargs={"JobID":result[2]}
+                        ) #this method gets offset from the job ID
+                        t.name = threadName
                         t.start()
                         activeThreads.append(t)
                         TRQ.q.put(t)
-
+                    
 
                     #execute known method.
 
 
 
                 elif result[3] == "FetchAchievements.executeFetchAchievements":
+                    MaxThreads = ConfigHelper.getConfigString("MaxWorkerThreads")
                     params = json.loads(result[8])
                     t = threading.Thread(
                         target=FetchAchievements.executeFetchAchievements, 
                         args=(params["scope"],), 
                         kwargs={"jobID":result[2],"offset":result[7]}) #
                     t.name = "%s:%s" % (result[2][0:3],result[1])
-                    if checkThread(activeThreads,t.name):
+                    if checkThread(activeThreads,t.name) == 0:
                         t.start()
                         activeThreads.append(t)
                         TRQ.q.put(t)
@@ -89,6 +104,7 @@ def executeMonitor():
 
 
                 elif result[3] == "FetchPlayerUpdatesAndNewPlayers.findNewPlayers":
+                    MaxThreads = ConfigHelper.getConfigString("MaxWorkerThreads")
                     params = json.loads(result[8])
                     t = threading.Thread(
                         target=FetchPlayerUpdatesAndNewPlayers.findNewPlayers, 
@@ -96,7 +112,7 @@ def executeMonitor():
                         kwargs={"jobID":result[2],"siteName":params["siteName"]}
                         ) #
                     t.name = "%s:%s" % (result[2][0:3],result[1])
-                    if checkThread(activeThreads,t.name):
+                    if checkThread(activeThreads,t.name) == 0:
                         t.start()
                         activeThreads.append(t)
                         TRQ.q.put(t)
@@ -104,14 +120,14 @@ def executeMonitor():
 
 
                 elif result[3] == "buildAllForAllArenasSequentially.buildAllForAllArenasSequentially":
-                    
+                    MaxThreads = ConfigHelper.getConfigString("MaxWorkerThreads")
                     t = threading.Thread (
                         target=BuildAllForAllArenasSequentially.buildAllForAllArenasSequentially,
                         kwargs={"jobID":result[2],"startIndex":result[7]}
                     )
                     
                     t.name = "%s:%s" % (result[2][0:3],result[1])
-                    if checkThread(activeThreads,t.name):
+                    if checkThread(activeThreads,t.name) == 0:
                         t.start()
                         activeThreads.append(t)
                         TRQ.q.put(t)
@@ -120,10 +136,11 @@ def executeMonitor():
         time.sleep(1) #sleep for a second to allow termination checks
 
 def checkThread(threads,threadTitle):
+    counter = 0
     for t in threads:
         if t.name == threadTitle:
-            return False
-    return True
+            counter = counter + 1
+    return counter
 
 def terminateMonitor():
     global __terminateInstruction__
