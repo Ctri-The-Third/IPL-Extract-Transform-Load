@@ -49,7 +49,7 @@ def executeMonitor():
                         args=(params["scope"],), 
                         kwargs={"ID":result[2],"offset":result[7]}) #
                     t.start()
-                    t.name = "%s:%s" % (result[2][0:3],result[2])
+                    t.name = "%s:%s" % (result[2][0:3],result[1])
                     TRQ.q.put(t)
                     
                 
@@ -59,7 +59,7 @@ def executeMonitor():
                         #args=(params["scope"],), 
                         kwargs={"JobID":result[2]}) #this method gets offset from the job ID
                     t.start()
-                    t.name = "%s:%s" % (result[2][0:3],result[2])
+                    t.name = "%s:%s" % (result[2][0:3],result[1])
                     TRQ.q.put(t)
 
                     #execute known method.
@@ -73,7 +73,7 @@ def executeMonitor():
                         args=(params["scope"],), 
                         kwargs={"jobID":result[2],"offset":result[7]}) #
                     t.start()
-                    t.name = "%s:%s" % (result[2][0:3],result[2])
+                    t.name = "%s:%s" % (result[2][0:3],result[1])
                     TRQ.q.put(t)
 
 
@@ -86,7 +86,7 @@ def executeMonitor():
                         kwargs={"jobID":result[2],"siteName":params["siteName"]}
                         ) #
                     t.start()
-                    t.name = "%s:%s" % (result[2][0:3],result[2])
+                    t.name = "%s:%s" % (result[2][0:3],result[1])
                     TRQ.q.put(t)
 
                 elif result[3] == "buildAllForAllArenasSequentially.buildAllForAllArenasSequentially":
@@ -96,7 +96,7 @@ def executeMonitor():
                         kwargs={"jobID":result[2],"startIndex":result[7]}
                     )
                     t.start()
-                    t.name = "%s:%s" % (result[2][0:3],result[2])
+                    t.name = "%s:%s" % (result[2][0:3],result[1])
                     TRQ.q.put(t)
 
                 #print(result)
