@@ -29,6 +29,7 @@ def executeMonitor():
                 healthstatus = 'dead'
             order by lastheartbeat asc, started asc
  """
+    activeThreads = []
     seconds = 29
     while not isTerminated():
         seconds = seconds + 1
@@ -48,9 +49,12 @@ def executeMonitor():
                         target=FetchPlayerAndGames.executeQueryGames, 
                         args=(params["scope"],), 
                         kwargs={"ID":result[2],"offset":result[7]}) #
-                    t.start()
                     t.name = "%s:%s" % (result[2][0:3],result[1])
-                    TRQ.q.put(t)
+                    if checkThread(activeThreads,t.name):
+                        t.start()
+                        activeThreads.append(t)
+                        TRQ.q.put(t)
+
                     
                 
                 elif result[3] == "FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers":
@@ -58,9 +62,12 @@ def executeMonitor():
                         target=FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers, 
                         #args=(params["scope"],), 
                         kwargs={"JobID":result[2]}) #this method gets offset from the job ID
-                    t.start()
                     t.name = "%s:%s" % (result[2][0:3],result[1])
-                    TRQ.q.put(t)
+                    if checkThread(activeThreads,t.name):
+                        t.start()
+                        activeThreads.append(t)
+                        TRQ.q.put(t)
+
 
                     #execute known method.
 
@@ -72,9 +79,12 @@ def executeMonitor():
                         target=FetchAchievements.executeFetchAchievements, 
                         args=(params["scope"],), 
                         kwargs={"jobID":result[2],"offset":result[7]}) #
-                    t.start()
                     t.name = "%s:%s" % (result[2][0:3],result[1])
-                    TRQ.q.put(t)
+                    if checkThread(activeThreads,t.name):
+                        t.start()
+                        activeThreads.append(t)
+                        TRQ.q.put(t)
+
 
 
 
@@ -85,9 +95,13 @@ def executeMonitor():
                         #args=(params["siteName"],), 
                         kwargs={"jobID":result[2],"siteName":params["siteName"]}
                         ) #
-                    t.start()
                     t.name = "%s:%s" % (result[2][0:3],result[1])
-                    TRQ.q.put(t)
+                    if checkThread(activeThreads,t.name):
+                        t.start()
+                        activeThreads.append(t)
+                        TRQ.q.put(t)
+
+
 
                 elif result[3] == "buildAllForAllArenasSequentially.buildAllForAllArenasSequentially":
                     
@@ -95,12 +109,21 @@ def executeMonitor():
                         target=BuildAllForAllArenasSequentially.buildAllForAllArenasSequentially,
                         kwargs={"jobID":result[2],"startIndex":result[7]}
                     )
-                    t.start()
+                    
                     t.name = "%s:%s" % (result[2][0:3],result[1])
-                    TRQ.q.put(t)
+                    if checkThread(activeThreads,t.name):
+                        t.start()
+                        activeThreads.append(t)
+                        TRQ.q.put(t)
 
                 #print(result)
         time.sleep(1) #sleep for a second to allow termination checks
+
+def checkThread(threads,threadTitle):
+    for t in threads:
+        if t.name == threadTitle:
+            return False
+    return True
 
 def terminateMonitor():
     global __terminateInstruction__
