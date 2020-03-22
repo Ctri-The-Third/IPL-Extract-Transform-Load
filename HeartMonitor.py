@@ -89,13 +89,18 @@ def executeMonitor():
 
                 elif result[3] == "FetchAchievements.executeFetchAchievements":
                     MaxThreads = ConfigHelper.getConfigString("MaxWorkerThreads")
+                    threadName = "%s:%s" % (result[2][0:3],result[1])
                     params = json.loads(result[8])
-                    t = threading.Thread(
-                        target=FetchAchievements.executeFetchAchievements, 
-                        args=(params["scope"],), 
-                        kwargs={"jobID":result[2],"offset":result[7]}) #
-                    t.name = "%s:%s" % (result[2][0:3],result[1])
-                    if checkThread(activeThreads,t.name) == 0:
+                    if checkThread(activeThreads,threadName) == 0:
+                        FetchAchievements.FetchAchievementsLoad()
+                    while checkThread(activeThreads,threadName) < MaxThreads:
+
+                        t = threading.Thread(
+                            target=FetchAchievements.FetchAchievementsLoop, 
+                            args=(params["scope"],), 
+                            kwargs={"jobID":result[2],"offset":result[7]}) #
+                        t.name = "%s:%s" % (result[2][0:3],result[1])
+                    
                         t.start()
                         activeThreads.append(t)
                         TRQ.q.put(t)

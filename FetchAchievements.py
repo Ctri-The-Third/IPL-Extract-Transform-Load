@@ -24,7 +24,7 @@ import ConfigHelper as cfg
 #targetIDs = {
 #    '7-9-5940'
 #}
-def executeFetchAchievements (scope, jobID = None, offset = 0):
+def FetchAchievementsLoad (scope, jobID = None, offset = 0):
     params = {}
     params["scope"] = scope
     
@@ -42,7 +42,11 @@ def executeFetchAchievements (scope, jobID = None, offset = 0):
             jobID= jobStart("Fetch achievements, players from the last 7 days",0,"FetchAchievements.executeFetchAchievements",params,len(targetIDs))
     
     print("Scope : %s" % (scope))
-    fetchAllAchievements(targetIDs, jobID=jobID)
+    FetchAchievementsLoop(targetIDs, jobID=jobID)
+    return jobID 
+
+def FetchAchievementsLoop(targetIDs, jobID=None):
+    return
 
 def fetchAllAchievements (targetIDs, jobID = None):
     conn = connectToSource()
