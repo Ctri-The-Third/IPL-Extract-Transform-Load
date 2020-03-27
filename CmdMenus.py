@@ -31,7 +31,6 @@ from CmdMenus_drawMethods import *
 from FetchPlayerAndGames import QueryGamesExecute
 #from FetchPlayerUpdatesAndNewPlayers import updateExistingPlayers
 from FetchPlayerUpdatesAndNewPlayers import findNewPlayers
-from FetchAchievements import executeFetchAchievements
 import BuildAllForAllArenasSequentially
 import FetchPlayerAndGames
 import FetchPlayerUpdatesAndNewPlayers
