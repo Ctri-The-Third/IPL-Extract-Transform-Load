@@ -104,8 +104,7 @@ select max (ID) from IDs
     
     closeConnection()
 #summaries! :) 
-def updateExistingPlayers(JobID = None):
-    startTime = datetime.datetime.now()
+def updateExistingPlayersLoad(JobID = None):
     conn = connectToSource()
     cursor = conn.cursor()
     offset = 0
@@ -125,33 +124,55 @@ order by started desc"""
         
 
     results = getPlayers(offset=offset)
-
+    for playerID in results:
+        wpq.summaryQ.put(playerID)
     totalTargetsToUpdate = len(results)
+    
+    
+    closeConnection()
+    
+
+def updateExistingPlayersExecute():
+    
+    updateExistingPlayersLoad()
+    TotalEntries = wpq.summaryQ.qsize()
+    jobID = jobStart("Fetch summaries, all known players",0,"FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers",None,TotalEntries,delay=-2)
+    return jobID
+
+
+def updateExistingPlayersLoop(JobID = None):
+    startTime = datetime.datetime.now()
+    conn = connectToSource()
+    cursor = conn.cursor()
+    offset = 0
+    TotalEntries = wpq.summaryQ.qsize()
+
     if JobID == None:
-        JobID = jobStart("Fetch summaries, all known players",0,"FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers",None,totalTargetsToUpdate)
+        JobID = jobStart("Fetch summaries, all known players",0,"FetchPlayerUpdatesAndNewPlayers.updateExistingPlayers",None,TotalEntries)
         startTime = datetime.datetime.now()
 
     
     global WorkerStatus
 
-        
     lastHeartbeat = startTime
     counter = offset
     jobHeartbeat(JobID,counter)
-    for result in results:
+    while wpq.summaryQ.empty() == False:
+        targetID = wpq.summaryQ.get()
+        targetID = targetID[0]
         heartbeatDelta = (datetime.datetime.now() - lastHeartbeat).total_seconds()
         if heartbeatDelta > 30:
             jobHeartbeat(JobID,counter)
             lastHeartbeat = datetime.datetime.now()
-        counter = counter + 1
+        counter = TotalEntries - wpq.summaryQ.qsize() 
         WorkerStatus = {}
         WorkerStatus["CurEntry"] = counter
-        WorkerStatus["TotalEntries"] = totalTargetsToUpdate
-        WorkerStatus["CurrentAction"] = "summary of %s" % (result[0]) 
+        WorkerStatus["TotalEntries"] = TotalEntries
+        WorkerStatus["CurrentAction"] = "summary of %s" % (targetID) 
         delta = "[    Calculating     ]"
         if counter >= 20:
             delta = ((datetime.datetime.now() - startTime).total_seconds() / counter) 
-            delta = (totalTargetsToUpdate - counter) * delta #seconds remaining
+            delta = (TotalEntries - counter) * delta #seconds remaining
             seconds = round(delta,0)
             minutes = 0
             hours = 0
@@ -165,11 +186,11 @@ order by started desc"""
             
             delta = "%ih, %im, %is" % (hours,minutes,seconds)
             
-        wpq.updateQ(counter,totalTargetsToUpdate,"summary of %s" % (result[0]) ,delta)
+        wpq.updateQ(counter,TotalEntries,"summary of %s" % (targetID) ,delta)
             
         
 
-        ID = result[0].split('-')
+        ID = targetID.split('-')
         player = fetchPlayer_root('',ID[0],ID[1],ID[2])
 
         datetime_list = []
@@ -184,12 +205,12 @@ order by started desc"""
 
 
         #print("Summary update for player %s-%s-%s, [%i/%i]" % (ID[0],ID[1],ID[2],counter,totalTargetsToUpdate))
-        addPlayer(result[0],codeName,joined,missions) 
-        _parseCentresAndAdd(player["centre"],result[0])
+        addPlayer(targetID,codeName,joined,missions) 
+        _parseCentresAndAdd(player["centre"],targetID)
     jobEnd(JobID)
     endTime = datetime.datetime.now()
     f = open("Stats.txt","a+")
-    f.write("Queried {0} players' aggregates, operation completed after {1}. \t\n".format(len(results),endTime - startTime ))
+    f.write("Queried {0} players' aggregates, operation completed after {1}. \t\n".format(TotalEntries,endTime - startTime ))
     f.close()
 
 def manualTargetSummary(rootID):
