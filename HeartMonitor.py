@@ -92,15 +92,14 @@ def executeMonitor():
                     threadName = "%s:%s" % (result[2][0:3],result[1])
                     params = json.loads(result[8])
                     if checkThread(activeThreads,threadName) == 0:
-                        FetchAchievements.FetchAchievementsLoad()
+                        FetchAchievements.FetchAchievementsLoad(params["scope"],jobID=result[2],offset=result[7])
                     while checkThread(activeThreads,threadName) < MaxThreads:
 
                         t = threading.Thread(
                             target=FetchAchievements.FetchAchievementsLoop, 
                             args=(params["scope"],), 
-                            kwargs={"jobID":result[2],"offset":result[7]}) #
+                            kwargs={"jobID":result[2],}) #
                         t.name = "%s:%s" % (result[2][0:3],result[1])
-                    
                         t.start()
                         activeThreads.append(t)
                         TRQ.q.put(t)
@@ -143,8 +142,10 @@ def executeMonitor():
 def checkThread(threads,threadTitle):
     counter = 0
     for t in threads:
-        if t.name == threadTitle:
+        if t.name == threadTitle and t.isAlive():
             counter = counter + 1
+        if not t.isAlive():
+            threads.remove(t)
     return counter
 
 def terminateMonitor():

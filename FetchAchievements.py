@@ -32,7 +32,7 @@ def FetchAchievementsLoad (scope, jobID = None, offset = 0):
         targetIDs = getInterestingPlayersRoster(True,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),offset=offset)
         if jobID == None: 
             jobID=jobStart("Fetch achievements, inactive players",0,"FetchAchievements.executeFetchAchievements",params, len(targetIDs))
-    elif scope == "partial":
+    elif scope == "partial" or scope == "activePlayers":
         targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"), offset=offset)
         if jobID == None: 
             jobID=jobStart("Fetch achievements, active players",0,"FetchAchievements.executeFetchAchievements",params,len(targetIDs))
@@ -46,6 +46,7 @@ def FetchAchievementsLoad (scope, jobID = None, offset = 0):
     return jobID 
 
 def FetchAchievementsLoop(targetIDs, jobID=None):
+    fetchAllAchievements(targetIDs=targetIDs, jobID=jobID)
     return
 
 def fetchAllAchievements (targetIDs, jobID = None):
