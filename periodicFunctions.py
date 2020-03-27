@@ -15,11 +15,11 @@ def queueWeekly():
 
     #67
     params = {}
-    params["scope"] = "recent"
-    targetIDs = SQLHelper.getPlayersWhoMightNeedAchievementUpdates("recent")
+    params["scope"] = "activePlayers"
+    targetIDs = SQLHelper.getInterestingPlayersRoster(False,ConfigHelper.getConfigString("StartDate"),ConfigHelper.getConfigString("ChurnDuration"),siteName =  None)
     achievesID = SQLHelper.jobStart("Fetch achievements, players from the last 7 days",0,"FetchAchievements.executeFetchAchievements",params,len(targetIDs), delay=-2)
     SQLHelper.jobBlock(gamesID,achievesID)
-
+    
     #6
     renderID = SQLHelper.jobStart("Render all blobs",0 ,"buildAllForAllArenasSequentially.buildAllForAllArenasSequentially", None, len(cfg["configs"]), delay=-2)
     SQLHelper.jobBlock(achievesID,renderID)
