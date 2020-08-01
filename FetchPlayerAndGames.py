@@ -7,7 +7,7 @@ import queue
 from colorama import Fore
 from FetchHelper import fetchPlayer_root
 from FetchHelper import fetchPlayerRecents_root
-from SQLHelper import addPlayer
+from SQLHelper import addPlayer, updateGameFetchMetrics
 from SQLHelper import addGame 
 from SQLHelper import addParticipation
 from SQLHelper import getInterestingPlayersRoster
@@ -59,7 +59,7 @@ def queryIndividual(ID, scope = None):
     IDPart = ID.split("-")[2]
     
     summaryJson = fetchPlayer_root('',region,site,IDPart)
-    if summaryJson is not None:
+    if summaryJson is not None and len(summaryJson) > 0:
         #print(DBGstring)
         datetime_list = []
         missions = 0
@@ -82,7 +82,7 @@ def queryIndividual(ID, scope = None):
                     missionUUID = addGame(mission[0],mission[1],mission[2])
                     "FetchPlayerAndGames: %s, %s " % (missionUUID, mission)
                     addParticipation(missionUUID,ID,mission[3])
-    
+            updateGameFetchMetrics(ID)
 def QueryGamesLoop (jobID,counter = 0):
      
     jobHeartbeat(jobID,counter)

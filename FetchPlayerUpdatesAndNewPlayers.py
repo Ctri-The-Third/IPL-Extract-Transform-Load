@@ -204,7 +204,7 @@ def updateExistingPlayersLoop(JobID = None):
         codeName = str(player["centre"][0]["codename"])
 
 
-        #print("Summary update for player %s-%s-%s, [%i/%i]" % (ID[0],ID[1],ID[2],counter,totalTargetsToUpdate))
+        #DBG("Summary update for player %s-%s-%s, [%i/%i]" % (ID[0],ID[1],ID[2],counter,TotalEntries),3)
         addPlayer(targetID,codeName,joined,missions) 
         _parseCentresAndAdd(player["centre"],targetID)
     jobEnd(JobID)
