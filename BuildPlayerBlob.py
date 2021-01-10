@@ -140,7 +140,7 @@ where pl.playerID = %s
 	 """
 	conn = connectToSource()
 	cursor = conn.cursor()
-	DBG("BuildPlayerBlob.buildPlayerBlob start[%s], end[%s], target[%s], arena[%s]" % (cachedconfig["StartDate"],cachedconfig["EndDate"],targetID,cachedconfig["SiteNameReal"]),3)
+	#DBG("BuildPlayerBlob.buildPlayerBlob start[%s], end[%s], target[%s], arena[%s]" % (cachedconfig["StartDate"],cachedconfig["EndDate"],targetID,cachedconfig["SiteNameReal"]),3)
 
 	#startDate, endDate, arenaName, startDate, endDate, arenaName,  startDate, endDate, arenaName, arenaName, PlayerID
 	
@@ -210,9 +210,10 @@ where pl.playerID = %s
 	
 
 def executeBuildPlayerBlobs(jobID = None, counter = None): 
+
 	cachedconfig = cfg.getConfig()
 	targetIDs = getTop5PlayersRoster(cachedconfig["StartDate"],cachedconfig["EndDate"],cachedconfig["SiteNameReal"])
-	DBG("Big 5 players = %s" % (targetIDs,),1)
+	DBG("Building big 5 player blobs",3)
 
 	if jobID is not None and counter is not None:
 		jobHeartbeat(jobID,counter)

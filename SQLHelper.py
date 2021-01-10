@@ -110,7 +110,7 @@ def getPlayers(offset = 0):
     cursor.execute(query, (offset,))
     results = cursor.fetchall()    
 
-    conn.commit() 
+     
     closeConnection()
     return results
 

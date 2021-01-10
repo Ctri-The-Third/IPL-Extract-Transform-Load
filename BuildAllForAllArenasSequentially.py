@@ -5,6 +5,7 @@ import BuildPlayerBlob
 import BuildHeadToHeadsToJSON
 import BuildAnnualArenaMetrics
 import BuildAnnualTop3s
+import BuildAnnualStars
 import ConfigHelper as cfgH
 from SQLHelper import jobStart,jobHeartbeat,jobEnd
 def buildAllForAllArenasSequentially(jobID = None, startIndex = None):
@@ -30,8 +31,10 @@ def buildAllForAllArenasSequentially(jobID = None, startIndex = None):
                         BuildPlayerBlob.executeBuildPlayerBlobs(jobID = jobID, counter = counter)
                         #BuildHeadToHeadsToJSON.buildHeadToHeads() 
                         BuildAnnualArenaMetrics.executeBuild()
+                        jobHeartbeat(jobID,counter)
                         BuildAnnualTop3s.execute()
-                        
+                        jobHeartbeat(jobID,counter)
+                        BuildAnnualStars.executeBuild_AnnualStars()
                         jobHeartbeat(jobID,counter)
                 counter = counter + 1
         jobEnd(jobID)
