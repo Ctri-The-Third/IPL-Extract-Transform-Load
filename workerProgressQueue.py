@@ -32,3 +32,9 @@ def updateQ(curEntry,total,action,ETA):
     q.put(WorkerStatus)
 def getQ():
     return q
+
+
+
+summaryQ = queue.Queue()
+achieveQ = queue.Queue()
+gamesQ = queue.Queue()

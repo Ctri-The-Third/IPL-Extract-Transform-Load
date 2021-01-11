@@ -7,14 +7,14 @@ import queue
 from colorama import Fore
 from FetchHelper import fetchPlayer_root
 from FetchHelper import fetchPlayerRecents_root
-from SQLHelper import addPlayer
+from SQLHelper import addPlayer, updateGameFetchMetrics
 from SQLHelper import addGame 
 from SQLHelper import addParticipation
 from SQLHelper import getInterestingPlayersRoster
 from SQLHelper import jobStart, jobHeartbeat, jobEnd
 import ConfigHelper as cfg
 import workerProgressQueue as wpq 
- 
+import DBG 
 
  #The query starts at the date in question and looks backwards. We use the "End Date" from the config.
 #targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("EndDate'],cfg.getConfigString("ChurnDuration'])
@@ -25,24 +25,33 @@ import workerProgressQueue as wpq
 #}
 updatedPlayers = []
 
-def executeQueryGames(scope, interval = "Null", ArenaName = None, offset = None, ID = None): #Scope should be "full" or "partial"
+def QueryGamesLoad(scope, interval = "Null", ArenaName = None, offset = None, ID = None):
     params = {}
     params["scope"] = scope
     params["arenaName"] = cfg.getConfigString("SiteNameReal")
     if scope == "full": 
         targetIDs = getInterestingPlayersRoster(True,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),offset=offset)
         if ID == None: #new job
-            ID = jobStart("Fetch games, all players",0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs))
+            ID = jobStart("Fetch games, all players",0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs),delay=-2)
     elif scope == "activePlayers":
         targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),offset=offset,siteName =  None)
         if ID == None: #new job
-            ID = jobStart("Fetch games, All arenas active players " ,0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs)) 
+            ID = jobStart("Fetch games, All arenas active players " ,0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs), delay=-2) 
     else: #local
         targetIDs = getInterestingPlayersRoster(False,cfg.getConfigString("StartDate"),cfg.getConfigString("ChurnDuration"),offset=offset,siteName = params["arenaName"])
         if ID == None: #new job
-            ID = jobStart("Fetch games, [%s] active players " % (cfg.getConfigString("SiteNameShort")),0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs)) 
+            ID = jobStart("Fetch games, [%s] active players " % (cfg.getConfigString("SiteNameShort")),0,"FetchPlayerAndGames.executeQueryGames",params,len(targetIDs), delay=-2) 
             
-    queryPlayers(targetIDs,scope, siteName = params["arenaName"], jobID=ID, offset=offset)
+    for targetID in targetIDs:
+        wpq.gamesQ.put(targetID)
+    
+    return ID
+
+
+def QueryGamesExecute(scope, interval = "Null", ArenaName = None, offset = None, ID = None): #Scope should be "full" or "partial"
+    jobID = QueryGamesLoad(scope,interval, ArenaName,offset,ID)
+    #QueryGamesLoop(jobID,offset)
+
 def queryIndividual(ID, scope = None):
         
     region = ID.split("-")[0]
@@ -50,7 +59,7 @@ def queryIndividual(ID, scope = None):
     IDPart = ID.split("-")[2]
     
     summaryJson = fetchPlayer_root('',region,site,IDPart)
-    if summaryJson is not None:
+    if summaryJson is not None and len(summaryJson) > 0:
         #print(DBGstring)
         datetime_list = []
         missions = 0
@@ -73,20 +82,16 @@ def queryIndividual(ID, scope = None):
                     missionUUID = addGame(mission[0],mission[1],mission[2])
                     "FetchPlayerAndGames: %s, %s " % (missionUUID, mission)
                     addParticipation(missionUUID,ID,mission[3])
-    
-def queryPlayers (targetIDs,scope, siteName = None, jobID = None, offset = None):
-    updatedPlayers = []
-    
-    counter = 0
-    if offset is not None:
-        counter = offset
+            updateGameFetchMetrics(ID)
+def QueryGamesLoop (jobID,counter = 0):
+     
     jobHeartbeat(jobID,counter)
-    
-    totalPlayerCount = len(targetIDs) + counter
+    totalPlayerCount = wpq.gamesQ.qsize() + counter
     startTime = datetime.datetime.now()
     lastHeartbeat = startTime
     global WorkerStatus
-    for ID in targetIDs:
+    while wpq.gamesQ.empty() == False:
+        ID = wpq.gamesQ.get()
         ETA = "Calculating"
         if  jobID != None:
             heartbeatDelta = ((datetime.datetime.now() - lastHeartbeat).total_seconds()) 
@@ -115,20 +120,21 @@ def queryPlayers (targetIDs,scope, siteName = None, jobID = None, offset = None)
             ETA = "Calculating"
 
         
-        #DBGstring = "Seeking games for %s, [%i / %i] : " % (ID,counter,totalPlayerCount)
+        DBGstring = "Seeking games for %s, [%i / %i] : " % (ID,counter,totalPlayerCount)
+        DBG.DBG(DBGstring,2)
         wpq.updateQ(counter,totalPlayerCount, "games for %s" % (ID),ETA)
-        counter = counter + 1 
-        queryIndividual(ID,scope)
-            
+        counter = totalPlayerCount - wpq.gamesQ.qsize() 
+        queryIndividual(ID)
+        wpq.gamesQ.task_done()
     jobEnd(jobID)        
 
 
     endTime = datetime.datetime.now()
-    f = open("Stats.txt","a+")
-    f.write("Queried {0} players' recent games, operation completed after {1}. \t\n".format(len(targetIDs),endTime - startTime ))
-    f.close()
+    #f = open("Stats.txt","a+")
+    #f.write("Queried {0} players' recent games, operation completed after {1}. \t\n".format(len(targetIDs),endTime - startTime ))
+    #f.close()
 
 def manualTargetForGames(targetID):
-    queryIndividual(targetID,"full")
+    queryIndividual(targetID,"individual")
  
 

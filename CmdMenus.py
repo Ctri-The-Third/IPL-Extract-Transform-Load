@@ -28,17 +28,16 @@ from renderProgressBar import renderBar
 import ConfigHelper as cfg 
 from ctypes import *
 from CmdMenus_drawMethods import *
-from FetchPlayerAndGames import executeQueryGames
-from FetchPlayerUpdatesAndNewPlayers import updateExistingPlayers
+from FetchPlayerAndGames import QueryGamesExecute
+#from FetchPlayerUpdatesAndNewPlayers import updateExistingPlayers
 from FetchPlayerUpdatesAndNewPlayers import findNewPlayers
-from FetchAchievements import executeFetchAchievements
 import BuildAllForAllArenasSequentially
 import FetchPlayerAndGames
 import FetchPlayerUpdatesAndNewPlayers
 import FetchIndividual 
 import QueryIndividual
 import QueryArena 
-
+import periodicFunctions
 import feedbackQueue # shared module that contains a queue for giving output to the UI
 
 import FetchAchievements 
@@ -52,6 +51,7 @@ import BuildHeadToHeadsToJSON
 import BuildAnnualArenaMetrics 
 import BuildAnnualTop3s
 import workerProgressQueue 
+import SQLHelper
 # This application class serves as a wrapper for the initialization of curses
 # and also manages the actual forms of the application
  
@@ -202,49 +202,20 @@ while (inputS != "exit" and inputS != "x" and stop != True) and not safeShutdown
             
             waitingFunction = "61"
             feedback.append("Enter User ID or GamerTag to search")
-        elif inputS == "66":
-            feedback.append("Performing update of active local players in background...")
-            t = threading.Thread(target=executeQueryGames, args=("activePlayers",))
-            t.name = "66, active locals"
-            threads.append(t)
-            t.start()      
-            inputS = ""
-        elif inputS == "67":
-            feedback.append("Performing background update of achievements for recent players...")
-            t = threading.Thread(target=executeFetchAchievements, args =("recent",))
-            t.name = "67, ach <=7 days"
-            threads.append(t)
-            t.start()      
-            inputS = ""
-        elif inputS == "677":
-            feedback.append("Performing background update of achievements for active players...")
-            t = threading.Thread(target=executeFetchAchievements, args =("partial",))
-            t.names = "677 - ach actives"
-            threads.append(t)
-            t.start()      
+        elif inputS == "66": 
+            
+            feedback.append("Queuing tasks. Will being in <30 seconds...")
+            periodicFunctions.queueWeekly()
             inputS = ""
         elif inputS == "661":
-            feedback.append("Performing update of inactivate players in background...")
-            t = threading.Thread(target=executeQueryGames, args=("full",))
-            t.name = "661 - games, all inactive "
-            threads.append(t)
-            t.start()      
-            inputS = ""
+            feedback.append("Performing full update of interesting player games...")         
+            FetchPlayerAndGames.QueryGamesExecute("full")
         elif inputS == "666":
+            #MONTHLY UPDATE
             feedback.append("Performing complete update in background...")
-            t = threading.Thread(target=updateExistingPlayers)
-            t.name = "666, summary update all"
-            threads.append(t)
-            t.name 
-            t.start()
+            periodicFunctions.queueMonthly()
             inputS = ""
-        elif inputS == "667":
-            feedback.append("Seeking new players in background...")
-            t = threading.Thread(target=findNewPlayers)
-            t.name = "667, new player search for someone"
-            threads.append(t)
-            t.start()
-            inputS = ""
+
         elif inputS == "cls":
             feedback.append("Clearing console")
             clearScreen()

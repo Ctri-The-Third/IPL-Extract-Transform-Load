@@ -20,8 +20,9 @@ def getInterestingPlayersRoster(includeChurned,startDate,period,siteName = None,
         order by Missions desc, SeenIn60Days Asc
         OFFSET %s;
         """
-
-        cursor.execute(query, (offset,))
+        if offset == None:
+            offset = 0
+        cursor.execute(query, (abs(offset),))
     elif siteName is not None:
         query = sql.SQL("""
         with MostRecentPerArena as 
@@ -96,10 +97,26 @@ def getPlayersWhoMightNeedAchievementUpdates(scope, offset = 0):
     
     closeConnection()
     return playerList
-    
+def getPlayers(offset = 0):
+    conn = connectToSource()
+    cursor = conn.cursor()
+
+    query = """with data as ( select row_number() over (order by Level desc, Missions desc) as ID, PlayerID, Missions, Level from Players)
+	select PlayerID from data
+            where (ID >= 0)
+			order by ID asc 
+            offset %s 
+            """
+    cursor.execute(query, (offset,))
+    results = cursor.fetchall()    
+
+     
+    closeConnection()
+    return results
 
 def addPlayer(playerID,GamerTag,Joined,missions):
     
+    now = "%s" % datetime.datetime.now()
     conn = connectToSource()
     cursor = conn.cursor()
     query = sql.SQL("""select missions from players where playerID = %s""")
@@ -110,23 +127,22 @@ def addPlayer(playerID,GamerTag,Joined,missions):
             playerneedsUpdate = True
     except Exception as e:
         playerneedsUpdate = True
-        pass
+
     query =  sql.SQL("""insert into Players 
-    (PlayerID,GamerTag,Joined,Missions
-    )
+    (PlayerID,GamerTag,Joined,Missions,firstsummaryupdate,lastsummaryupdate)
     VALUES
-    (%s,%s,%s,%s)
+    (%s,%s,%s,%s,%s,%s)
     ON CONFLICT (PlayerID) DO UPDATE
-    SET Missions = %s
+    SET Missions = %s, lastsummaryupdate = %s
     """)
     
-    data = (playerID,GamerTag,Joined,missions,missions)
+    data = (playerID,GamerTag,Joined,missions,now,now,missions,now)
     try:
         cursor.execute(query,data)
         DBG("  DBG: SQLHelper.AddPlayer - Added new player %s" % playerID,3)
     
-    except:
-        DBG("Failed to UPSERT player %s" % playerID,1)
+    except Exception as e:
+        DBG("Failed to UPSERT player %s because %s" % (playerID,e),2)
     
     
     conn.commit()
@@ -196,6 +212,22 @@ def addGame(timestamp, arena, gametype):
          return result[1]
 
     return ''
+
+def updateGameFetchMetrics(playerID):
+    conn = connectToSource()
+    cursor = conn.cursor()
+    now = datetime.datetime.now()
+    SQL = """
+        UPDATE players SET 
+        lastdetailupdate = %s,
+        firstdetailupdate = COALESCE(firstdetailupdate,%s)
+        where playerID = %s
+    """
+    data = (now,now,playerID)
+    cursor.execute(SQL,data)
+    conn.commit()
+    closeConnection()
+
 
 def addParticipation(gameUUID, playerID, score):
     conn = connectToSource()
@@ -377,7 +409,11 @@ order by playerRank asc
     closeConnection()
     return rows
 
+def markPlayerSummaryUpdate(playerID):
+    return None
 
+def markPlayerGamesUpdate(playerID):
+    return None
 
 def jobStart(description,resumeIndex,methodName, methodParams, completeIndex = None, delay = 0):
 
@@ -422,6 +458,17 @@ def jobHeartbeat(ID,progressIndex):
 
     conn.commit()
     closeConnection()
+def jobBlock(jobWhichBlocks,jobWhichIsBlocked):
+    SQL = """INSERT INTO jobsblocking
+    (jobid, blockingid) 
+    values (%s,%s)"""
+    conn=connectToSource()
+    cursor = conn.cursor()
+
+    cursor.execute(SQL,(jobWhichBlocks,jobWhichIsBlocked))
+
+    conn.commit()
+    closeConnection()
 
 _activeJobsCacheTime = None
 _activeJobsCacheResults = None
@@ -435,6 +482,9 @@ def getActiveJobs():
         SQL = """ with data as (select row_number() over (partition by healthstatus order by finished desc ) as row, * from public."jobsView")
     select * from data where finished is null or (finished is not null and row <= 3 and row > 0)
     order by finished desc, started asc"""
+
+
+    
         conn =connectToSource()
         cursor = conn.cursor()
         

@@ -6,6 +6,7 @@ from DBG import DBG
  
 
 def executeBuild():
+    DBG("Building arena metrics",3)
     conn = connectToSource()
     cursor = conn.cursor()
 
@@ -23,12 +24,25 @@ def executeBuild():
     #print ("  == Which games were played")
 
     SQL = """
-    select count(*), gamename from games g 
+with gamesbyname as (
+select count(*) as gameCount, gamename from games g 
     where arenaName ilike %s
     and gametimestamp >= %s
-    and gametimestamp <= %s
+    and gametimestamp < %s
     group by 2
-    order by 1 desc;
+    order by 1 desc
+),
+totalGames as (
+	select sum(gameCount) totalGames
+	from gamesbyname
+)
+select cast(gamecount as integer), gamename from gamesbyname full outer join totalgames on true 
+where (gamecount / totalgames) > 0.01
+union 
+select cast(sum(gamecount) as integer), 'other' from gamesbyname full outer join totalgames on true 
+where (gamecount / totalgames) <= 0.01
+order by 1 desc; 
+
     """
 
     parameters = (
@@ -176,7 +190,124 @@ def executeBuild():
     outputObject['playerCounts'] = playerCounts
 
     #print(json.dumps(outputObject,indent=4))
+        
+    #MEMBER PERCENTILES - visits
+    SQL = """with data as (select 
+percent_rank() over (order by count(distinct date_trunc('day',g.gametimestamp))) as percentile
+,count(distinct date_trunc('day',g.gametimestamp)) as visits
+, pl.playerID from players pl join participation p on pl.playerID = p.playerID
+join games g on g.gameuuid = p.gameuuid
+where g.arenaname ilike %s
+and g.gametimestamp >= %s
+and g.gametimestamp < %s
+group by pl.playerID
+),
+finalresults as (
+	select
+	count (case when visits >= 1 and visits < 2 then 1 else null end) as one,
+	count (case when visits >= 2 and visits < 3 then 1 else null end) as twoVisits,
+	count (case when visits >= 3 and visits < 5 then 1 else null end) as LessThanFive,
+	count (case when visits >= 5 and visits < 11 then 1 else null end) as LessThanEleven, 
+	count (case when visits >= 11 then 1 else null end) as MoreThanEleven
+	from data 
+)
+select * from finalResults
 
+"""
+    parameters = [cfg['SiteNameReal'], startYear, endYear]
+    cursor.execute(SQL,parameters)
+    result = cursor.fetchone()
+    
+    
+    visits = [
+        {"caption":"1 visit", "players":result[0]}
+        , {"caption":"2 visits", "players": result[1]}
+        , {"caption":"3-4 visits", "players": result[2]}
+        , {"caption":"5-10 visits", "players": result[3]}
+        , {"caption":"11+ visits", "players": result[4]}
+    ]
+        
+    
+    outputObject['regularsAggregateVisits'] = visits
+    #referrals
+    #print ("  == Referrals and Welcomers")
+
+    #MEMBER PERCENTILES - GAMES
+    SQL = """with data as (select 
+percent_rank() over (order by count(distinct date_trunc('day',g.gametimestamp))) as percentile
+,count(distinct date_trunc('day',g.gametimestamp)) as visits
+, pl.playerID from players pl join participation p on pl.playerID = p.playerID
+join games g on g.gameuuid = p.gameuuid
+where g.arenaname ilike %s
+and g.gametimestamp >= %s
+and g.gametimestamp < %s
+group by pl.playerID
+),
+finalresults as (
+	select
+	count (case when visits >= 1 and visits < 3 then 1 else null end) as max2,
+	count (case when visits >= 3 and visits < 7 then 1 else null end) as max6,
+	count (case when visits >= 7 and visits < 13 then 1 else null end) as max12,
+	count (case when visits >= 13 and visits < 36 then 1 else null end) as max35, 
+	count (case when visits >= 36 then 1 else null end) as min36
+	from data 
+)
+select * from finalResults"""
+
+    parameters = [cfg['SiteNameReal'], startYear, endYear]
+    cursor.execute(SQL,parameters)
+    result = cursor.fetchone()
+    
+    
+    games = [
+        {"caption":"1-2 games", "players":result[0]}
+        , {"caption":"3-6 games", "players": result[1]}
+        , {"caption":"7-12 games", "players": result[2]}
+        , {"caption":"13-35 games", "players": result[3]}
+        , {"caption":"36+ games", "players": result[4]}
+    ]
+    outputObject['regularsAggregateGames'] = games
+
+    #MEMBER PERCENTILES - RETENTION
+    SQL = """with preData as 
+(select  p.playerid
+, min(g.gametimestamp) as firstSeen
+, max(g.gametimestamp) as lastSeen
+, floor(extract(epoch from max(g.gametimestamp) - min(g.gametimestamp))/604800)::int as weeks
+from games g  join participation p on p.gameuuid = g.gameuuid
+where arenaname ilike %s
+and g.gametimestamp < %s
+
+group by 1 
+),
+data as 
+(select * from preData where lastSeen >= %s
+),
+finalresults as (
+	select count(case when weeks >= 0 and weeks <= 4 then 1 else null end) as max4
+	, count(case when weeks > 4 and weeks <= 12 then 1 else null end) as max12
+	, count(case when weeks > 12 and weeks <= 52 then 1 else null end) as max52
+	, count(case when weeks > 52 and weeks <= 104 then 1 else null end) as max104
+	, count(case when weeks > 104 and weeks <= 156 then 1 else null end) as max156
+	, count(case when weeks > 156  then 1 else null end) as min157
+	from data
+)
+select * from finalresults"""
+    parameters = [cfg['SiteNameReal'], endYear, startYear]
+
+    cursor.execute(SQL,parameters)
+    result = cursor.fetchone()
+    
+    
+    retention = [
+        {"caption":"0-4 weeks", "players":result[0]}
+        , {"caption":"5-12 weeks", "players": result[1]}
+        , {"caption":"13-52 weeks", "players": result[2]}
+        , {"caption":"1-2 years", "players": result[3]}
+        , {"caption":"3-4 years", "players": result[4]}
+        , {"caption":"5+ years", "players": result[5]}
+    ]
+    outputObject['regularsAggregateRetention'] = retention
 
     filepart = "AnnualMetrics" 
     if os.name == "nt":

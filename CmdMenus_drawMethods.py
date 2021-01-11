@@ -85,37 +85,37 @@ def drawMainMenu(CurrentWorkerStatus,threadCounter,feedback, stayActiveFlag):
     print_at (10,1,"6",PI=2)
     print_at (11,0,"[61 ] Update individual player")
     print_at (11,1,"61",PI=1)
-    print_at (12,0,"[66 ] Run DB game search for active players at site")
+    print_at (12,0,"[66 ] Run weekly update")
     print_at (12,1,"66",PI=1)
-    print_at (13,0,"[67 ] Run Achievement refresh for all recent players")
-    print_at (13,1,"67",PI=2)
-    print_at (14,0,"[677] Run Achievement refresh for all active players")
-    print_at (14,1,"677",PI=3)
-    print_at (15,0,"[661] Run DB game search for all inactivate players" )
-    print_at (15,1,"661",PI=3)
-    print_at (16,0,"[666] Run DB summary refresh for all players")
-    print_at (16,1,"666",PI=3)
-    print_at (17,0,"[667] Find new players for active site")
-    print_at (17,1,"667",PI=2)
+    #print_at (13,0,"[67 ] Run Achievement refresh for all recent players")
+    #print_at (13,1,"67",PI=2)
+    #print_at (14,0,"[677] Run Achievement refresh for all active players")
+    #print_at (14,1,"677",PI=3)
+    print_at (13,0,"[661] Summary refresh" )
+    print_at (13,1,"661",PI=3)
+    print_at (14,0,"[666] Run monthly update")
+    print_at (14,1,"666",PI=3)
+    #print_at (17,0,"[667] Find new players for active site")
+    #print_at (17,1,"667",PI=2)
     
-    print_at (18,0,"" )
-    print_at (19,0,"[t] threads \t[x] Exit" )
+    print_at (15,0,"" )
+    print_at (16,0,"[t] threads \t[x] Exit" )
     if stayActiveFlag:
-        print_at(19,30,"[s] re-enable auto-shutdown")
+        print_at(16,30,"[s] re-enable auto-shutdown")
     else: 
-        print_at(19,30,"[s] disable auto-shutdown")
-    print_at (20,0,"")
+        print_at(16,30,"[s] disable auto-shutdown")
+    print_at (17,0,"")
     
     
     
     if feedback.__len__() >= 5:
-        print_at (21,0,"/----- Previous commands ---------------------------------------------\\ ",PI=2)
+        print_at (18,0,"/----- Previous commands ---------------------------------------------\\ ",PI=2)
         counter = 0 
         for var in feedback[-5:]:
             counter = counter + 1
             var = var + " " * 70 
             var = var[0:70] 
-            print_at(21+counter,0,var,PI=4)
+            print_at(18+counter,0,var,PI=4)
 
         
 def drawArenaMenu():
