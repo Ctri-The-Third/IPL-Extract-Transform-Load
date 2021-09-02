@@ -76,12 +76,15 @@ def queryIndividual(ID, scope = None):
         if playerNeedsUpdated == True or scope == "full":
             updatedPlayers.append(ID)
             missionsJson = fetchPlayerRecents_root('',region,site,IDPart)
-            if missionsJson != None:
+            if missionsJson != None and "mission" in missionsJson:
                 for mission in missionsJson["mission"]:
                 
                     missionUUID = addGame(mission[0],mission[1],mission[2])
                     "FetchPlayerAndGames: %s, %s " % (missionUUID, mission)
                     addParticipation(missionUUID,ID,mission[3])
+            elif missionsJson != None:
+                print("???")
+                    
             updateGameFetchMetrics(ID)
 def QueryGamesLoop (jobID,counter = 0):
      
