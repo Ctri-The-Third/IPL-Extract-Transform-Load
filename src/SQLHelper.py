@@ -8,6 +8,10 @@ import ConfigHelper as cfg
 import hashlib
 import datetime
 
+import logging 
+
+lo = logging.getLogger("SQL_Helper")
+
 def getInterestingPlayersRoster(includeChurned,startDate,period,siteName = None, offset = 0):
  
     conn = connectToSource()
@@ -416,7 +420,7 @@ def markPlayerGamesUpdate(playerID):
     return None
 
 def jobStart(description,resumeIndex,methodName, methodParams, completeIndex = None, delay = 0):
-
+    lo.debug("registering job: %s\t%s\t%s ",description,methodName,methodParams)
     ID = str(uuid.uuid4())
     SQL  = """INSERT into jobsList ("desc","id","started","methodname","methodparams","completeindex") values 
     (%s,%s,now() + interval '%s minutes',%s,%s,%s)"""

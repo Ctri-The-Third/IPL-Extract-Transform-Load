@@ -4,7 +4,16 @@ import time
 import csv
 import sys
 
+from time import sleep
+from datetime import datetime
+import logging 
+lo = logging.getLogger("FetchHelper")
+last_successful_request = datetime.now()
 
+def log_request():
+    global last_successful_request
+    delta = datetime.now() - last_successful_request()
+    lo.debug("")
 
 def outputPlayerToCSV(json,idAsString):
     playerName = json["centre"][0]["codename"]
@@ -52,9 +61,20 @@ def fetchPlayer_root(token,region,site,code):
             'memberSite':str(site),
             'memberId':str(code),
             'token':str(token)} 
+    retry_attempts = 0 
+    while retry_attempts < 20:
+        try:
+            r = requests.post(url = API_DetailsURL, data = data)
+            retry_attempts = 30 
+        except Exception as e:
+            lo.error("%s",e)
+            retry_attempts += 1
+            sleep_duration = pow(2,retry_attempts)
+            lo.debug("Sleeping %s seconds ", sleep_duration)
+            sleep(sleep_duration)
+            
 
-    r = requests.post(url = API_DetailsURL, data = data)
-    
+
     try:
         responseJSON = json.loads(r.text)
         if not( 'centre'  in responseJSON and len(responseJSON['centre']) >= 1):
@@ -62,6 +82,7 @@ def fetchPlayer_root(token,region,site,code):
     except Exception as e:
         responseJSON = {}
     finally:
+        log_request()
         return responseJSON
     
 def fetchPlayerAcheivement_root(token,region,site,code):

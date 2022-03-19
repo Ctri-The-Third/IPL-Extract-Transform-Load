@@ -1,3 +1,6 @@
+INSERT INTO public."settingsAndInfo"(
+	id, value)
+	VALUES ('DB_SCHEMA', '1.8');
 
 ALTER TABLE public.players
     ADD COLUMN firstdetailupdate timestamp without time zone;
